@@ -10,7 +10,7 @@
 
 1. Установите и включите модуль **socketlib**.
 2. В Foundry: «Дополнения → Установить модуль» и вставьте адрес манифеста:
-   `https://raw.githubusercontent.com/Paragon-Re-verse/detective-story-reverse/main/module.json`
+   `https://github.com/Paragon-Re-verse/detective-story-reverse/releases/latest/download/module.json`
 3. Включите модуль в мире на системе dnd5e.
 
 ## Что умеет

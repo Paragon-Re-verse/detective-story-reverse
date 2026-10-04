@@ -10,7 +10,7 @@ The module is a deep rework of the Investigation Re:Verse prototype. The board e
 
 1. Install and enable the **socketlib** module.
 2. In Foundry: “Add-on Modules → Install Module” and paste the manifest URL:
-   `https://raw.githubusercontent.com/Paragon-Re-verse/detective-story-reverse/main/module.json`
+   `https://github.com/Paragon-Re-verse/detective-story-reverse/releases/latest/download/module.json`
 3. Enable the module in a dnd5e world.
 
 ## Features

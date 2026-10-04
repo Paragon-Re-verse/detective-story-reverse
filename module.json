@@ -7,11 +7,11 @@
     { "name": "Paragon" }
   ],
   "url": "https://github.com/Paragon-Re-verse/detective-story-reverse",
-  "manifest": "https://raw.githubusercontent.com/Paragon-Re-verse/detective-story-reverse/main/module.json",
+  "manifest": "https://github.com/Paragon-Re-verse/detective-story-reverse/releases/latest/download/module.json",
   "download": "https://github.com/Paragon-Re-verse/detective-story-reverse/releases/download/v1.0.0/module.zip",
-  "license": "LICENSE",
-  "readme": "README.md",
-  "changelog": "CHANGELOG.md",
+  "license": "https://github.com/Paragon-Re-verse/detective-story-reverse/blob/main/LICENSE",
+  "readme": "https://github.com/Paragon-Re-verse/detective-story-reverse/blob/main/README.md",
+  "changelog": "https://github.com/Paragon-Re-verse/detective-story-reverse/blob/main/CHANGELOG.md",
   "compatibility": {
     "minimum": "13",
     "verified": "13.351"
