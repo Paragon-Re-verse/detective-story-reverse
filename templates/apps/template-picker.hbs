@@ -1,0 +1,12 @@
+<input type="search" name="templateSearch" placeholder="{{localize 'DETECTIVE_STORY.Library.Search'}}" autofocus>
+<ul class="picker-list">
+    {{#each templates}}
+    <li data-search="{{this.searchIndex}}">
+        <label class="checkbox">
+            <input type="checkbox" name="template" value="{{this.id}}">
+            <img src="{{this.img}}" alt="" loading="lazy">
+            <span>{{this.name}}</span>
+        </label>
+    </li>
+    {{/each}}
+</ul>

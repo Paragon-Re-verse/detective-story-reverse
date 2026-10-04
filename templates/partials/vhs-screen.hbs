@@ -1,0 +1,4 @@
+<div class="vhs-screen{{#if vhsEffect}} vhs-effect{{/if}}">
+    <video src="{{videoUrl}}" controls playsinline preload="metadata"></video>
+    {{#if vhsEffect}}<span class="vhs-osd" aria-hidden="true">▶ PLAY</span>{{/if}}
+</div>

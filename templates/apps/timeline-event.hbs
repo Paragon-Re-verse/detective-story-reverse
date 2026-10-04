@@ -1,0 +1,21 @@
+<div class="form-group">
+    <label>{{localize "DETECTIVE_STORY.Timeline.EventTitle"}}</label>
+    <div class="form-fields"><input type="text" name="title" value="{{event.title}}" required autofocus></div>
+</div>
+<div class="form-group">
+    <label>{{localize "DETECTIVE_STORY.Timeline.DateTime"}}</label>
+    <div class="form-fields"><input type="datetime-local" name="dateTime" value="{{event.dateTime}}"></div>
+</div>
+<div class="form-group">
+    <label>{{localize "DETECTIVE_STORY.Timeline.Photo"}}</label>
+    <div class="form-fields"><file-picker name="image" type="image" value="{{event.image}}"></file-picker></div>
+</div>
+<div class="form-group">
+    <label>{{localize "DETECTIVE_STORY.Timeline.Side"}}</label>
+    <div class="form-fields">
+        <select name="side">
+            <option value="above" {{#if isAbove}}selected{{/if}}>{{localize "DETECTIVE_STORY.Timeline.Above"}}</option>
+            <option value="below" {{#unless isAbove}}selected{{/unless}}>{{localize "DETECTIVE_STORY.Timeline.Below"}}</option>
+        </select>
+    </div>
+</div>

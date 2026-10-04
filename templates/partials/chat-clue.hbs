@@ -1,0 +1,8 @@
+<div class="detective-story-chat clue-chat-card">
+    <figure class="dsr-polaroid">
+        <img src="{{clue.img}}" alt="">
+        <figcaption>{{clue.name}}</figcaption>
+    </figure>
+    <div class="clue-chat-type"><img src="{{clueType.icon}}" alt=""> {{clueType.name}}</div>
+    {{#if enrichedDescription}}<div class="clue-chat-description">{{{enrichedDescription}}}</div>{{/if}}
+</div>

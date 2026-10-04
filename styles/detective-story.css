@@ -1,0 +1,1838 @@
+/* Detective Story Reverse — окна модуля в классическом оформлении Foundry.
+   Используются только переменные CSS самого Foundry, поэтому светлая и тёмная темы подхватываются сами. */
+
+/* В светлой теме акцент Foundry слишком светлый для мелкого текста на бежевом фоне. */
+.theme-light .detective-story,
+.detective-story.theme-light {
+  --color-text-accent: var(--color-warm-2, #c9593f);
+}
+
+.detective-story .window-content {
+  gap: 0.5rem;
+}
+
+.detective-story .empty-message {
+  color: var(--color-text-subtle);
+  font-style: italic;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.detective-story .hint {
+  color: var(--color-form-hint, var(--color-text-subtle));
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .warning-hint {
+  color: var(--color-level-warning);
+}
+
+.detective-story button.icon {
+  flex: 0 0 auto;
+  width: 28px;
+  min-width: 28px;
+  padding: 0;
+}
+
+.detective-story button.active {
+  border-color: var(--color-text-accent);
+  box-shadow: 0 0 6px var(--color-shadow-highlight, rgba(255, 100, 0, 0.5));
+}
+
+.detective-story .tags,
+.detective-story .case-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.detective-story .tag,
+.detective-story .case-tag {
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: var(--font-size-11, 11px);
+  color: var(--color-text-secondary);
+}
+
+.detective-story .case-tag {
+  border-color: var(--color-text-accent);
+}
+
+.detective-story .case-tag.closed {
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+/* ---------- Образцы цветов ---------- */
+
+.detective-story .swatches,
+.detective-story .thread-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.detective-story .swatch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.detective-story .swatch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.detective-story .swatch .swatch-chip {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background: var(--swatch-color);
+}
+
+.detective-story .swatch input:checked + .swatch-chip {
+  outline: 2px solid var(--color-text-accent);
+  outline-offset: 1px;
+}
+
+.detective-story .swatch input:focus-visible + .swatch-chip {
+  outline: 2px dashed var(--color-text-accent);
+}
+
+.detective-story .swatch.large {
+  width: 46%;
+}
+
+.detective-story .swatch.large .swatch-chip {
+  width: 32px;
+  height: 32px;
+}
+
+/* ---------- Список улик ---------- */
+
+.detective-story.clue-list .window-content {
+  padding: 0;
+}
+
+.detective-story .clue-list-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.detective-story .clue-list-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .clue-list-toolbar input[type="search"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .clue-list-toolbar select {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 160px;
+}
+
+.detective-story .clue-list-toolbar button {
+  flex: 0 0 32px;
+}
+
+.detective-story .selection-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .selection-bar button {
+  flex: 0 0 auto;
+}
+
+.detective-story .clue-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+
+.detective-story .clue-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.detective-story .clue-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.detective-story .clue-item.is-new {
+  border-color: var(--color-text-accent);
+}
+
+.detective-story .clue-item.highlighted,
+.detective-story .clue-item:has(.clue-select input:checked) {
+  border-color: var(--color-text-accent);
+  box-shadow: 0 0 0 1px var(--color-text-accent), 0 0 10px var(--color-shadow-highlight, rgba(238, 155, 58, 0.5));
+}
+
+.detective-story .clue-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  cursor: pointer;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.detective-story .clue-thumb .clue-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
+  transition: transform 0.2s ease;
+}
+
+.detective-story .clue-item:hover .clue-image {
+  transform: scale(1.04);
+}
+
+.detective-story .clue-thumb .type-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+}
+
+.detective-story .clue-thumb .new-badge {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--color-text-accent);
+  color: #1b1209;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.detective-story .clue-thumb .new-badge i {
+  font-size: 8px;
+}
+
+.detective-story .thumb-footer {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  transition: opacity 0.15s ease;
+}
+
+.detective-story .case-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(15, 12, 20, 0.85);
+  color: #f7f3e8;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.detective-story .case-chip i {
+  color: var(--color-text-accent);
+  font-size: 9px;
+}
+
+.detective-story .case-chip.closed i {
+  color: #9f8475;
+}
+
+.detective-story .thumb-footer .lock-badge {
+  margin-left: auto;
+  color: #f7f3e8;
+  text-shadow: 0 0 3px #000;
+}
+
+.detective-story .clue-actions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  padding: 18px 4px 5px;
+  background: linear-gradient(to bottom, transparent, rgba(10, 8, 14, 0.92) 55%);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+}
+
+.detective-story .clue-item:hover .clue-actions,
+.detective-story .clue-item:focus-within .clue-actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.detective-story .clue-item:hover .thumb-footer {
+  opacity: 0;
+}
+
+.detective-story .clue-actions button {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #f7f3e8;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.detective-story .clue-actions button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-text-accent);
+}
+
+.detective-story .clue-actions button:disabled {
+  opacity: 0.4;
+}
+
+.detective-story .clue-grid.selection-mode .clue-actions {
+  display: none;
+}
+
+.detective-story .clue-select {
+  display: none;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+}
+
+.detective-story .clue-grid.selection-mode .clue-select {
+  display: block;
+}
+
+.detective-story .clue-grid.selection-mode .new-badge {
+  display: none;
+}
+
+.detective-story .clue-name {
+  font-size: var(--font-size-12, 12px);
+  text-align: center;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- Просмотр улики ---------- */
+
+.detective-story .clue-view-header {
+  display: flex;
+  gap: 12px;
+}
+
+.detective-story .clue-view-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.detective-story .clue-view-info h2 {
+  margin: 0;
+  border: none;
+}
+
+.detective-story .clue-type img,
+.detective-story .template-meta img,
+.detective-story .mini-clue-list .clue-type img {
+  width: 18px;
+  height: 18px;
+  border: none;
+  vertical-align: middle;
+}
+
+/* Значок типа и название — одна строка: в узкой строке списка они не должны переноситься друг под друга */
+.detective-story .mini-clue-list .clue-type,
+.detective-story .template-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.detective-story .mini-clue-list .clue-name {
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detective-story .mini-clue-list .lock-slot {
+  flex: 0 0 14px;
+  text-align: center;
+}
+
+.detective-story .clue-view-info .clue-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detective-story .clue-view-info .clue-type img {
+  width: 22px;
+  height: 22px;
+}
+
+.detective-story .received-from {
+  color: var(--color-text-accent, var(--color-text-secondary));
+}
+
+.detective-story .received-at {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .clue-description,
+.detective-story .dossier-text,
+.detective-story .case-text {
+  padding: 0.25rem 0;
+}
+
+.detective-story .clue-notes textarea,
+.detective-story .personal-notes textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.detective-story .notes-readonly {
+  white-space: pre-wrap;
+}
+
+.detective-story .clue-view-actions,
+.detective-story .dossier-actions,
+.detective-story .permissions-buttons,
+.detective-story .gm-footer {
+  display: flex;
+  gap: 4px;
+}
+
+/* ---------- Редактор улики ---------- */
+
+.detective-story.clue-editor .editor-summary-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.detective-story.clue-editor .editor-image-preview {
+  width: 110px;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  flex: 0 0 auto;
+}
+
+.detective-story.clue-editor .editor-summary-fields {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story prose-mirror {
+  min-height: 160px;
+}
+
+.detective-story .font-size-input {
+  flex: 0 0 64px;
+  width: 64px;
+}
+
+/* ---------- Окно ГМ ---------- */
+
+.detective-story.gm-window .gm-players {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 8px;
+  min-height: 0;
+  height: 100%;
+}
+
+.detective-story.gm-window .gm-players:not(.active) {
+  display: none;
+}
+
+.detective-story .player-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--color-border);
+}
+
+.detective-story .player-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.detective-story .player-row:hover {
+  background: var(--color-control-hover, rgba(255, 255, 255, 0.05));
+}
+
+.detective-story .player-row.selected {
+  outline: 1px solid var(--color-text-accent);
+}
+
+.detective-story .player-portrait {
+  position: relative;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+}
+
+.detective-story .player-portrait img {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  object-position: top;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.detective-story .player-portrait .status-dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--color-cool-5, #0b0a13);
+}
+
+.detective-story .player-names {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .character-name {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-11, 11px);
+}
+
+.detective-story .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-text-subtle);
+  flex: 0 0 auto;
+}
+
+.detective-story .status-dot.online,
+.detective-story .online-dot {
+  background: var(--color-level-success, #4caf50);
+  color: var(--color-level-success, #4caf50);
+}
+
+.detective-story .online-dot {
+  background: none;
+  font-size: 8px;
+}
+
+.detective-story .clue-count {
+  min-width: 24px;
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: var(--font-size-11, 11px);
+}
+
+.detective-story .player-details {
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+.detective-story .player-details-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.detective-story .player-details-header h3 {
+  margin: 0;
+  border: none;
+}
+
+.detective-story .header-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.detective-story .header-buttons button {
+  flex: 0 0 auto;
+}
+
+.detective-story .mini-clue-list,
+.detective-story .template-list,
+.detective-story .type-list,
+.detective-story .picker-list,
+.detective-story .recipient-list,
+.detective-story .profiler-list,
+.detective-story .transfer-clues,
+.detective-story .pinned-clues,
+.detective-story .linked-suspects,
+.detective-story .case-list,
+.detective-story .import-summary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.detective-story .mini-clue-list li,
+.detective-story .type-row,
+.detective-story .picker-list li label,
+.detective-story .linked-suspects li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .mini-clue-list img,
+.detective-story .picker-list img,
+.detective-story .linked-suspects img,
+.detective-story .type-row img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border: none;
+  border-radius: 3px;
+  flex: 0 0 auto;
+}
+
+.detective-story .mini-clue-list .clue-name,
+.detective-story .type-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .zones-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detective-story .zones-header button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.detective-story .zone-table td,
+.detective-story .zone-table th,
+.detective-story .permissions-table td,
+.detective-story .permissions-table th {
+  padding: 3px 4px;
+  text-align: left;
+}
+
+.detective-story .zone-table tr.touched td {
+  color: var(--color-text-primary);
+}
+
+.detective-story .zone-buttons {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+}
+
+.detective-story .library-toolbar,
+.detective-story .types-toolbar,
+.detective-story .suspects-toolbar,
+.detective-story .timeline-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.detective-story .library-toolbar input {
+  flex: 1;
+}
+
+.detective-story .library-toolbar button,
+.detective-story .types-toolbar button,
+.detective-story .suspects-toolbar button,
+.detective-story .timeline-toolbar button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.detective-story .template-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .template-image {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: none;
+  border-radius: 4px;
+}
+
+.detective-story .template-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .template-name {
+  font-weight: bold;
+}
+
+.detective-story .template-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .template-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.detective-story .type-builtin {
+  color: var(--color-text-subtle);
+  font-style: italic;
+}
+
+.detective-story .gm-footer {
+  border-top: 1px solid var(--color-border);
+  padding-top: 6px;
+}
+
+.detective-story .gm-footer .danger,
+.detective-story .danger {
+  color: var(--color-level-error);
+}
+
+/* ---------- Журнал дела ---------- */
+
+.detective-story .case-tab {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+.detective-story .case-tab:not(.active) {
+  display: none;
+}
+
+.detective-story .case-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-right: 1px solid var(--color-border);
+  padding-right: 6px;
+  min-height: 0;
+}
+
+.detective-story .case-list {
+  overflow-y: auto;
+}
+
+.detective-story .case-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.detective-story .archive-tab .case-row {
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+.detective-story .case-row:hover {
+  background: var(--color-control-hover, rgba(255, 255, 255, 0.05));
+}
+
+.detective-story .case-row.selected {
+  outline: 1px solid var(--color-text-accent);
+}
+
+.detective-story .case-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 32px;
+  padding: 1px 7px;
+  border-radius: 4px 4px 4px 0;
+  background: #d8c49a;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.35);
+  color: #2b2215;
+  font-family: "PT Mono", monospace;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.detective-story .case-badge.large {
+  padding: 2px 9px;
+  font-size: 0.7em;
+  vertical-align: middle;
+}
+
+.detective-story .case-details {
+  position: relative;
+}
+
+.detective-story .case-stamp {
+  position: absolute;
+  top: 96px;
+  right: 28px;
+  z-index: 2;
+  pointer-events: none;
+  padding: 3px 14px;
+  border: 4px double #b3261e;
+  border-radius: 6px;
+  background: rgba(179, 38, 30, 0.06);
+  color: #b3261e;
+  font-family: "PT Mono", monospace;
+  font-size: 1.35em;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-11deg);
+  opacity: 0.85;
+}
+
+.detective-story .case-number {
+  font-weight: bold;
+  color: var(--color-text-accent, var(--color-text-primary));
+}
+
+.detective-story .case-title {
+  color: var(--color-text-secondary);
+}
+
+.detective-story .case-details {
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+}
+
+.detective-story .case-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .case-header h2 {
+  flex: 1;
+  margin: 0;
+  border: none;
+}
+
+.detective-story .case-header input {
+  flex: 1;
+}
+
+.detective-story .case-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.detective-story .case-buttons button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.detective-story .case-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detective-story .inline-edit {
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .pinned-clues {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 14px 10px;
+  min-height: 60px;
+  padding: 10px 6px;
+  border-radius: 8px;
+}
+
+.detective-story .pinned-dropzone {
+  border: 2px dashed var(--color-border);
+}
+
+.detective-story .pinned-dropzone.drag-over {
+  border-color: var(--color-text-accent);
+  background: rgba(238, 155, 58, 0.06);
+}
+
+.detective-story .pinned-clue {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.detective-story .dsr-polaroid.small {
+  width: 104px;
+  margin: 8px 0 0;
+  padding: 5px 5px 0;
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.detective-story .pinned-clue:nth-child(even) .dsr-polaroid.small {
+  transform: rotate(1.8deg);
+}
+
+.detective-story .pinned-clue .dsr-polaroid.small:hover {
+  transform: rotate(0deg) scale(1.04);
+}
+
+.detective-story .dsr-polaroid.small figcaption {
+  font-size: 1.15em;
+}
+
+.detective-story .dsr-polaroid.not-owned {
+  cursor: default;
+  filter: grayscale(0.5);
+}
+
+.detective-story .unpin-button {
+  position: absolute;
+  top: 0;
+  right: 2px;
+  z-index: 1;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  min-height: 22px;
+  border-radius: 50%;
+  font-size: 11px;
+}
+
+.detective-story .pinned-clues .drop-hint,
+.detective-story .pinned-clues .empty-message {
+  grid-column: 1 / -1;
+}
+
+.detective-story .drop-hint {
+  color: var(--color-text-subtle);
+  font-style: italic;
+  text-align: center;
+  padding: 6px;
+}
+
+.detective-story .link-suspect {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.detective-story .link-suspect button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.detective-story .suspect-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.detective-story .suspect-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.detective-story .suspect-card img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: top;
+  border: none;
+  border-radius: 4px;
+}
+
+.detective-story .suspect-name {
+  font-weight: bold;
+  text-align: center;
+}
+
+/* ---------- Досье ---------- */
+
+.detective-story .dossier-header {
+  display: flex;
+  gap: 12px;
+}
+
+.detective-story .dossier-title h2 {
+  margin-top: 0;
+  border: none;
+}
+
+.detective-story .dossier-buttons {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+/* ---------- Таймлайн ---------- */
+
+.detective-story .timeline-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.detective-story .timeline-track {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.detective-story .timeline-grid {
+  display: grid;
+  grid-template-rows: 1fr 32px 1fr;
+  column-gap: 14px;
+  row-gap: 0;
+  min-height: 100%;
+  padding: 8px 28px 8px 16px;
+}
+
+.detective-story .timeline-line {
+  position: relative;
+  grid-row: 2;
+  grid-column: 1 / -1;
+  align-self: center;
+  height: 4px;
+  margin-right: -18px;
+  border-radius: 2px;
+  background: linear-gradient(to right, transparent, var(--color-text-accent) 24px);
+}
+
+.detective-story .timeline-line::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-style: solid;
+  border-width: 8px 0 8px 12px;
+  border-color: transparent transparent transparent var(--color-text-accent);
+}
+
+.detective-story .timeline-marker {
+  grid-row: 2;
+  align-self: center;
+  justify-self: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid var(--color-text-accent);
+  background: var(--color-text-primary);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.35);
+  z-index: 1;
+}
+
+.detective-story .timeline-event {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: rgba(127, 127, 127, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.12s ease;
+}
+
+.detective-story .timeline-event:hover {
+  transform: translateY(-2px);
+}
+
+.detective-story .timeline-event.below:hover {
+  transform: translateY(2px);
+}
+
+.detective-story .timeline-event.above {
+  grid-row: 1;
+  align-self: end;
+  margin-bottom: 18px;
+  border-bottom: 3px solid var(--color-text-accent);
+}
+
+.detective-story .timeline-event.below {
+  grid-row: 3;
+  align-self: start;
+  margin-top: 18px;
+  border-top: 3px solid var(--color-text-accent);
+}
+
+.detective-story .timeline-event::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  height: 26px;
+  transform: translateX(-50%);
+  background: var(--color-text-accent);
+}
+
+.detective-story .timeline-event.above::after {
+  top: 100%;
+}
+
+.detective-story .timeline-event.below::after {
+  bottom: 100%;
+}
+
+.detective-story .event-image {
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border: none;
+  border-radius: 6px;
+}
+
+.detective-story .event-date {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-text-accent);
+  font-weight: bold;
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .event-title {
+  font-size: var(--font-size-14, 14px);
+  line-height: 1.25;
+}
+
+.detective-story .event-actions {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+}
+
+/* ---------- Диалоги ---------- */
+
+.detective-story .recipient-list li,
+.detective-story .profiler-list li {
+  padding: 3px 0;
+}
+
+.detective-story .recipient-user {
+  color: var(--color-text-subtle);
+}
+
+.detective-story .picker-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.detective-story .transfer-sender {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detective-story .sender-portrait {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid var(--color-text-accent);
+  border-radius: 50%;
+}
+
+.detective-story .transfer-clues {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 14px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 6px 2px 10px;
+}
+
+.detective-story .transfer-clue {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.detective-story .transfer-clue:nth-child(even) .dsr-polaroid {
+  transform: rotate(1.8deg);
+}
+
+.detective-story .transfer-clue.duplicate .dsr-polaroid {
+  opacity: 0.45;
+  filter: grayscale(0.7);
+}
+
+.detective-story .duplicate-label {
+  position: absolute;
+  top: 42%;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: rgba(10, 8, 14, 0.85);
+  color: #f7f3e8;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.detective-story .transfer-question {
+  text-align: center;
+  font-weight: bold;
+}
+
+.detective-story .permissions-table tr.restricted td:first-child {
+  color: var(--color-level-warning);
+}
+
+.detective-story .detective-zone-tab fieldset,
+.detective-story .detection-fields {
+  margin-top: 6px;
+}
+
+/* ---------- Вкладка «Улика» в настройках Tile ---------- */
+
+.tile-config .detective-zone-tab button[data-zone-action] {
+  margin-top: 6px;
+}
+
+/* ---------- Полароид: просмотр улики, досье, чат ---------- */
+
+.dsr-polaroid {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 150px;
+  margin: 8px 4px 4px;
+  padding: 7px 7px 0;
+  border-radius: 2px;
+  background: #fbf8f1;
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.45);
+  transform: rotate(-1.5deg);
+}
+
+.dsr-polaroid::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translateX(-50%);
+  background: url("../assets/board/redPin.webp") center / contain no-repeat;
+  filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.4));
+}
+
+.dsr-polaroid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: top;
+  border: none;
+  border-radius: 0;
+}
+
+.dsr-polaroid.portrait img {
+  aspect-ratio: 3 / 4;
+}
+
+.dsr-polaroid figcaption {
+  padding: 4px 2px 7px;
+  overflow: hidden;
+  color: #2b2b2b;
+  font-family: "Caveat", cursive;
+  font-size: 1.45em;
+  line-height: 1.1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detective-story .dossier-polaroid {
+  width: 160px;
+  transform: rotate(1.5deg);
+}
+
+/* ---------- Сообщения в чате ---------- */
+
+.detective-story-chat.clue-chat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.detective-story-chat.clue-chat-card .dsr-polaroid {
+  width: 160px;
+}
+
+.detective-story-chat .clue-chat-type {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story-chat .clue-chat-type img {
+  width: 18px;
+  height: 18px;
+  border: none;
+}
+
+.detective-story-chat .clue-chat-description {
+  align-self: stretch;
+}
+
+.detective-story-chat.gm-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 6px;
+  border-left: 4px solid var(--color-text-accent);
+  border-radius: 3px;
+  background: rgba(127, 127, 127, 0.1);
+}
+
+.detective-story-chat.gm-note > i {
+  margin-top: 2px;
+  color: var(--color-text-accent);
+}
+
+.detective-story-chat.gm-note.tone-found {
+  border-left-color: #2e7d32;
+}
+
+.detective-story-chat.gm-note.tone-found > i {
+  color: #2e7d32;
+}
+
+.detective-story-chat.gm-note.tone-accepted {
+  border-left-color: #1565c0;
+}
+
+.detective-story-chat.gm-note.tone-accepted > i {
+  color: #1565c0;
+}
+
+.detective-story-chat.gm-note.tone-declined {
+  border-left-color: #c62828;
+}
+
+.detective-story-chat.gm-note.tone-declined > i {
+  color: #c62828;
+}
+
+/* ---------- Анимация находки ---------- */
+
+#detective-story-find-animation {
+  position: fixed;
+  left: 50%;
+  top: 45%;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 40px 20px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(10, 8, 14, 0.78), rgba(10, 8, 14, 0.55) 70%, transparent);
+  color: #f5ecd8;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: detective-story-find-appear 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  transition: opacity 1.2s ease;
+}
+
+#detective-story-find-animation.fading {
+  opacity: 0;
+}
+
+#detective-story-find-animation .find-polaroid {
+  width: 220px;
+  margin: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 46px rgba(255, 205, 120, 0.55);
+  transform: rotate(-3deg);
+  animation: detective-story-find-glow 2.4s ease-in-out 0.6s infinite alternate;
+}
+
+#detective-story-find-animation .find-polaroid figcaption {
+  font-size: 1.9em;
+}
+
+#detective-story-find-animation .find-stamp {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  padding: 4px 16px;
+  border: 5px double #c62828;
+  border-radius: 8px;
+  background: rgba(255, 250, 240, 0.12);
+  color: #e53935;
+  font-family: "PT Mono", monospace;
+  font-size: 1.7em;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+  transform: translate(-50%, -50%) rotate(-14deg);
+  animation: detective-story-find-stamp 0.35s ease-out 0.45s both;
+}
+
+#detective-story-find-animation .find-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px;
+  border-radius: 12px;
+  background: rgba(10, 8, 14, 0.75);
+}
+
+#detective-story-find-animation .find-type img {
+  width: 24px;
+  height: 24px;
+}
+
+#detective-story-find-animation .find-more {
+  font-style: italic;
+  opacity: 0.9;
+}
+
+@keyframes detective-story-find-appear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -42%) scale(0.6) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes detective-story-find-stamp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-14deg) scale(1.8);
+  }
+  to {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) rotate(-14deg) scale(1);
+  }
+}
+
+@keyframes detective-story-find-glow {
+  from {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 205, 120, 0.35);
+  }
+  to {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 205, 120, 0.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #detective-story-find-animation,
+  #detective-story-find-animation .find-polaroid,
+  #detective-story-find-animation .find-stamp {
+    animation: none;
+  }
+}
+
+/* ---------- Вкладки окон заполняют высоту ---------- */
+
+.detective-story.gm-window section.tab.active,
+.detective-story.case-journal section.tab.active {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.detective-story.gm-window .gm-players.active,
+.detective-story.case-journal .case-tab.active {
+  overflow: hidden;
+}
+
+/* Архивные подозреваемые: досье удалено, в деле хранится снимок */
+.detective-story .linked-suspects li.archived img {
+  filter: grayscale(1) sepia(0.35);
+  opacity: 0.75;
+}
+
+.detective-story .linked-suspects li.archived a {
+  color: var(--color-text-subtle);
+}
+
+.detective-story .archived-label {
+  margin-left: auto;
+  padding: 0 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-11, 11px);
+  white-space: nowrap;
+}
+
+.detective-story .archived-note {
+  margin: 4px 0;
+  color: var(--color-text-subtle);
+  font-style: italic;
+}
+
+.detective-story .archive-heading {
+  margin: 14px 0 6px;
+  font-size: var(--font-size-16, 16px);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .archived-suspect-group {
+  margin-bottom: 10px;
+}
+
+.detective-story .archived-suspect-group h4.case-row {
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  font-size: var(--font-size-14, 14px);
+}
+
+.detective-story .archived-suspect-group .linked-suspects {
+  padding-left: 40px;
+}
+
+/* Значок личной заметки на карточке улики (только в своём списке) */
+.detective-story .thumb-footer .note-badge {
+  margin-left: auto;
+  color: #ffe9a6;
+  text-shadow: 0 0 3px #000;
+}
+
+.detective-story .thumb-footer .note-badge + .lock-badge {
+  margin-left: 4px;
+}
+
+/* Список улик строками: картинка, название и тип, значки дел, кнопки — в одну строку */
+.detective-story .clue-row-meta {
+  display: none;
+}
+
+.detective-story .clue-grid.view-rows {
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+
+.detective-story .clue-grid.view-rows .clue-item {
+  display: grid;
+  grid-template-columns: auto 44px minmax(0, 1fr) auto auto;
+  grid-template-areas: "select image name chips actions" "select image meta chips actions";
+  column-gap: 8px;
+  align-items: center;
+  padding: 4px 6px;
+}
+
+.detective-story .clue-grid.view-rows .clue-item:hover {
+  transform: none;
+}
+
+.detective-story .clue-grid.view-rows .clue-thumb {
+  display: contents;
+}
+
+.detective-story .clue-grid.view-rows .clue-image {
+  grid-area: image;
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.detective-story .clue-grid.view-rows .clue-item:hover .clue-image {
+  transform: none;
+}
+
+.detective-story .clue-grid.view-rows .clue-name {
+  grid-area: name;
+  text-align: left;
+  font-weight: bold;
+  -webkit-line-clamp: 1;
+}
+
+.detective-story .clue-grid.view-rows .clue-row-meta {
+  grid-area: meta;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .clue-grid.view-rows .clue-row-meta img {
+  width: 16px;
+  height: 16px;
+  border: none;
+}
+
+.detective-story .clue-grid.view-rows .type-badge,
+.detective-story .clue-grid.view-rows .new-badge {
+  display: none;
+}
+
+.detective-story .clue-grid.view-rows .thumb-footer {
+  grid-area: chips;
+  position: static;
+  opacity: 1;
+  flex-wrap: nowrap;
+}
+
+.detective-story .clue-grid.view-rows .thumb-footer .note-badge,
+.detective-story .clue-grid.view-rows .thumb-footer .lock-badge {
+  color: var(--color-text-subtle);
+  text-shadow: none;
+}
+
+.detective-story .clue-grid.view-rows .clue-actions,
+.detective-story .clue-grid.view-rows .clue-item:hover .clue-actions {
+  grid-area: actions;
+  position: static;
+  opacity: 1;
+  transform: none;
+  background: none;
+  padding: 0;
+  pointer-events: auto;
+}
+
+.detective-story .clue-grid.view-rows .clue-select {
+  grid-area: select;
+  position: static;
+}
+
+/* Подсказка у курсора над зоной в режиме сосредоточения */
+#detective-story-zone-hint {
+  position: fixed;
+  z-index: 10000;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(20, 16, 12, 0.88);
+  border: 1px solid #ffe066;
+  color: #fff3d6;
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+#detective-story-zone-hint[data-tone="far"] {
+  border-color: #e8a33d;
+}
+
+#detective-story-zone-hint[data-tone="warning"] {
+  border-color: #d9534f;
+}
+
+/* Выдача перетаскиванием: шаблон тянут из библиотеки на игрока */
+.detective-story .template-row[draggable="true"] {
+  cursor: grab;
+}
+
+.template-drop-target {
+  outline: 2px dashed var(--color-text-accent, #ee9b3a);
+  outline-offset: -2px;
+  background: rgba(238, 155, 58, 0.15) !important;
+}
+
+/* Журнал событий */
+.detective-story.event-log .window-content {
+  padding: 0;
+}
+
+.detective-story .event-log-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.detective-story .event-log-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .event-log-toolbar select {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .event-log-toolbar button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.detective-story .event-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0 0.5rem;
+}
+
+.detective-story .event-row {
+  display: grid;
+  grid-template-columns: auto 20px auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 2px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-13, 13px);
+}
+
+.detective-story .event-time {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-11, 11px);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.detective-story .event-icon {
+  text-align: center;
+  color: var(--color-text-subtle);
+}
+
+.detective-story .event-actor {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.detective-story .event-actor.game-master {
+  color: var(--color-text-accent);
+}
+
+.detective-story .event-text {
+  overflow-wrap: anywhere;
+}
+
+.detective-story .event-row.type-found .event-icon,
+.detective-story .event-row.type-transferAccepted .event-icon,
+.detective-story .event-row.type-granted .event-icon {
+  color: #5fbf6a;
+}
+
+.detective-story .event-row.type-failed .event-icon,
+.detective-story .event-row.type-transferDeclined .event-icon {
+  color: #d9534f;
+}
+
+.detective-story .event-row.type-placedOnBoard .event-icon,
+.detective-story .event-row.type-pinned .event-icon,
+.detective-story .event-row.type-caseClosed .event-icon {
+  color: #e8a33d;
+}
+
+.detective-story .gm-footer {
+  flex-wrap: wrap;
+}

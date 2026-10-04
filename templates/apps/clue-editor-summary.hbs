@@ -1,0 +1,34 @@
+<section class="tab{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <div class="editor-summary-top">
+        <img class="editor-image-preview" src="{{clue.img}}" alt="">
+        <div class="editor-summary-fields">
+            <div class="form-group">
+                <label>{{localize "DETECTIVE_STORY.Editor.Name"}}</label>
+                <div class="form-fields"><input type="text" name="name" value="{{clue.name}}" required></div>
+            </div>
+            <div class="form-group">
+                <label>{{localize "DETECTIVE_STORY.Editor.Image"}}</label>
+                <div class="form-fields"><file-picker name="img" type="image" value="{{clue.img}}"></file-picker></div>
+            </div>
+            <div class="form-group">
+                <label>{{localize "DETECTIVE_STORY.Editor.Type"}}</label>
+                <div class="form-fields">
+                    <select name="typeId">{{selectOptions typeChoices selected=clue.typeId}}</select>
+                    <button type="button" class="icon" data-action="addClueType" data-tooltip="{{localize 'DETECTIVE_STORY.ClueTypes.NewTitle'}}"><i class="fa-solid fa-plus"></i></button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>{{localize "DETECTIVE_STORY.Editor.Tags"}}</label>
+                <div class="form-fields"><string-tags name="tags" value="{{tagsValue}}"></string-tags></div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group stacked">
+        <label>{{localize "DETECTIVE_STORY.Editor.Description"}}</label>
+        <prose-mirror name="description" value="{{clue.description}}"></prose-mirror>
+    </div>
+    {{#if canGrant}}
+    <button type="button" data-action="grantToPlayers"><i class="fa-solid fa-gift"></i> {{localize "DETECTIVE_STORY.Grant.ToPlayers"}}</button>
+    {{/if}}
+    {{#if isPlayerCopy}}<p class="hint">{{localize "DETECTIVE_STORY.Editor.CopyHint"}}</p>{{/if}}
+</section>

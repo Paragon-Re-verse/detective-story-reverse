@@ -1,0 +1,48 @@
+<section class="tab{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <figure class="visual-preview">
+        <div class="visual-preview-stage" data-visual-preview></div>
+        <figcaption class="hint">{{localize "DETECTIVE_STORY.Visual.PreviewHint"}}</figcaption>
+    </figure>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Visual.Kind"}}</label>
+        <div class="form-fields"><select name="visual.kind">{{selectOptions kindChoices selected=clue.visual.kind localize=true}}</select></div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Visual.KindHint"}}</p>
+    </div>
+    <div class="form-group" data-kinds="media">
+        <label>{{localize "DETECTIVE_STORY.Visual.Audio"}}</label>
+        <div class="form-fields"><file-picker name="visual.audioPath" type="audio" value="{{clue.visual.audioPath}}"></file-picker></div>
+    </div>
+    <div class="form-group" data-kinds="video">
+        <label>{{localize "DETECTIVE_STORY.Visual.Video"}}</label>
+        <div class="form-fields"><file-picker name="visual.videoPath" type="video" value="{{clue.visual.videoPath}}"></file-picker></div>
+    </div>
+    <div class="form-group" data-kinds="media video">
+        <label>{{localize "DETECTIVE_STORY.Visual.TapeEffect"}}</label>
+        <div class="form-fields"><input type="checkbox" name="visual.audioEffectEnabled" {{checked clue.visual.audioEffectEnabled}}></div>
+    </div>
+    <div class="form-group" data-kinds="handout photo">
+        <label>{{localize "DETECTIVE_STORY.Visual.Image"}}</label>
+        <div class="form-fields"><file-picker name="visual.image" type="image" value="{{clue.visual.image}}"></file-picker></div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Visual.ImageHint"}}</p>
+    </div>
+    <div class="form-group stacked" data-kinds="index photo sticky">
+        <label>{{localize "DETECTIVE_STORY.Visual.Text"}}</label>
+        <textarea name="visual.text" rows="3">{{clue.visual.text}}</textarea>
+        <p class="hint">{{localize "DETECTIVE_STORY.Visual.TextHint"}}</p>
+    </div>
+    <div class="form-group" data-kinds="sticky">
+        <label>{{localize "DETECTIVE_STORY.Visual.PaperColor"}}</label>
+        <div class="form-fields">{{> dsr-swatches name="visual.tint" swatches=tintSwatches}}</div>
+    </div>
+    <div class="form-group" data-kinds="index photo sticky">
+        <label>{{localize "DETECTIVE_STORY.Visual.InkColor"}}</label>
+        <div class="form-fields">{{> dsr-swatches name="visual.textColor" swatches=inkSwatches}}</div>
+    </div>
+    <div class="form-group" data-kinds="index photo sticky">
+        <label>{{localize "DETECTIVE_STORY.Visual.Font"}}</label>
+        <div class="form-fields">
+            <select name="visual.font">{{selectOptions fontChoices selected=clue.visual.font}}</select>
+            <input type="number" class="font-size-input" name="visual.fontSize" value="{{clue.visual.fontSize}}" min="6" max="64" step="1" data-tooltip="{{localize 'DETECTIVE_STORY.Visual.FontSize'}}">
+        </div>
+    </div>
+</section>

@@ -1,0 +1,13 @@
+<p class="hint">{{localize "DETECTIVE_STORY.Transfer.PickHint"}}</p>
+<ul class="recipient-list">
+    {{#each candidates}}
+    <li>
+        <label class="checkbox">
+            <input type="checkbox" name="recipient" value="{{this.id}}">
+            <span class="recipient-name">{{this.characterName}}</span>
+            {{#unless (eq this.characterName this.name)}}<span class="recipient-user">({{this.name}})</span>{{/unless}}
+            {{#if this.active}}<i class="fa-solid fa-circle online-dot" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Online'}}"></i>{{/if}}
+        </label>
+    </li>
+    {{/each}}
+</ul>

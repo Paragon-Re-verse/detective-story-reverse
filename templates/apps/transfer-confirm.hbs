@@ -1,0 +1,17 @@
+<header class="transfer-sender">
+    <img class="sender-portrait" src="{{senderPortrait}}" alt="">
+    <p>{{localize "DETECTIVE_STORY.Transfer.Offer" name=senderName}}</p>
+</header>
+<ul class="transfer-clues">
+    {{#each clues}}
+    <li class="transfer-clue{{#if this.isDuplicate}} duplicate{{/if}}">
+        <figure class="dsr-polaroid small">
+            <img src="{{this.img}}" alt="">
+            <figcaption>{{this.name}}</figcaption>
+        </figure>
+        {{#if this.isDuplicate}}<span class="duplicate-label"><i class="fa-solid fa-check" inert></i> {{localize "DETECTIVE_STORY.Transfer.AlreadyHave"}}</span>{{/if}}
+    </li>
+    {{/each}}
+</ul>
+{{#if hasDuplicates}}<p class="hint">{{localize "DETECTIVE_STORY.Transfer.DuplicateHint"}}</p>{{/if}}
+<p class="transfer-question">{{localize "DETECTIVE_STORY.Transfer.Question"}}</p>

@@ -1,0 +1,31 @@
+<div class="timeline-body">
+    {{#if missing}}
+    <p class="empty-message">{{localize "DETECTIVE_STORY.Timeline.Missing"}}</p>
+    {{else}}
+    {{#if canEdit}}
+    <header class="timeline-toolbar">
+        <button type="button" data-action="addEvent"><i class="fa-solid fa-calendar-plus"></i> {{localize "DETECTIVE_STORY.Timeline.NewEvent"}}</button>
+    </header>
+    {{/if}}
+    <div class="timeline-track">
+        <div class="timeline-grid" style="grid-template-columns: repeat({{columnCount}}, minmax(180px, 1fr));">
+            <div class="timeline-line"></div>
+            {{#each events}}
+            <article class="timeline-event {{#if this.isAbove}}above{{else}}below{{/if}}" style="grid-column: {{this.column}};" data-event-id="{{this.id}}">
+                {{#if this.image}}<img class="event-image" src="{{this.image}}" alt="" loading="lazy">{{/if}}
+                <div class="event-date"><i class="fa-regular fa-clock" inert></i> {{this.dateLabel}}</div>
+                <div class="event-title">{{this.title}}</div>
+                {{#if ../canEdit}}
+                <div class="event-actions">
+                    <button type="button" class="icon" data-action="editEvent" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="icon" data-action="deleteEvent" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                {{/if}}
+            </article>
+            <div class="timeline-marker" style="grid-column: {{this.column}};" data-tooltip="{{this.dateLabel}}"></div>
+            {{/each}}
+        </div>
+    </div>
+    {{#unless hasEvents}}<p class="empty-message">{{localize "DETECTIVE_STORY.Timeline.Empty"}}</p>{{/unless}}
+    {{/if}}
+</div>

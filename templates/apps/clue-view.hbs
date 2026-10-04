@@ -1,0 +1,36 @@
+<div class="clue-view-body">
+    {{#if missing}}
+    <p class="empty-message">{{localize "DETECTIVE_STORY.ClueView.Missing"}}</p>
+    {{else}}
+    <div class="clue-view-header">
+        <figure class="dsr-polaroid clue-view-polaroid">
+            <img src="{{clue.img}}" alt="">
+            <figcaption>{{clue.name}}</figcaption>
+        </figure>
+        <div class="clue-view-info">
+            <h2>{{clue.name}}</h2>
+            <div class="clue-type"><img src="{{clueType.icon}}" alt=""> {{clueType.name}}</div>
+            {{#if receivedFromLabel}}<div class="received-from"><i class="fa-solid fa-hand-holding-hand"></i> {{receivedFromLabel}}</div>{{/if}}
+            <div class="received-at">{{localize "DETECTIVE_STORY.ClueView.ReceivedAt"}}: {{receivedAt}}</div>
+            {{#if clue.tags.length}}<div class="tags">{{#each clue.tags}}<span class="tag">{{this}}</span>{{/each}}</div>{{/if}}
+            {{#if caseLabels.length}}<div class="case-tags">{{#each caseLabels}}<span class="case-tag">{{this}}</span>{{/each}}</div>{{/if}}
+        </div>
+    </div>
+    <section class="clue-description">{{{enrichedDescription}}}</section>
+    <section class="clue-notes">
+        <h3>{{localize "DETECTIVE_STORY.ClueView.Notes"}}</h3>
+        {{#if isOwner}}
+        <textarea name="notes" rows="5" placeholder="{{localize 'DETECTIVE_STORY.ClueView.NotesPlaceholder'}}">{{clue.notes}}</textarea>
+        {{else}}
+        <p class="notes-readonly">{{clue.notes}}</p>
+        {{/if}}
+    </section>
+    <footer class="clue-view-actions">
+        <button type="button" data-action="showInChat"><i class="fa-solid fa-comment"></i> {{localize "DETECTIVE_STORY.ClueList.ShowInChat"}}</button>
+        {{#if isOwner}}
+        <button type="button" data-action="placeOnBoard" {{disabled (not boardAvailable)}}><i class="fa-solid fa-thumbtack"></i> {{localize "DETECTIVE_STORY.ClueList.PlaceOnBoard"}}</button>
+        <button type="button" data-action="transferClue"><i class="fa-solid fa-share"></i> {{localize "DETECTIVE_STORY.ClueList.Transfer"}}</button>
+        {{/if}}
+    </footer>
+    {{/if}}
+</div>

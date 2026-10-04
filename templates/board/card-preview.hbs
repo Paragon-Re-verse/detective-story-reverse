@@ -1,0 +1,62 @@
+<div class="card-preview-body card-{{card.type}}">
+    {{#if isPhoto}}
+    <div class="preview-photo preview-stage">
+        <img class="preview-frame" src="{{frameImage}}" alt="">
+        <div class="preview-photo-content"><img src="{{image}}" alt=""></div>
+        <div class="preview-photo-caption" style="font-family: '{{font}}'; color: {{card.textColor}};">{{card.text}}</div>
+        {{#if stamp}}<span class="preview-stamp" style="left: {{stamp.left}}%; top: {{stamp.top}}%; width: {{stamp.width}}%; aspect-ratio: {{stamp.imageRatio}}; background-color: {{stamp.color}}; --stamp-image: url('{{stamp.imageUrl}}'); transform: translate(-50%, -50%) rotate({{stamp.rotation}}deg);"></span>{{/if}}
+    </div>
+    {{/if}}
+    {{#if isHandout}}
+    <div class="preview-stage preview-handout-stage">
+        <img class="preview-handout" src="{{image}}" alt="">
+        {{#if stamp}}<span class="preview-stamp" style="left: {{stamp.left}}%; top: {{stamp.top}}%; width: {{stamp.width}}%; aspect-ratio: {{stamp.imageRatio}}; background-color: {{stamp.color}}; --stamp-image: url('{{stamp.imageUrl}}'); transform: translate(-50%, -50%) rotate({{stamp.rotation}}deg);"></span>{{/if}}
+    </div>
+    {{/if}}
+    {{#if isPaper}}
+    <div class="preview-paper preview-stage{{#if isSticky}} sticky{{/if}}" style="--paper-tint: {{card.tint}}; --paper-image: url('{{backgroundImage}}');">
+        <div class="preview-paper-text" style="font-family: '{{font}}'; color: {{card.textColor}};">{{card.text}}</div>
+        {{#if stamp}}<span class="preview-stamp" style="left: {{stamp.left}}%; top: {{stamp.top}}%; width: {{stamp.width}}%; aspect-ratio: {{stamp.imageRatio}}; background-color: {{stamp.color}}; --stamp-image: url('{{stamp.imageUrl}}'); transform: translate(-50%, -50%) rotate({{stamp.rotation}}deg);"></span>{{/if}}
+    </div>
+    {{/if}}
+    {{#if isMedia}}
+    <div class="preview-media">
+        <div class="cassette">
+            <img src="{{image}}" alt="">
+            <div class="cassette-reels"><span class="reel left"></span><span class="reel right"></span></div>
+        </div>
+        <div class="preview-media-title">{{card.text}}</div>
+        {{#if card.audioPath}}
+        <audio controls src="{{card.audioPath}}"></audio>
+        {{#if isGameMaster}}
+        <button type="button" data-action="toggleGlobalAudio" class="{{#if globalPlaying}}active{{/if}}">
+            {{#if globalPlaying}}<i class="fa-solid fa-stop"></i> {{localize "DETECTIVE_STORY.Board.Menu.StopForAll"}}
+            {{else}}<i class="fa-solid fa-tower-broadcast"></i> {{localize "DETECTIVE_STORY.Board.Menu.PlayForAll"}}{{/if}}
+        </button>
+        {{/if}}
+        {{else}}
+        <p class="empty-message">{{localize "DETECTIVE_STORY.CardPreview.NoAudio"}}</p>
+        {{/if}}
+    </div>
+    {{/if}}
+    {{#if isVideo}}
+    <div class="preview-video">
+        {{#if card.videoPath}}
+        {{> dsr-vhs-screen}}
+        {{else}}
+        <img class="preview-vhs" src="{{card.image}}" alt="">
+        <p class="empty-message">{{localize "DETECTIVE_STORY.CardPreview.NoVideo"}}</p>
+        {{/if}}
+        <div class="preview-media-title">{{card.text}}</div>
+        {{#if card.videoPath}}{{#if isGameMaster}}
+        <button type="button" data-action="toggleGlobalVideo" class="{{#if globalVideoPlaying}}active{{/if}}">
+            {{#if globalVideoPlaying}}<i class="fa-solid fa-stop"></i> {{localize "DETECTIVE_STORY.Board.Menu.StopForAll"}}
+            {{else}}<i class="fa-solid fa-tower-broadcast"></i> {{localize "DETECTIVE_STORY.Board.Menu.ShowForAll"}}{{/if}}
+        </button>
+        {{/if}}{{/if}}
+    </div>
+    {{/if}}
+    {{#if card.snapshot.description}}
+    <p class="preview-description">{{card.snapshot.description}}</p>
+    {{/if}}
+</div>

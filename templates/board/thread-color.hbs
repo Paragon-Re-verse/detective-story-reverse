@@ -1,0 +1,10 @@
+<p class="hint">{{localize "DETECTIVE_STORY.Board.ThreadColorHint"}}</p>
+<div class="thread-colors">
+    {{#each colors}}
+    <label class="swatch large" style="--swatch-color: {{this.value}}" data-tooltip="{{this.label}}">
+        <input type="radio" name="threadColor" value="{{this.key}}" {{checked this.selected}}>
+        <span class="swatch-chip"></span>
+        <span class="swatch-label">{{this.label}}</span>
+    </label>
+    {{/each}}
+</div>

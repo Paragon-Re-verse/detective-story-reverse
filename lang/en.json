@@ -1,0 +1,592 @@
+{
+    "DETECTIVE_STORY": {
+        "Common": {
+            "Save": "Save",
+            "Cancel": "Cancel",
+            "Edit": "Edit",
+            "Delete": "Delete",
+            "Yes": "Yes",
+            "No": "No",
+            "Ok": "Got it",
+            "Select": "Select",
+            "Online": "Online",
+            "Quoted": "“{text}”"
+        },
+        "Roles": {
+            "Profiler": "Profiler"
+        },
+        "Folders": {
+            "Clues": "Clues",
+            "Suspects": "Suspects",
+            "Cases": "Cases"
+        },
+        "Packs": {
+            "Boards": "Clue Boards",
+            "GmGuide": "GM Guide"
+        },
+        "Controls": {
+            "Group": "Detective",
+            "Inspect": "Default mode",
+            "ClueList": "Clue list",
+            "CaseJournal": "Case journal",
+            "Focus": "Focus mode",
+            "GameMasterWindow": "GM window",
+            "Sticky": "Sticky note",
+            "SuspectCard": "Suspect card",
+            "ThreadColor": "Thread color"
+        },
+        "Keybindings": {
+            "ClueList": "Open clue list",
+            "CaseJournal": "Open case journal",
+            "Focus": "Focus mode (on/off)",
+            "GameMasterWindow": "Open GM window"
+        },
+        "Settings": {
+            "ProfilersCreateCases": {
+                "Name": "Profilers create cases",
+                "Hint": "When enabled, profilers can create new cases. By default only the GM creates cases."
+            },
+            "ShowSetupWarning": {
+                "Name": "Warn about player permissions",
+                "Hint": "When the GM logs in, show which players cannot create board cards on their own and can only use the board while a GM is online."
+            },
+            "FindAnimation": {
+                "Name": "Discovery animation",
+                "Hint": "Show a found or received clue in the middle of the screen. Each user sets this for themselves."
+            },
+            "Profilers": {
+                "Name": "Profilers",
+                "Label": "Choose profilers",
+                "Hint": "A profiler is a player who keeps cases and suspect dossiers. The role applies to the whole world; there can be several profilers."
+            },
+            "Permissions": {
+                "Name": "Player permissions on the board",
+                "Label": "Check permissions",
+                "Hint": "Show which players can create board cards without a GM."
+            },
+            "ZoneLabels": {
+                "Name": "Zone labels for the GM",
+                "Hint": "Each search zone shows the clue name, the check and the DC above it. Only the GM sees them."
+            },
+            "StampFolder": {
+                "Name": "Stamp folder",
+                "Hint": "Stamps for the “Stamp” menu on board cards come from this folder. Put your own images there: white .webp files with transparency — the color is applied when stamping. After adding files, pick the folder again or reload the world."
+            },
+            "StampColor": {
+                "Name": "Stamp color",
+                "Hint": "The color stamps are applied in. The “Redacted” stamp is always dark."
+            }
+        },
+        "BoardSettings": {
+            "AutoScale": {
+                "Name": "Board: automatic scale",
+                "Hint": "Size cards to the scene width. The multiplier below is then applied on top."
+            },
+            "SceneScale": {
+                "Name": "Board: card scale",
+                "Hint": "A fixed scale (without auto scale) or an overall multiplier (with auto scale)."
+            },
+            "PinColor": {
+                "Name": "Board: pin color",
+                "Hint": "Pin color for new cards.",
+                "random": "Random",
+                "red": "Red",
+                "blue": "Blue",
+                "yellow": "Yellow",
+                "green": "Green",
+                "none": "No pins"
+            },
+            "ThreadWidth": {
+                "Name": "Board: thread width",
+                "Hint": "Width of the threads between cards, in pixels."
+            },
+            "StickyWidth": {
+                "Name": "Board: sticky note width",
+                "Hint": "Sticky note width in pixels."
+            },
+            "PhotoWidth": {
+                "Name": "Board: photo card width",
+                "Hint": "Photo card width in pixels."
+            },
+            "IndexWidth": {
+                "Name": "Board: index card width",
+                "Hint": "Index card width in pixels."
+            },
+            "HandoutWidth": {
+                "Name": "Board: handout width",
+                "Hint": "Initial handout width in pixels."
+            },
+            "HandoutHeight": {
+                "Name": "Board: handout height",
+                "Hint": "Initial handout height in pixels."
+            },
+            "BaseFontSize": {
+                "Name": "Board: base font size",
+                "Hint": "Text size on a card of standard width."
+            }
+        },
+        "Notify": {
+            "GameMasterRequired": "This action needs a GM online.",
+            "WrongSystem": "Detective Story Reverse only works with the dnd5e system.",
+            "NewClues": "New clues: {count}",
+            "AttemptsReset": "Attempts reset."
+        },
+        "Socket": {
+            "Denied": "Request denied: no permission"
+        },
+        "Clue": {
+            "Unnamed": "Unnamed clue"
+        },
+        "ClueTypes": {
+            "silhouette": "Silhouette",
+            "blood": "Blood",
+            "footprints": "Footprints",
+            "fingerprint": "Fingerprint",
+            "document": "Document",
+            "item": "Item",
+            "weapon": "Weapon",
+            "key": "Key",
+            "audio": "Audio",
+            "unknown": "No type",
+            "NewTitle": "New clue type",
+            "EditTitle": "Clue type",
+            "Name": "Name",
+            "Icon": "Icon",
+            "IconHint": "Pick a file or upload your own through the file picker.",
+            "NameRequired": "Enter a type name.",
+            "Hint": "Built-in types cannot be deleted. Your own types can be added, edited and deleted: clues of a deleted type show as “No type”.",
+            "BuiltIn": "built-in",
+            "DeleteTitle": "Delete type",
+            "DeleteConfirm": "Delete the type “{name}”?"
+        },
+        "Kind": {
+            "photo": "Photo card",
+            "index": "Index card",
+            "sticky": "Sticky note",
+            "handout": "Handout",
+            "media": "Media (cassette)",
+            "pin": "Pin",
+            "video": "Video cassette (VHS)"
+        },
+        "ZoneMode": {
+            "background": "Background, no token",
+            "battlemap": "Battle map with token"
+        },
+        "InkColors": {
+            "black": "Black ink",
+            "red": "Red ink",
+            "green": "Green ink",
+            "blue": "Blue ink"
+        },
+        "StickyTints": {
+            "white": "White paper",
+            "lightRed": "Pink paper",
+            "blue": "Light blue paper",
+            "green": "Green paper",
+            "yellow": "Yellow paper",
+            "orange": "Orange paper"
+        },
+        "ThreadColors": {
+            "red": "Red",
+            "blue": "Blue",
+            "green": "Green",
+            "yellow": "Yellow",
+            "white": "White",
+            "black": "Black"
+        },
+        "Zone": {
+            "Tab": "Clue",
+            "Hint": "This tile becomes a search zone: players click it to find a clue.",
+            "Template": "Clue",
+            "TemplateHint": "Picking a clue fills in its detection settings below; here you can change them for this zone only.",
+            "NoTemplate": "— not a search zone —",
+            "HiddenWarning": "Do not hide the zone with the standard “Hide” button: players cannot click a hidden tile. Players don't see the zone outside focus mode anyway.",
+            "ResetAll": "Reset attempts for all players",
+            "TemplateDeleted": "(template deleted)",
+            "LabelDifficulty": "DC {dc}",
+            "LabelRadius": "radius {radius} {units}",
+            "LabelAttempts": "attempts: {count}"
+        },
+        "Detection": {
+            "Legend": "Detection",
+            "ZoneMode": "Mode",
+            "ZoneModeHint": "Background — click the zone without a token. Battle map — a selected character token within the radius is required.",
+            "Radius": "Radius",
+            "RadiusHint": "Distance from the token center to the nearest edge of the zone.",
+            "SceneUnits": "scene units",
+            "Check": "Check",
+            "CheckHint": "A dnd5e skill or ability key (prc, inv, wis) or a roll formula, for example 1d20 + @abilities.int.mod.",
+            "Difficulty": "Difficulty",
+            "DifficultyHint": "A number or a formula. Not shown to players.",
+            "RollMode": "Roll mode",
+            "MaxAttempts": "Attempts",
+            "MaxAttemptsHint": "Attempts per player; 0 means unlimited."
+        },
+        "Search": {
+            "NoTemplate": "This zone has no clue.",
+            "SelectToken": "Select your character's token.",
+            "TooFar": "You are too far away: move ≈ {distance} {units} closer.",
+            "AlreadySearched": "You have already examined this place.",
+            "Failed": "You couldn't learn anything important.",
+            "NoActor": "Assign a character in your player settings or select your token.",
+            "InvalidFormula": "The zone settings contain an invalid check. Tell the GM.",
+            "RollFlavor": "Searching for clues",
+            "HintCloser": "Get closer: ≈ {distance} {units} more",
+            "HintInspect": "Examine"
+        },
+        "Focus": {
+            "On": "Focus mode on.",
+            "Off": "Focus mode off."
+        },
+        "FindAnimation": {
+            "AndMore": "and {count} more",
+            "Stamp": "Clue found",
+            "StampReceived": "Clue received"
+        },
+        "Chat": {
+            "PlayerFoundClue": "<strong>{player}</strong>: clue found — <strong>{clue}</strong>.",
+            "TransferAccepted": "<strong>{sender}</strong> → <strong>{recipient}</strong>, clues: {clues}. Accepted.",
+            "TransferDeclined": "<strong>{sender}</strong> → <strong>{recipient}</strong>, clues: {clues}. Declined."
+        },
+        "ClueList": {
+            "Title": "Clue list",
+            "TitleFor": "Clue list: {name}",
+            "Player": "Player",
+            "Search": "Search by name and tags",
+            "AllTypes": "All types",
+            "SelectionMode": "Select several to hand over",
+            "Selected": "Selected",
+            "TransferSelected": "Hand over selected",
+            "Empty": "No clues yet.",
+            "NothingFound": "Nothing found.",
+            "New": "new",
+            "ShowInChat": "Show in chat",
+            "PlaceOnBoard": "Place on the board",
+            "OpenBoardFirst": "Open the clue board",
+            "Transfer": "Hand over",
+            "NoPlayers": "There are no players in the world.",
+            "DeleteTitle": "Delete clue",
+            "DeleteConfirm": "Delete the clue “{clue}” from {player}?",
+            "SortBy": "Sort",
+            "Sort": {
+                "received": "Newest first",
+                "name": "By name",
+                "type": "By type",
+                "case": "By case"
+            },
+            "ViewRows": "Show as rows",
+            "ViewGrid": "Show as tiles"
+        },
+        "ClueView": {
+            "Title": "Clue",
+            "Missing": "This clue is no longer in the list.",
+            "ReceivedFrom": "Received from: {name}",
+            "ReceivedAt": "Received",
+            "Notes": "Personal notes",
+            "NotesPlaceholder": "Only you can see your notes. When you hand over the clue, they go with it."
+        },
+        "Editor": {
+            "Title": "Clue: {name}",
+            "TitleCopy": "Clue: {name} ({player})",
+            "NewClue": "New clue",
+            "Create": "Create",
+            "Created": "Clue created.",
+            "Name": "Name",
+            "Image": "Image",
+            "Type": "Type",
+            "NoType": "— no type —",
+            "Tags": "Tags",
+            "Description": "Description",
+            "DetectionHint": "Default settings: when a zone is created they are copied to it and can be changed there.",
+            "CopyHint": "This is a player's copy of the clue: editing changes only this copy, not the template or other players' copies.",
+            "Tabs": {
+                "summary": "Summary",
+                "detection": "Detection",
+                "visual": "Visuals"
+            }
+        },
+        "Visual": {
+            "Kind": "Kind",
+            "KindHint": "Decides which card appears on the board when a player places the clue on the board.",
+            "Audio": "Audio file",
+            "TapeEffect": "Apply tape effect",
+            "Image": "Card image",
+            "ImageHint": "If empty, the clue image is used.",
+            "Text": "Text",
+            "TextHint": "If empty, the clue name is used (the description for an index card).",
+            "PaperColor": "Paper color",
+            "InkColor": "Ink color",
+            "Font": "Font",
+            "FontSize": "Font size",
+            "PreviewHint": "This is how the card will look on the board.",
+            "Video": "Video file"
+        },
+        "Grant": {
+            "Button": "Give clue",
+            "ToPlayers": "Give to players",
+            "PickTitle": "Who gets the clue",
+            "PickTemplatesTitle": "Which clues to give",
+            "Confirm": "Give",
+            "Done": "Clues given: {count}",
+            "DragHint": "Drag onto a player to give the clue",
+            "DroppedTo": "“{clue}” given to {name}.",
+            "AlreadyHas": "{name} already has “{clue}”.",
+            "OnlyPlayers": "Clues can only be given to players."
+        },
+        "Transfer": {
+            "PickTitle": "Who gets the clues",
+            "PickHint": "Tick the players. Each gets their own copy and decides whether to accept it.",
+            "Send": "Hand over",
+            "Sent": "Clues sent. The recipient will see the request when they are online.",
+            "NoRecipients": "Nobody to hand over to: there are no other players.",
+            "ConfirmTitle": "You are being handed clues",
+            "Offer": "{name} wants to hand you clues:",
+            "AlreadyHave": "already have",
+            "DuplicateHint": "Clues you already have will not be added again.",
+            "Question": "Accept?",
+            "AcceptedBy": "Your clues were accepted: {name}.",
+            "DeclinedBy": "Your clues were declined: {name}."
+        },
+        "GameMasterWindow": {
+            "Title": "GM window",
+            "Tabs": {
+                "players": "Players",
+                "library": "Library",
+                "types": "Types"
+            },
+            "NoPlayers": "No players.",
+            "SelectPlayer": "Pick a player on the left.",
+            "ClueCount": "Clues",
+            "OpenList": "Open clue list",
+            "PlayerClues": "Player's clues",
+            "NoClues": "The player has no clues.",
+            "Attempts": "Attempts per zone",
+            "AttemptsColumn": "Attempts",
+            "AttemptsOf": "{used} of {max}",
+            "AttemptsUnlimited": "{used} (unlimited)",
+            "Scene": "Scene",
+            "Clue": "Clue",
+            "Found": "Found",
+            "NoZones": "No search zones yet.",
+            "ResetAllZones": "Reset all",
+            "ResetForPlayer": "Reset for this player",
+            "ResetForAll": "Reset for all players in this zone"
+        },
+        "Library": {
+            "Search": "Search by name and tags",
+            "New": "New clue",
+            "Empty": "No clue templates yet.",
+            "DeleteTitle": "Delete clue",
+            "DeleteConfirm": "Delete the template “{name}”? Copies already given to players will stay."
+        },
+        "DataTools": {
+            "Export": "Export",
+            "Import": "Import",
+            "Reset": "Reset data",
+            "ImportTitle": "Import data",
+            "SummaryIntro": "The file contains:",
+            "SummaryTypes": "Clue types",
+            "SummaryTemplates": "Clue templates",
+            "SummarySuspects": "Suspects",
+            "SummaryCases": "Cases",
+            "Conflicts": "Entries whose id already exists: {count}. Replace or skip them?",
+            "Replace": "Replace",
+            "Skip": "Skip",
+            "ImportDone": "Import finished.",
+            "ResetTitle": "Reset module data",
+            "ResetWarning": "All clue types, templates, suspects and cases will be deleted. This cannot be undone — export first.",
+            "ResetPlayers": "Also clear players' clues, notes and attempts",
+            "ResetDone": "Module data deleted.",
+            "Errors": {
+                "InvalidJson": "The file cannot be read as JSON.",
+                "WrongFormat": "This is not a Detective Story Reverse export file.",
+                "NewerVersion": "The file was made by a newer version of the module."
+            }
+        },
+        "Case": {
+            "NumberLabel": "Case #{number}",
+            "NumberBadge": "#{number}",
+            "Create": "New case",
+            "CreateTitle": "New case",
+            "Title": "Title",
+            "Description": "Description",
+            "Clues": "Clues",
+            "Suspects": "Suspects",
+            "Close": "Close case",
+            "CloseTitle": "Close case",
+            "CloseConfirm": "Close the case? Pinned clues cannot be edited or deleted while the case is closed.",
+            "Reopen": "Reopen",
+            "DeleteTitle": "Delete case",
+            "DeleteConfirm": "Delete {label} together with its timeline?",
+            "NoOpenCases": "No open cases.",
+            "SelectCase": "Pick a case.",
+            "NoClues": "The case has none of your clues.",
+            "DropHint": "Drag a clue here from the clue list",
+            "PinOnlyOwn": "You can only pin a clue from your own list.",
+            "Unpin": "Unpin",
+            "NoSuspects": "No suspects linked.",
+            "Link": "Link",
+            "Unlink": "Unlink",
+            "ClueLocked": "The clue is locked by a closed case.",
+            "ArchiveHint": "Closed cases. Pick a case to open or reopen it.",
+            "ArchiveEmpty": "The archive is empty.",
+            "ClosedStamp": "Case closed",
+            "ArchivedSuspects": "Archived suspects",
+            "ArchivedSuspectsEmpty": "No archived suspects.",
+            "ClosedReadOnly": "The case is closed: reopen it first to change it.",
+            "NoCluesAll": "The case has no clues."
+        },
+        "CaseJournal": {
+            "Title": "Case journal",
+            "Tabs": {
+                "cases": "Cases",
+                "suspects": "Suspects",
+                "archive": "Archive"
+            }
+        },
+        "Suspect": {
+            "Unnamed": "Unknown",
+            "NewTitle": "New suspect",
+            "Create": "New suspect",
+            "None": "No dossiers yet.",
+            "Name": "Name",
+            "Portrait": "Portrait",
+            "Description": "Description",
+            "Appearance": "Appearance",
+            "MyNotes": "My notes",
+            "MyNotesHint": "Only you can see these.",
+            "DeleteTitle": "Delete dossier",
+            "DeleteConfirm": "Delete the suspect's dossier?",
+            "Archived": "archived",
+            "ArchivedNote": "The dossier was deleted. This is a snapshot taken at deletion, kept in the case.",
+            "Deleted": "This suspect's dossier was deleted.",
+            "DeleteArchiveNote": "The suspect is linked to cases: {cases}. They will stay there as an archived suspect."
+        },
+        "Timeline": {
+            "Title": "Timeline",
+            "TitleFor": "Timeline: {label}",
+            "Missing": "Case not found.",
+            "Empty": "No events yet.",
+            "NewEvent": "New event",
+            "EditEvent": "Event",
+            "EventTitle": "Title",
+            "DateTime": "Date and time",
+            "Photo": "Photo",
+            "Side": "Side of the line",
+            "Above": "Above the line",
+            "Below": "Below the line",
+            "TitleRequired": "Enter an event title.",
+            "DeleteTitle": "Delete event",
+            "DeleteConfirm": "Delete the timeline event?"
+        },
+        "Permissions": {
+            "Title": "Player permissions on the board",
+            "Intro": "These players cannot create board cards themselves: their cards are created through the GM, so this only works while a GM is online.",
+            "AllGood": "All players can create board cards without a GM.",
+            "Player": "Player",
+            "Role": "Role",
+            "Draw": "Drawings",
+            "Browse": "Browse files",
+            "Upload": "Upload files",
+            "HowToFix": "Role permissions are set in “Game Settings → Configure Permissions”.",
+            "DontShow": "Don't show again",
+            "Disabled": "Warning turned off. You can turn it back on in the module settings."
+        },
+        "Board": {
+            "MarkAsBoard": "Make a clue board",
+            "UnmarkBoard": "Unmark clue board",
+            "DefaultStickyText": "Motive?",
+            "CardPlaced": "Card placed on the board.",
+            "CannotConnectSelf": "A card cannot be connected to itself.",
+            "OnlyGameMasterDeletes": "Only the GM can delete cards.",
+            "DeleteConfirm": "Delete the card from the board?",
+            "RemoveThreadsConfirm": "Remove all threads of this card (incoming and outgoing)?",
+            "NoClue": "You don't have this clue.",
+            "NoDetails": "This card has no linked clue.",
+            "NoSuspects": "No suspect dossiers yet.",
+            "PlaceSuspect": "Place",
+            "ThreadColorHint": "New threads you draw will have this color.",
+            "Menu": {
+                "Details": "Details",
+                "View": "View",
+                "Edit": "Edit",
+                "PlayForMe": "Listen",
+                "PlayForAll": "Play for everyone",
+                "StopForAll": "Stop for everyone",
+                "Hide": "Hide from players",
+                "Reveal": "Show to players",
+                "RemoveThreads": "Remove threads",
+                "Delete": "Delete card",
+                "Watch": "Watch",
+                "ShowForAll": "Show to everyone"
+            },
+            "CreateFromClue": "Clue from the list…",
+            "CreateSuspect": "Suspect…",
+            "PickClueTitle": "Which clue to place"
+        },
+        "CardSheet": {
+            "Title": "Board card",
+            "Threads": "Threads from this card",
+            "RemoveThread": "Remove thread",
+            "DeletedCard": "deleted card"
+        },
+        "CardPreview": {
+            "Title": "Card view",
+            "NoAudio": "No audio file is attached to the cassette.",
+            "NoVideo": "No video file is attached to the cassette."
+        },
+        "EventLog": {
+            "Open": "Event log",
+            "Title": "Event log",
+            "AllPlayers": "All participants",
+            "AllEvents": "All events",
+            "Empty": "No events yet.",
+            "NothingFound": "Nothing matches the filter.",
+            "Clear": "Clear log",
+            "ClearTitle": "Clear event log",
+            "ClearConfirm": "Delete all log entries of all participants? Clues and cases are not affected.",
+            "Types": {
+                "found": "Discoveries",
+                "failed": "Failed searches",
+                "transferSent": "Handovers",
+                "transferAccepted": "Accepted handovers",
+                "transferDeclined": "Declined handovers",
+                "placedOnBoard": "Placed on the board",
+                "shownInChat": "Shown in chat",
+                "granted": "Given by the GM",
+                "pinned": "Pinned to a case",
+                "caseClosed": "Cases closed",
+                "caseReopened": "Cases reopened"
+            },
+            "Text": {
+                "found": "Found: “{clue}” (scene “{scene}”)",
+                "failed": "Failed search: “{clue}”, attempt {attempt} of {max} (scene “{scene}”)",
+                "failedUnlimited": "Failed search: “{clue}”, attempt {attempt} (scene “{scene}”)",
+                "transferSent": "Handover → {recipient}: {clues}",
+                "transferAccepted": "Accepted a handover from {sender}: {clues}",
+                "transferDeclined": "Declined a handover from {sender}: {clues}",
+                "placedOnBoard": "On the board: “{clue}” (scene “{scene}”)",
+                "shownInChat": "Shown in chat: “{clue}”",
+                "granted": "Given → {recipient}: {clues}",
+                "pinned": "Pinned to {case}: “{clue}”",
+                "caseClosed": "Closed {case}",
+                "caseReopened": "Reopened {case}"
+            }
+        },
+        "Stamps": {
+            "Menu": "Stamp",
+            "Remove": "Remove stamp",
+            "FolderUnreadable": "Could not read the stamp folder. Check the path in the module settings.",
+            "classified": "Classified",
+            "missing": "Missing",
+            "x": "Hand-drawn X",
+            "evidence": "Evidence",
+            "deceased": "Deceased",
+            "redacted": "Redacted"
+        },
+        "VideoPlayer": {
+            "Title": "Video recording",
+            "Muted": "The browser started the video muted — turn the sound on in the player."
+        }
+    }
+}

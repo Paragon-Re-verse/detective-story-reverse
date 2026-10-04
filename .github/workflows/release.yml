@@ -1,18 +1,9 @@
 name: Release
 
-# Собирает zip модуля и публикует GitHub Release при пуше тега vX.Y.Z.
-# module.json.download (releases/latest/download/<id>.zip) и .manifest (raw
-# module.json на main) рассчитаны именно на этот workflow.
-
 on:
   push:
     tags:
-      - "v*.*.*"
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "Tag to release (must already exist, e.g. v2.2.3)"
-        required: true
+      - "v*"
 
 permissions:
   contents: write
@@ -21,27 +12,35 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
+      - uses: actions/checkout@v4
 
-      - name: Read module id
-        id: module
-        run: echo "id=$(jq -r '.id' module.json)" >> "$GITHUB_OUTPUT"
+      - name: Build module.zip
+        run: zip -r module.zip module.json LICENSE README.md README.ru.md CHANGELOG.md CHANGELOG.ru.md assets lang packs scripts styles templates -x "*.DS_Store" -x "packs/*/LOCK"
 
-      - name: Build module zip
-        env:
-          MODULE_ID: ${{ steps.module.outputs.id }}
+      # Release notes: the CHANGELOG section of this version (from its heading to the next "## ").
+      - name: Release notes
         run: |
-          mkdir -p "build/$MODULE_ID"
-          rsync -a --exclude='.git' --exclude='.github' --exclude='build' --exclude='*.DS_Store' \
-            ./ "build/$MODULE_ID/"
-          (cd build && zip -r "../$MODULE_ID.zip" "$MODULE_ID")
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v version="$VERSION" '
+            /^## / { inside = index($0, "## " version) == 1; next }
+            inside { print }
+          ' CHANGELOG.md > release-notes.md
+          echo "" >> release-notes.md
+          echo "Русский журнал изменений: CHANGELOG.ru.md" >> release-notes.md
 
-      - name: Create release
+      # A release with the same tag may already exist (for example, a re-tagged version): replace it entirely.
+      - name: Remove previous release with this tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete "$GITHUB_REF_NAME" --yes --repo "$GITHUB_REPOSITORY" || true
+
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.tag || github.ref_name }}
-          files: ${{ steps.module.outputs.id }}.zip
-          generate_release_notes: true
+          name: Detective Story Reverse ${{ github.ref_name }}
+          body_path: release-notes.md
+          prerelease: false
+          make_latest: true
+          files: |
+            module.zip
+            module.json

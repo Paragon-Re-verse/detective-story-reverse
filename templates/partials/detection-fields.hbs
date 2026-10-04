@@ -1,0 +1,47 @@
+<fieldset class="detection-fields">
+    <legend>{{localize "DETECTIVE_STORY.Detection.Legend"}}</legend>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Detection.ZoneMode"}}</label>
+        <div class="form-fields">
+            <select name="{{fieldPrefix}}.zoneMode">{{selectOptions zoneModeChoices selected=detection.zoneMode localize=true}}</select>
+        </div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Detection.ZoneModeHint"}}</p>
+    </div>
+    <div class="form-group zone-radius-group" {{#unless (eq detection.zoneMode "battlemap")}}hidden{{/unless}}>
+        <label>{{localize "DETECTIVE_STORY.Detection.Radius"}} <span class="units">({{units}})</span></label>
+        <div class="form-fields">
+            <input type="number" name="{{fieldPrefix}}.radius" value="{{detection.radius}}" min="0" step="any">
+        </div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Detection.RadiusHint"}}</p>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Detection.Check"}}</label>
+        <div class="form-fields">
+            <input type="text" name="{{fieldPrefix}}.check" value="{{detection.check}}" list="{{datalistId}}">
+            <datalist id="{{datalistId}}">
+                {{#each checkSuggestions}}<option value="{{this.value}}">{{this.label}}</option>{{/each}}
+            </datalist>
+        </div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Detection.CheckHint"}}</p>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Detection.Difficulty"}}</label>
+        <div class="form-fields">
+            <input type="text" name="{{fieldPrefix}}.dc" value="{{detection.dc}}">
+        </div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Detection.DifficultyHint"}}</p>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Detection.RollMode"}}</label>
+        <div class="form-fields">
+            <select name="{{fieldPrefix}}.rollMode">{{selectOptions rollModeChoices selected=detection.rollMode localize=true}}</select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Detection.MaxAttempts"}}</label>
+        <div class="form-fields">
+            <input type="number" name="{{fieldPrefix}}.maxAttempts" value="{{detection.maxAttempts}}" min="0" step="1">
+        </div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Detection.MaxAttemptsHint"}}</p>
+    </div>
+</fieldset>

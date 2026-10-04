@@ -1,0 +1,34 @@
+<section class="tab archive-tab{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <p class="hint">{{localize "DETECTIVE_STORY.Case.ArchiveHint"}}</p>
+    <ul class="case-list">
+        {{#each closedCases}}
+        <li class="case-row" data-case-id="{{this.id}}" data-action="selectCase">
+            <span class="case-badge">{{localize "DETECTIVE_STORY.Case.NumberBadge" number=this.number}}</span>
+            <span class="case-title">{{this.title}}</span>
+            <i class="fa-solid fa-lock"></i>
+        </li>
+        {{else}}
+        <li class="empty-message">{{localize "DETECTIVE_STORY.Case.ArchiveEmpty"}}</li>
+        {{/each}}
+    </ul>
+    <h3 class="archive-heading"><i class="fa-solid fa-user-secret" inert></i> {{localize "DETECTIVE_STORY.Case.ArchivedSuspects"}}</h3>
+    {{#each archivedSuspectGroups}}
+    <div class="archived-suspect-group">
+        <h4 class="case-row" data-case-id="{{this.id}}" data-action="selectCase">
+            <span class="case-badge">{{localize "DETECTIVE_STORY.Case.NumberBadge" number=this.number}}</span>
+            <span class="case-title">{{this.title}}</span>
+            {{#if this.closed}}<i class="fa-solid fa-lock"></i>{{/if}}
+        </h4>
+        <ul class="linked-suspects">
+            {{#each this.suspects}}
+            <li data-suspect-id="{{this.id}}" class="archived">
+                <img src="{{this.portrait}}" alt="" loading="lazy">
+                <a data-action="openSuspect">{{this.name}}</a>
+            </li>
+            {{/each}}
+        </ul>
+    </div>
+    {{else}}
+    <p class="empty-message">{{localize "DETECTIVE_STORY.Case.ArchivedSuspectsEmpty"}}</p>
+    {{/each}}
+</section>

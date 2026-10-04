@@ -1,0 +1,29 @@
+<li class="clue-item{{#if isNew}} is-new{{/if}}" data-origin-id="{{originId}}" data-type-id="{{typeId}}" data-search="{{searchIndex}}" data-name="{{name}}" data-type-name="{{typeName}}" data-received="{{receivedAt}}" data-case-number="{{caseSortNumber}}" draggable="true">
+    <div class="clue-thumb" data-action="openClue" data-tooltip="{{name}}">
+        <img class="clue-image" src="{{img}}" alt="" loading="lazy" draggable="false">
+        {{#if isNew}}<span class="new-badge"><i class="fa-solid fa-star" inert></i> {{localize "DETECTIVE_STORY.ClueList.New"}}</span>{{/if}}
+        <img class="type-badge" src="{{typeIcon}}" alt="" draggable="false" data-tooltip="{{typeName}}">
+        <div class="thumb-footer">
+            {{#each caseTags}}
+            <span class="case-chip{{#if this.closed}} closed{{/if}}" data-tooltip="{{this.label}}"><i class="fa-solid fa-folder" inert></i>{{this.number}}</span>
+            {{/each}}
+            {{#if hasNotes}}<i class="fa-solid fa-note-sticky note-badge" data-tooltip="{{notesPreview}}"></i>{{/if}}
+            {{#if locked}}<i class="fa-solid fa-lock lock-badge" data-tooltip="{{localize 'DETECTIVE_STORY.Case.ClueLocked'}}"></i>{{/if}}
+        </div>
+        <div class="clue-actions">
+            <button type="button" data-action="showInChat" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.ShowInChat'}}"><i class="fa-solid fa-comment" inert></i></button>
+            {{#if isOwnList}}
+            <button type="button" data-action="placeOnBoard" {{disabled (not boardAvailable)}}
+                data-tooltip="{{#if boardAvailable}}{{localize 'DETECTIVE_STORY.ClueList.PlaceOnBoard'}}{{else}}{{localize 'DETECTIVE_STORY.ClueList.OpenBoardFirst'}}{{/if}}"><i class="fa-solid fa-thumbtack" inert></i></button>
+            <button type="button" data-action="transferClue" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.Transfer'}}"><i class="fa-solid fa-share" inert></i></button>
+            {{/if}}
+            {{#if isGameMaster}}
+            <button type="button" data-action="editClue" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen" inert></i></button>
+            <button type="button" data-action="deleteClue" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash" inert></i></button>
+            {{/if}}
+        </div>
+    </div>
+    <label class="clue-select"><input type="checkbox" data-select {{checked selected}}></label>
+    <div class="clue-name">{{name}}</div>
+    <div class="clue-row-meta"><img src="{{typeIcon}}" alt="" draggable="false"> {{typeName}}</div>
+</li>

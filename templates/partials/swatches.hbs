@@ -1,0 +1,8 @@
+<div class="swatches">
+    {{#each swatches}}
+    <label class="swatch" style="--swatch-color: {{this.value}}" data-tooltip="{{localize this.label}}">
+        <input type="radio" name="{{../name}}" value="{{this.value}}" {{checked this.selected}}>
+        <span class="swatch-chip"></span>
+    </label>
+    {{/each}}
+</div>

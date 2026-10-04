@@ -1,0 +1,65 @@
+<div class="card-sheet-body">
+    {{#if hasText}}
+    <div class="form-group stacked">
+        <label>{{localize "DETECTIVE_STORY.Visual.Text"}}</label>
+        <textarea name="text" rows="4">{{card.text}}</textarea>
+    </div>
+    {{/if}}
+    {{#if hasTint}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Visual.PaperColor"}}</label>
+        <div class="form-fields">{{> dsr-swatches name="tint" swatches=tintSwatches}}</div>
+    </div>
+    {{/if}}
+    {{#if hasText}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Visual.InkColor"}}</label>
+        <div class="form-fields">{{> dsr-swatches name="textColor" swatches=inkSwatches}}</div>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Visual.Font"}}</label>
+        <div class="form-fields">
+            <select name="font">{{selectOptions fontChoices selected=card.font}}</select>
+            <input type="number" class="font-size-input" name="fontSize" value="{{card.fontSize}}" min="6" max="64" step="1" data-tooltip="{{localize 'DETECTIVE_STORY.Visual.FontSize'}}">
+        </div>
+    </div>
+    {{/if}}
+    {{#if hasImage}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Visual.Image"}}</label>
+        <div class="form-fields"><file-picker name="image" type="image" value="{{card.image}}"></file-picker></div>
+    </div>
+    {{/if}}
+    {{#if hasAudio}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Visual.Audio"}}</label>
+        <div class="form-fields"><file-picker name="audioPath" type="audio" value="{{card.audioPath}}"></file-picker></div>
+    </div>
+    {{/if}}
+    {{#if hasVideo}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Visual.Video"}}</label>
+        <div class="form-fields"><file-picker name="videoPath" type="video" value="{{card.videoPath}}"></file-picker></div>
+    </div>
+    {{/if}}
+    {{#if hasTapeEffect}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Visual.TapeEffect"}}</label>
+        <div class="form-fields"><input type="checkbox" name="audioEffectEnabled" {{checked card.audioEffectEnabled}}></div>
+    </div>
+    {{/if}}
+    {{#if connections.length}}
+    <fieldset class="card-threads">
+        <legend>{{localize "DETECTIVE_STORY.CardSheet.Threads"}}</legend>
+        <ul>
+            {{#each connections}}
+            <li data-target-id="{{this.targetId}}">
+                <span class="thread-target">{{this.targetLabel}}</span>
+                <select name="connections.{{this.index}}.color">{{selectOptions ../threadColorChoices selected=this.color}}</select>
+                <button type="button" class="icon" data-action="removeThread" data-tooltip="{{localize 'DETECTIVE_STORY.CardSheet.RemoveThread'}}"><i class="fa-solid fa-scissors"></i></button>
+            </li>
+            {{/each}}
+        </ul>
+    </fieldset>
+    {{/if}}
+</div>

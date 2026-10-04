@@ -1,0 +1,34 @@
+<div class="permissions-body">
+    {{#if allDirect}}
+    <p>{{localize "DETECTIVE_STORY.Permissions.AllGood"}}</p>
+    {{else}}
+    <p>{{localize "DETECTIVE_STORY.Permissions.Intro"}}</p>
+    {{/if}}
+    <table class="permissions-table">
+        <thead>
+            <tr>
+                <th>{{localize "DETECTIVE_STORY.Permissions.Player"}}</th>
+                <th>{{localize "DETECTIVE_STORY.Permissions.Role"}}</th>
+                <th>{{localize "DETECTIVE_STORY.Permissions.Draw"}}</th>
+                <th>{{localize "DETECTIVE_STORY.Permissions.Browse"}}</th>
+                <th>{{localize "DETECTIVE_STORY.Permissions.Upload"}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each players}}
+            <tr class="{{#unless this.direct}}restricted{{/unless}}">
+                <td>{{this.name}}</td>
+                <td>{{this.roleName}}</td>
+                <td>{{#if this.canDraw}}<i class="fa-solid fa-check"></i>{{else}}<i class="fa-solid fa-xmark"></i>{{/if}}</td>
+                <td>{{#if this.canBrowse}}<i class="fa-solid fa-check"></i>{{else}}<i class="fa-solid fa-xmark"></i>{{/if}}</td>
+                <td>{{#if this.canUpload}}<i class="fa-solid fa-check"></i>{{else}}<i class="fa-solid fa-xmark"></i>{{/if}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+    <p class="hint">{{localize "DETECTIVE_STORY.Permissions.HowToFix"}}</p>
+    <footer class="permissions-buttons">
+        <button type="button" data-action="dismiss"><i class="fa-solid fa-check"></i> {{localize "DETECTIVE_STORY.Common.Ok"}}</button>
+        <button type="button" data-action="disableWarning"><i class="fa-solid fa-bell-slash"></i> {{localize "DETECTIVE_STORY.Permissions.DontShow"}}</button>
+    </footer>
+</div>

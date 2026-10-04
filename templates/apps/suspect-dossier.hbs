@@ -1,0 +1,61 @@
+<div class="dossier-body">
+    {{#if editing}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Suspect.Name"}}</label>
+        <div class="form-fields"><input type="text" name="name" value="{{suspect.name}}" required autofocus></div>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Suspect.Portrait"}}</label>
+        <div class="form-fields"><file-picker name="portrait" type="image" value="{{suspect.portrait}}"></file-picker></div>
+    </div>
+    <div class="form-group stacked">
+        <label>{{localize "DETECTIVE_STORY.Suspect.Description"}}</label>
+        <prose-mirror name="description" value="{{suspect.description}}"></prose-mirror>
+    </div>
+    <div class="form-group stacked">
+        <label>{{localize "DETECTIVE_STORY.Suspect.Appearance"}}</label>
+        <prose-mirror name="appearance" value="{{suspect.appearance}}"></prose-mirror>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Editor.Tags"}}</label>
+        <div class="form-fields"><string-tags name="tags" value="{{tagsValue}}"></string-tags></div>
+    </div>
+    <footer class="dossier-actions">
+        <button type="submit"><i class="fa-solid fa-floppy-disk"></i> {{localize "DETECTIVE_STORY.Common.Save"}}</button>
+        {{#unless isNew}}<button type="button" data-action="toggleEdit"><i class="fa-solid fa-xmark"></i> {{localize "DETECTIVE_STORY.Common.Cancel"}}</button>{{/unless}}
+    </footer>
+    {{else}}
+    <div class="dossier-header">
+        <figure class="dsr-polaroid portrait dossier-polaroid">
+            <img src="{{suspect.portrait}}" alt="">
+            <figcaption>{{suspect.name}}</figcaption>
+        </figure>
+        <div class="dossier-title">
+            <h2>{{suspect.name}}</h2>
+            {{#if suspect.archived}}<p class="archived-note"><i class="fa-solid fa-box-archive" inert></i> {{localize "DETECTIVE_STORY.Suspect.ArchivedNote"}}</p>{{/if}}
+            {{#if suspect.tags.length}}<div class="tags">{{#each suspect.tags}}<span class="tag">{{this}}</span>{{/each}}</div>{{/if}}
+            {{#if canEdit}}
+            <div class="dossier-buttons">
+                <button type="button" data-action="toggleEdit"><i class="fa-solid fa-pen"></i> {{localize "DETECTIVE_STORY.Common.Edit"}}</button>
+                <button type="button" data-action="deleteSuspect"><i class="fa-solid fa-trash"></i> {{localize "DETECTIVE_STORY.Common.Delete"}}</button>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    <section class="dossier-section">
+        <h3>{{localize "DETECTIVE_STORY.Suspect.Description"}}</h3>
+        <div class="dossier-text">{{{enrichedDescription}}}</div>
+    </section>
+    <section class="dossier-section">
+        <h3>{{localize "DETECTIVE_STORY.Suspect.Appearance"}}</h3>
+        <div class="dossier-text">{{{enrichedAppearance}}}</div>
+    </section>
+    {{/if}}
+    {{#unless isNew}}
+    <section class="dossier-section personal-notes">
+        <h3>{{localize "DETECTIVE_STORY.Suspect.MyNotes"}}</h3>
+        <p class="hint">{{localize "DETECTIVE_STORY.Suspect.MyNotesHint"}}</p>
+        <textarea name="personalNotes" rows="4">{{notes}}</textarea>
+    </section>
+    {{/unless}}
+</div>

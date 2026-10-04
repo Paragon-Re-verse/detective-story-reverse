@@ -1,0 +1,15 @@
+<div class="profilers-body">
+    <p class="hint">{{localize "DETECTIVE_STORY.Settings.Profilers.Hint"}}</p>
+    <ul class="profiler-list">
+        {{#each players}}
+        <li>
+            <label class="checkbox">
+                <input type="checkbox" name="profiler" value="{{this.id}}" {{checked this.checked}}>
+                {{this.name}}
+            </label>
+        </li>
+        {{else}}
+        <li class="empty-message">{{localize "DETECTIVE_STORY.GameMasterWindow.NoPlayers"}}</li>
+        {{/each}}
+    </ul>
+</div>

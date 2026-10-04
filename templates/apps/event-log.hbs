@@ -1,0 +1,21 @@
+<div class="event-log-body">
+    <header class="event-log-toolbar">
+        <select name="userFilter">{{selectOptions userChoices selected=userFilter}}</select>
+        <select name="typeFilter">{{selectOptions typeChoices selected=typeFilter}}</select>
+        <button type="button" data-action="clearLog" {{disabled (not hasEntries)}} data-tooltip="{{localize 'DETECTIVE_STORY.EventLog.Clear'}}">
+            <i class="fa-solid fa-broom" inert></i>
+        </button>
+    </header>
+    <ol class="event-list">
+        {{#each entries}}
+        <li class="event-row type-{{this.type}}">
+            <span class="event-time">{{this.time}}</span>
+            <i class="event-icon {{this.icon}}" inert></i>
+            <span class="event-actor{{#if this.isGameMaster}} game-master{{/if}}">{{this.actor}}</span>
+            <span class="event-text">{{this.text}}</span>
+        </li>
+        {{else}}
+        <li class="empty-message">{{#if hasEntries}}{{localize "DETECTIVE_STORY.EventLog.NothingFound"}}{{else}}{{localize "DETECTIVE_STORY.EventLog.Empty"}}{{/if}}</li>
+        {{/each}}
+    </ol>
+</div>

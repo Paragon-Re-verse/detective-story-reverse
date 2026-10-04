@@ -1,0 +1,4 @@
+<section class="tab{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <p class="hint">{{localize "DETECTIVE_STORY.Editor.DetectionHint"}}</p>
+    {{> dsr-detection-fields fieldPrefix="detection" detection=clue.detection zoneModeChoices=zoneModeChoices rollModeChoices=rollModeChoices checkSuggestions=checkSuggestions units=(localize "DETECTIVE_STORY.Detection.SceneUnits") datalistId=(concat "detective-checks-" partId)}}
+</section>

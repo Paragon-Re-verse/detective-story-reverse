@@ -1,0 +1,20 @@
+<section class="tab gm-types{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <header class="types-toolbar">
+        <p class="hint">{{localize "DETECTIVE_STORY.ClueTypes.Hint"}}</p>
+        <button type="button" data-action="newType"><i class="fa-solid fa-plus"></i> {{localize "DETECTIVE_STORY.ClueTypes.NewTitle"}}</button>
+    </header>
+    <ul class="type-list">
+        {{#each clueTypes}}
+        <li class="type-row" data-type-id="{{this.id}}">
+            <img src="{{this.icon}}" alt="">
+            <span class="type-name">{{this.name}}</span>
+            {{#if this.builtIn}}
+            <span class="type-builtin">{{localize "DETECTIVE_STORY.ClueTypes.BuiltIn"}}</span>
+            {{else}}
+            <button type="button" class="icon" data-action="editType" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen"></i></button>
+            <button type="button" class="icon" data-action="deleteType" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash"></i></button>
+            {{/if}}
+        </li>
+        {{/each}}
+    </ul>
+</section>

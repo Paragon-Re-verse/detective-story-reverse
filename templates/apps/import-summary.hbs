@@ -1,0 +1,10 @@
+<p>{{localize "DETECTIVE_STORY.DataTools.SummaryIntro"}}</p>
+<ul class="import-summary">
+    <li>{{localize "DETECTIVE_STORY.DataTools.SummaryTypes"}}: <strong>{{summary.clueTypes}}</strong></li>
+    <li>{{localize "DETECTIVE_STORY.DataTools.SummaryTemplates"}}: <strong>{{summary.templates}}</strong></li>
+    <li>{{localize "DETECTIVE_STORY.DataTools.SummarySuspects"}}: <strong>{{summary.suspects}}</strong></li>
+    <li>{{localize "DETECTIVE_STORY.DataTools.SummaryCases"}}: <strong>{{summary.cases}}</strong></li>
+</ul>
+{{#if conflictCount}}
+<p class="warning-hint"><i class="fa-solid fa-triangle-exclamation"></i> {{localize "DETECTIVE_STORY.DataTools.Conflicts" count=conflictCount}}</p>
+{{/if}}

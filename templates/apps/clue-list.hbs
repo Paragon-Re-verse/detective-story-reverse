@@ -1,0 +1,31 @@
+<div class="clue-list-body">
+    <header class="clue-list-toolbar">
+        {{#if userChoices}}
+        <select name="ownerUserId" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.Player'}}">{{selectOptions userChoices selected=ownerUserId}}</select>
+        {{/if}}
+        <input type="search" name="search" value="{{searchText}}" placeholder="{{localize 'DETECTIVE_STORY.ClueList.Search'}}">
+        <select name="typeFilter">{{selectOptions typeChoices selected=typeFilter}}</select>
+        <select name="sortMode" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.SortBy'}}">{{selectOptions sortChoices selected=sortMode}}</select>
+        <button type="button" data-action="toggleView" data-tooltip="{{#if isRowsView}}{{localize 'DETECTIVE_STORY.ClueList.ViewGrid'}}{{else}}{{localize 'DETECTIVE_STORY.ClueList.ViewRows'}}{{/if}}">
+            <i class="fa-solid {{#if isRowsView}}fa-table-cells-large{{else}}fa-list{{/if}}" inert></i>
+        </button>
+        {{#if canTransfer}}
+        <button type="button" data-action="toggleSelection" class="{{#if selectionMode}}active{{/if}}" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.SelectionMode'}}">
+            <i class="fa-solid fa-list-check"></i>
+        </button>
+        {{/if}}
+    </header>
+    {{#if selectionMode}}
+    <div class="selection-bar">
+        <span>{{localize "DETECTIVE_STORY.ClueList.Selected"}}: <strong data-selected-count>{{selectedCount}}</strong></span>
+        <button type="button" data-action="transferSelected" {{disabled (not selectedCount)}}>
+            <i class="fa-solid fa-share"></i> {{localize "DETECTIVE_STORY.ClueList.TransferSelected"}}
+        </button>
+    </div>
+    {{/if}}
+    <ul class="clue-grid{{#if selectionMode}} selection-mode{{/if}}{{#if isRowsView}} view-rows{{/if}}">
+        {{#each clues}}{{> dsr-clue-list-item}}{{/each}}
+    </ul>
+    <p class="no-clues empty-message" {{#if hasClues}}hidden{{/if}}>{{localize "DETECTIVE_STORY.ClueList.Empty"}}</p>
+    <p class="filter-empty empty-message" hidden>{{localize "DETECTIVE_STORY.ClueList.NothingFound"}}</p>
+</div>

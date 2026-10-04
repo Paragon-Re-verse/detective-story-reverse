@@ -1,0 +1,18 @@
+<section class="tab suspects-tab{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    {{#if canEditSuspects}}
+    <header class="suspects-toolbar">
+        <button type="button" data-action="createSuspect"><i class="fa-solid fa-user-plus"></i> {{localize "DETECTIVE_STORY.Suspect.Create"}}</button>
+    </header>
+    {{/if}}
+    <ul class="suspect-grid">
+        {{#each suspects}}
+        <li class="suspect-card" data-suspect-id="{{this.id}}" data-action="openSuspect">
+            <img src="{{this.portrait}}" alt="" loading="lazy">
+            <span class="suspect-name">{{this.name}}</span>
+            {{#if this.tags.length}}<span class="tags">{{#each this.tags}}<span class="tag">{{this}}</span>{{/each}}</span>{{/if}}
+        </li>
+        {{else}}
+        <li class="empty-message">{{localize "DETECTIVE_STORY.Suspect.None"}}</li>
+        {{/each}}
+    </ul>
+</section>

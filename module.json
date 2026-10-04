@@ -1,41 +1,66 @@
 {
-  "title": "Visual Novel Re:Verse",
-  "description": "This module allows you to transform your social scenes using the Visual Novels Dialogues window in the style of visual novels or JRPGs, but with special functionality designed for comfortable D&amp;D, or other TTRPGs sessions.",
-  "version": "2.3.1",
+  "id": "detective-story-reverse",
+  "title": "Detective Story Reverse",
+  "description": "<p>Detective investigations for dnd5e: searching scenes for clues, a personal clue list for each player, handing clues over, a clue board with threads, suspect dossiers, cases and timelines. English and Russian.</p>",
+  "version": "1.0.0",
+  "authors": [
+    { "name": "Paragon" }
+  ],
+  "url": "https://github.com/Paragon-Re-verse/detective-story-reverse",
+  "manifest": "https://raw.githubusercontent.com/Paragon-Re-verse/detective-story-reverse/main/module.json",
+  "download": "https://github.com/Paragon-Re-verse/detective-story-reverse/releases/download/v1.0.0/module.zip",
+  "license": "LICENSE",
+  "readme": "README.md",
+  "changelog": "CHANGELOG.md",
   "compatibility": {
-    "minimum": "12",
-    "verified": "13"
+    "minimum": "13",
+    "verified": "13.351"
+  },
+  "relationships": {
+    "systems": [
+      { "id": "dnd5e", "type": "system", "compatibility": { "minimum": "5.3.3" } }
+    ],
+    "requires": [
+      { "id": "socketlib", "type": "module", "compatibility": { "minimum": "1.0.0" } }
+    ]
   },
   "socket": true,
-  "authors": [
-    {
-      "name": "Paragon",
-      "flags": {}
-    }
-  ],
   "esmodules": [
-    "scripts/main.js",
-    "scripts/settings.js"
+    "scripts/main.js"
   ],
   "styles": [
-    "styles/module.css"
+    "styles/fonts.css",
+    "styles/detective-story.css",
+    "styles/board.css"
   ],
   "languages": [
+    { "lang": "ru", "name": "Русский", "path": "lang/ru.json" },
+    { "lang": "en", "name": "English", "path": "lang/en.json" }
+  ],
+  "packs": [
     {
-      "lang": "ru",
-      "name": "Russian",
-      "path": "language/ru.json",
-      "flags": {}
+      "name": "boards",
+      "label": "DETECTIVE_STORY.Packs.Boards",
+      "path": "packs/boards",
+      "type": "Scene",
+      "ownership": { "PLAYER": "OBSERVER", "ASSISTANT": "OWNER" }
     },
     {
-      "lang": "en",
-      "name": "English",
-      "path": "language/en.json",
-      "flags": {}
+      "name": "gm-guide",
+      "label": "DETECTIVE_STORY.Packs.GmGuide",
+      "path": "packs/gm-guide",
+      "type": "JournalEntry",
+      "ownership": { "PLAYER": "NONE", "ASSISTANT": "OWNER" }
     }
   ],
-  "id": "visual-novel-reverse",
-  "url": "https://github.com/Paragon-Re-verse/Visual_Novel_Re-Verse",
-  "manifest": "https://raw.githubusercontent.com/Paragon-Re-verse/Visual_Novel_Re-Verse/main/module.json",
-  "download": "https://github.com/Paragon-Re-verse/Visual_Novel_Re-Verse/releases/latest/download/visual-novel-reverse.zip"
+  "packFolders": [
+    {
+      "name": "Detective Story Reverse",
+      "sorting": "m",
+      "color": "#3b2f22",
+      "packs": ["boards", "gm-guide"],
+      "folders": []
+    }
+  ],
+  "flags": {}
 }

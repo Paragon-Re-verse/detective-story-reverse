@@ -1,0 +1,11 @@
+<ul class="picker-list entry-picker-list">
+    {{#each entries}}
+    <li>
+        <label class="checkbox">
+            <input type="radio" name="entryId" value="{{this.id}}" {{#if @first}}checked{{/if}}>
+            <img src="{{this.img}}" alt="" loading="lazy">
+            <span>{{this.name}}</span>
+        </label>
+    </li>
+    {{/each}}
+</ul>
