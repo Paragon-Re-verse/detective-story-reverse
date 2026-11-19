@@ -15,7 +15,9 @@ export const SETTING_KEYS = {
   zoneLabels: "zoneLabels",
   stampFolder: "stampFolder",
   stampColor: "stampColor",
-  stampFiles: "stampFiles"
+  stampFiles: "stampFiles",
+  libraryFolders: "libraryFolders",
+  folderTreeState: "folderTreeState"
 };
 
 /**
@@ -131,6 +133,22 @@ export function registerSettings({ profilersConfig, permissionsWarning }, onProf
     config: true,
     type: new foundry.data.fields.ColorField({ nullable: false, initial: "#b3261e" }),
     default: "#b3261e"
+  });
+
+  // Папки библиотеки ГМ: «id → папка». Пишет только ГМ.
+  game.settings.register(MODULE_ID, SETTING_KEYS.libraryFolders, {
+    scope: "world",
+    config: false,
+    type: Object,
+    default: {}
+  });
+
+  // Свёрнутые папки каждого дерева на этом клиенте: «ключ дерева → id папок».
+  game.settings.register(MODULE_ID, SETTING_KEYS.folderTreeState, {
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {}
   });
 
   game.settings.register(MODULE_ID, SETTING_KEYS.stampFiles, {

@@ -1,6 +1,7 @@
 import { readUserSection, writeUserEntry, deleteUserEntries } from "./user-flags.js";
 import { getPlayerClue, buildPlayerClue, addCluesToUser, userHasClue, CLUE_SOURCES } from "./player-clues.js";
 import { logEvent, LOG_EVENTS } from "./event-log.js";
+import { addFolderWithClues } from "./clue-folders.js";
 
 /**
  * Передача улик между игроками без ведущего:
@@ -28,9 +29,10 @@ export function getUserCharacterName(user) {
  * Отправить улики выбранным игрокам.
  * @param {string[]} recipientIds
  * @param {string[]} originIds
+ * @param {object|null} [folder] - передача целой папки: структура и раскладка улик (buildFolderPayload)
  * @returns {Promise<number>} число созданных передач
  */
-export async function sendTransfers(recipientIds, originIds) {
+export async function sendTransfers(recipientIds, originIds, folder = null) {
   const sender = game.user;
   const transferredClues = {};
   for (const originId of originIds) {
@@ -61,7 +63,8 @@ export async function sendTransfers(recipientIds, originIds) {
       to: recipient.id,
       senderName: getUserCharacterName(sender),
       createdAt: Date.now(),
-      clues: transferredClues
+      clues: transferredClues,
+      folder
     });
     transferCount += 1;
     await logEvent(LOG_EVENTS.transferSent, { recipient: recipient.name, clues: listTransferredNames(transferredClues) });
@@ -115,7 +118,12 @@ export async function answerTransfer(transfer, accepted) {
         transferredClue.notes
       );
     });
-    addedIds = await addCluesToUser(recipient, clueRecords);
+    // Папка принимается только целиком: копия с подпапками ложится в корень (пп. 12, 30).
+    if (transfer.folder?.folders?.[transfer.folder.rootId]) {
+      addedIds = await addFolderWithClues(recipient, transfer.folder, clueRecords);
+    } else {
+      addedIds = await addCluesToUser(recipient, clueRecords);
+    }
   }
   await writeUserEntry(recipient, RECEIPTS_SECTION, transfer.id, {
     id: transfer.id,

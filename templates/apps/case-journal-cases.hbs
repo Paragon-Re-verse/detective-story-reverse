@@ -51,20 +51,27 @@
         </section>
         <section class="case-section case-clues">
             <h3>{{localize "DETECTIVE_STORY.Case.Clues"}}</h3>
-            <ul class="pinned-clues{{#if canDrop}} pinned-dropzone{{/if}}">
+            <div class="folder-layout">
+            {{> dsr-folder-tree folderTree}}
+            <ul class="pinned-clues folder-content{{#if canDrop}} pinned-dropzone{{/if}}">
                 {{#each pinnedClues}}
-                <li class="pinned-clue" data-origin-id="{{this.originId}}" data-tooltip="{{this.pinnedByName}} · {{this.pinnedAtLabel}}">
+                <li class="pinned-clue" data-origin-id="{{this.originId}}" data-folder-id="{{this.folderId}}" data-tooltip="{{this.pinnedByName}} · {{this.pinnedAtLabel}}" {{#if ../canEdit}}draggable="true"{{/if}}>
                     <figure class="dsr-polaroid small{{#unless this.ownedByMe}} not-owned{{/unless}}" data-action="openPinnedClue">
-                        <img src="{{this.img}}" alt="" loading="lazy">
+                        <img src="{{this.img}}" alt="" loading="lazy" draggable="false">
                         <figcaption>{{this.name}}</figcaption>
                     </figure>
-                    {{#if ../canEdit}}<button type="button" class="icon unpin-button" data-action="unpinClue" data-tooltip="{{localize 'DETECTIVE_STORY.Case.Unpin'}}"><i class="fa-solid fa-xmark" inert></i></button>{{/if}}
+                    {{#if this.folderPath}}<span class="folder-path" data-tooltip="{{this.folderPath}}"><i class="fa-solid fa-folder" inert></i> {{this.folderPath}}</span>{{/if}}
+                    {{#if ../canEdit}}
+                    <button type="button" class="icon move-pinned-button" data-action="movePinnedClue" data-tooltip="{{localize 'DETECTIVE_STORY.ClueFolders.MoveTo'}}"><i class="fa-solid fa-folder-tree" inert></i></button>
+                    <button type="button" class="icon unpin-button" data-action="unpinClue" data-tooltip="{{localize 'DETECTIVE_STORY.Case.Unpin'}}"><i class="fa-solid fa-xmark" inert></i></button>
+                    {{/if}}
                 </li>
                 {{else}}
                 {{#unless canDrop}}<li class="empty-message">{{#if managesCases}}{{localize "DETECTIVE_STORY.Case.NoCluesAll"}}{{else}}{{localize "DETECTIVE_STORY.Case.NoClues"}}{{/if}}</li>{{/unless}}
                 {{/each}}
                 {{#if canDrop}}<li class="drop-hint"><i class="fa-solid fa-hand-pointer"></i> {{localize "DETECTIVE_STORY.Case.DropHint"}}</li>{{/if}}
             </ul>
+            </div>
         </section>
         <section class="case-section case-suspects">
             <h3>{{localize "DETECTIVE_STORY.Case.Suspects"}}</h3>

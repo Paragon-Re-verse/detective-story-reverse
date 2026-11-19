@@ -12,10 +12,21 @@ import { isBoardScene } from "../board/board-scenes.js";
 import { placeClueOnBoard } from "../board/clue-cards.js";
 import { openClueView } from "./clue-view.js";
 import { openPlayerClueEditor } from "./clue-editor.js";
-import { startTransfer } from "./transfer-dialogs.js";
+import { startTransfer, startFolderTransfer } from "./transfer-dialogs.js";
+import { getFolderScope, moveItemsToFolder, FOLDER_SCOPES } from "../data/clue-folders.js";
+import { resolveFolderId, getFolderPath } from "../data/folder-tree.js";
+import {
+  prepareFolderTree,
+  attachFolderTree,
+  matchesSelectedFolder,
+  validateSelectedFolder,
+  pickFolderDialog,
+  ALL_FOLDERS
+} from "./folder-tree.js";
 
 const { renderTemplate } = foundry.applications.handlebars;
 const ITEM_TEMPLATE = `${TEMPLATE_PATH}/partials/clue-list-item.hbs`;
+const FOLDER_TREE_TEMPLATE = `${TEMPLATE_PATH}/partials/folder-tree.hbs`;
 
 /** Порядок карточек: новые сверху, по названию, по типу, по делу. */
 const SORT_MODES = ["received", "name", "type", "case"];
@@ -42,6 +53,7 @@ export class ClueListApplication extends DetectiveApplication {
     this.selectedOriginIds = new Set();
     this.searchText = "";
     this.typeFilter = "";
+    this.selectedFolderId = ALL_FOLDERS;
   }
 
   /** Окно одно: ГМ переключает в нём игроков, игрок видит только свой список. */
@@ -56,6 +68,7 @@ export class ClueListApplication extends DetectiveApplication {
     this.ownerUser = ownerUser;
     this.selectionMode = false;
     this.selectedOriginIds.clear();
+    this.selectedFolderId = ALL_FOLDERS;
     this.render({ window: { title: this.title } });
   }
 
@@ -72,12 +85,14 @@ export class ClueListApplication extends DetectiveApplication {
       deleteClue: ClueListApplication.#onDeleteClue,
       toggleSelection: ClueListApplication.#onToggleSelection,
       toggleView: ClueListApplication.#onToggleView,
-      transferSelected: ClueListApplication.#onTransferSelected
+      transferSelected: ClueListApplication.#onTransferSelected,
+      moveClue: ClueListApplication.#onMoveClue,
+      moveSelected: ClueListApplication.#onMoveSelected
     }
   };
 
   static PARTS = {
-    list: { template: `${TEMPLATE_PATH}/apps/clue-list.hbs`, scrollable: [".clue-grid"] }
+    list: { template: `${TEMPLATE_PATH}/apps/clue-list.hbs`, scrollable: [".clue-grid", ".dsr-folder-tree"] }
   };
 
   get title() {
@@ -89,10 +104,21 @@ export class ClueListApplication extends DetectiveApplication {
     return this.ownerUser.id === game.user.id;
   }
 
+  /** Папки этого списка: игрок раскладывает свои, ГМ — любого игрока. */
+  get folderScope() {
+    return getFolderScope(FOLDER_SCOPES.user, this.ownerUser.id);
+  }
+
+  #prepareFolderTree() {
+    return prepareFolderTree(this.folderScope, { selectedFolderId: this.selectedFolderId, canTransfer: this.isOwnList });
+  }
+
   /** @inheritDoc */
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     this.caseIndex = buildCaseIndex();
+    this.folders = this.folderScope.readFolders();
+    this.selectedFolderId = validateSelectedFolder(this.folders, this.selectedFolderId);
     const clueItems = listPlayerClues(this.ownerUser).map((playerClue) => this.#buildItemContext(playerClue));
     const typeChoices = { "": localize("ClueList.AllTypes") };
     for (const clueType of getClueTypeList()) typeChoices[clueType.id] = clueType.name;
@@ -112,6 +138,8 @@ export class ClueListApplication extends DetectiveApplication {
       userChoices,
       ownerUserId: this.ownerUser.id,
       canTransfer: this.isOwnList,
+      canSelect: this.isOwnList || game.user.isGM,
+      folderTree: this.#prepareFolderTree(),
       selectionMode: this.selectionMode,
       selectedCount: this.selectedOriginIds.size,
       sortChoices,
@@ -149,6 +177,9 @@ export class ClueListApplication extends DetectiveApplication {
       receivedAt: playerClue.receivedAt ?? 0,
       hasNotes,
       notesPreview,
+      folderId: resolveFolderId(this.folders ?? {}, playerClue.folderId) ?? "",
+      folderPath: getFolderPath(this.folders ?? {}, playerClue.folderId),
+      canMove: this.isOwnList || game.user.isGM,
       locked: caseTags.some((caseTag) => caseTag.closed)
     };
   }
@@ -209,6 +240,12 @@ export class ClueListApplication extends DetectiveApplication {
       this.#refreshSelectionCount();
     });
 
+    attachFolderTree(this.element.querySelector(".clue-list-body"), {
+      getScope: () => this.folderScope,
+      onSelect: (folderId) => this.#selectFolder(folderId),
+      onDrop: (event, folderId) => this.#onDropOnFolder(event, folderId),
+      onTransfer: (folderId) => startFolderTransfer(folderId)
+    });
     for (const itemElement of this.element.querySelectorAll(".clue-item")) this.#attachDrag(itemElement);
     this.#applySort();
     this.#applyFilters();
@@ -242,12 +279,56 @@ export class ClueListApplication extends DetectiveApplication {
     });
   }
 
+  /** Выбрать папку без перерисовки: меняются подсветка в дереве и видимость карточек. */
+  #selectFolder(folderId) {
+    this.selectedFolderId = folderId;
+    for (const nodeElement of this.element.querySelectorAll(".dsr-folder-tree .folder-node")) {
+      nodeElement.classList.toggle("selected", nodeElement.dataset.folderId === folderId);
+    }
+    this.#applyFilters();
+  }
+
+  /**
+   * Улику из этого же списка бросили на папку. Если она отмечена в режиме выбора, переезжают все отмеченные.
+   * @param {DragEvent} event
+   * @param {string|null} folderId
+   */
+  async #onDropOnFolder(event, folderId) {
+    let dropData;
+    try {
+      dropData = JSON.parse(event.dataTransfer.getData("text/plain"));
+    } catch {
+      return;
+    }
+    if (dropData?.type !== "DetectiveStoryClue" || dropData.ownerUserId !== this.ownerUser.id) return;
+    let originIds = [dropData.originId];
+    if (this.selectionMode && this.selectedOriginIds.has(dropData.originId)) originIds = [...this.selectedOriginIds];
+    await moveItemsToFolder(this.folderScope, originIds, folderId);
+  }
+
+  /** Обновить дерево (счётчики) без перерисовки сетки. */
+  async #refreshFolderTree() {
+    const treeElement = this.element?.querySelector(".dsr-folder-tree");
+    if (!treeElement) return;
+    const treeHtml = await renderTemplate(FOLDER_TREE_TEMPLATE, this.#prepareFolderTree());
+    const template = document.createElement("template");
+    template.innerHTML = treeHtml.trim();
+    const newTreeElement = template.content.firstElementChild;
+    newTreeElement.scrollTop = treeElement.scrollTop;
+    treeElement.replaceWith(newTreeElement);
+  }
+
   #applyFilters() {
     let visibleCount = 0;
+    // Поиск идёт по всем папкам, а у найденной улики видно, в какой она папке (п. 21).
+    const ignoreFolder = Boolean(this.searchText);
+    const showFolderChips = ignoreFolder || this.selectedFolderId === ALL_FOLDERS;
+    this.element.querySelector(".clue-grid")?.classList.toggle("show-folder", showFolderChips);
     for (const itemElement of this.element.querySelectorAll(".clue-item")) {
       const matchesSearch = !this.searchText || itemElement.dataset.search.includes(this.searchText);
       const matchesType = !this.typeFilter || itemElement.dataset.typeId === this.typeFilter;
-      const visible = matchesSearch && matchesType;
+      const matchesFolder = ignoreFolder || matchesSelectedFolder(this.folders ?? {}, itemElement.dataset.folderId || null, this.selectedFolderId);
+      const visible = matchesSearch && matchesType && matchesFolder;
       itemElement.hidden = !visible;
       if (visible) visibleCount += 1;
     }
@@ -258,8 +339,9 @@ export class ClueListApplication extends DetectiveApplication {
   #refreshSelectionCount() {
     const countElement = this.element.querySelector("[data-selected-count]");
     if (countElement) countElement.textContent = String(this.selectedOriginIds.size);
-    const transferButton = this.element.querySelector("[data-action='transferSelected']");
-    if (transferButton) transferButton.disabled = this.selectedOriginIds.size === 0;
+    for (const buttonElement of this.element.querySelectorAll("[data-action='transferSelected'], [data-action='moveSelected']")) {
+      buttonElement.disabled = this.selectedOriginIds.size === 0;
+    }
   }
 
   #refreshBoardButtons() {
@@ -281,6 +363,11 @@ export class ClueListApplication extends DetectiveApplication {
    */
   async #onUserUpdated(user, changes) {
     if (user.id !== this.ownerUser.id || !this.rendered) return;
+    // Папки поменялись (название, порядок, удаление): пути на карточках тоже меняются — окно целиком.
+    if (getChangedSectionKeys(changes, "folders")) {
+      this.render();
+      return;
+    }
     const changedKeys = getChangedSectionKeys(changes, "clues");
     if (!changedKeys) return;
     if (changedKeys.deleted.includes("*")) {
@@ -303,6 +390,7 @@ export class ClueListApplication extends DetectiveApplication {
     if (noCluesElement) noCluesElement.hidden = hasItems;
     this.#applyFilters();
     this.#refreshSelectionCount();
+    await this.#refreshFolderTree();
   }
 
   /**
@@ -410,6 +498,20 @@ export class ClueListApplication extends DetectiveApplication {
       rejectClose: false
     });
     if (confirmed) await deletePlayerClue(this.ownerUser, playerClue.originId);
+  }
+
+  static async #onMoveClue(event, target) {
+    const playerClue = this.#getClue(target);
+    if (!playerClue) return;
+    const folderId = await pickFolderDialog(this.folderScope);
+    if (folderId !== undefined) await moveItemsToFolder(this.folderScope, [playerClue.originId], folderId);
+  }
+
+  static async #onMoveSelected() {
+    if (!this.selectedOriginIds.size) return;
+    const folderId = await pickFolderDialog(this.folderScope);
+    if (folderId === undefined) return;
+    await moveItemsToFolder(this.folderScope, [...this.selectedOriginIds], folderId);
   }
 
   static #onToggleSelection() {

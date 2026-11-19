@@ -12,6 +12,7 @@ import {
   getUserCharacterName
 } from "../data/transfers.js";
 import { whisperGameMasters, escapeText, GM_NOTE_TONES } from "../chat.js";
+import { buildFolderPayload } from "../data/clue-folders.js";
 
 const { DialogV2 } = foundry.applications.api;
 const { renderTemplate } = foundry.applications.handlebars;
@@ -68,6 +69,29 @@ export async function startTransfer(originIds) {
   return transferCount > 0;
 }
 
+/**
+ * Передать свою папку целиком (с подпапками): получатель примет её целиком или откажется (пп. 12, 29, 30).
+ * @param {string} folderId
+ * @returns {Promise<boolean>}
+ */
+export async function startFolderTransfer(folderId) {
+  const folderPayload = buildFolderPayload(game.user, folderId);
+  if (!folderPayload) return false;
+  const originIds = Object.keys(folderPayload.itemFolders);
+  if (!originIds.length) {
+    ui.notifications.warn(localize("ClueFolders.TransferEmpty"));
+    return false;
+  }
+  const recipientIds = await pickRecipients({
+    title: format("ClueFolders.TransferTitle", { name: folderPayload.folders[folderId].name }),
+    confirmLabel: localize("Transfer.Send")
+  });
+  if (!recipientIds) return false;
+  const transferCount = await sendTransfers(recipientIds, originIds, folderPayload);
+  if (transferCount) ui.notifications.info(localize("Transfer.Sent"));
+  return transferCount > 0;
+}
+
 let incomingQueueRunning = false;
 
 /**
@@ -101,7 +125,8 @@ async function askAboutTransfer(transfer) {
     senderName: transfer.senderName,
     senderPortrait: sender?.character?.img || sender?.avatar || CONST.DEFAULT_TOKEN,
     clues,
-    hasDuplicates: duplicateIds.length > 0
+    hasDuplicates: duplicateIds.length > 0,
+    folderName: transfer.folder?.folders?.[transfer.folder.rootId]?.name ?? ""
   });
   const accepted = await DialogV2.confirm({
     window: { title: localize("Transfer.ConfirmTitle"), icon: "fa-solid fa-envelope-open-text" },

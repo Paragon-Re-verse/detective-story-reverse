@@ -2,6 +2,7 @@
     <img class="sender-portrait" src="{{senderPortrait}}" alt="">
     <p>{{localize "DETECTIVE_STORY.Transfer.Offer" name=senderName}}</p>
 </header>
+{{#if folderName}}<p class="transfer-folder"><i class="fa-solid fa-folder-tree" inert></i> {{localize "DETECTIVE_STORY.ClueFolders.TransferOffer" name=folderName count=clues.length}}</p>{{/if}}
 <ul class="transfer-clues">
     {{#each clues}}
     <li class="transfer-clue{{#if this.isDuplicate}} duplicate{{/if}}">

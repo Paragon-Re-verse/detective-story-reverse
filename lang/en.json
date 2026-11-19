@@ -421,7 +421,7 @@
             "NoOpenCases": "No open cases.",
             "SelectCase": "Pick a case.",
             "NoClues": "The case has none of your clues.",
-            "DropHint": "Drag a clue here from the clue list",
+            "DropHint": "Drag a clue or a folder here from the clue list",
             "PinOnlyOwn": "You can only pin a clue from your own list.",
             "Unpin": "Unpin",
             "NoSuspects": "No suspects linked.",
@@ -587,6 +587,45 @@
         "VideoPlayer": {
             "Title": "Video recording",
             "Muted": "The browser started the video muted — turn the sound on in the player."
+        },
+        "ClueFolders": {
+            "New": "New folder",
+            "NewSubfolder": "New subfolder",
+            "NewTitle": "New folder",
+            "EditTitle": "Folder",
+            "All": "All",
+            "None": "No folder",
+            "Unnamed": "New folder",
+            "Name": "Name",
+            "Color": "Color",
+            "Icon": "Icon",
+            "IconImage": "Custom image",
+            "IconImageHint": "If an image is chosen, it replaces the icon from the set.",
+            "Transfer": "Hand over the folder",
+            "TransferTitle": "Who gets the folder “{name}”",
+            "TransferEmpty": "The folder has no clues: nothing to hand over.",
+            "TransferOffer": "Folder “{name}”, clues: {count}. It can only be accepted as a whole.",
+            "MoveTo": "Move to folder",
+            "MoveTitle": "Move to folder",
+            "Move": "Move",
+            "MoveSelected": "Move selected",
+            "MoveDenied": {
+                "cycle": "A folder can't be put inside itself or its subfolder.",
+                "depth": "Folders can be at most {depth} levels deep."
+            },
+            "TooDeep": "Folders can be at most {depth} levels deep.",
+            "NoPermission": "These folders can't be changed.",
+            "DeleteTitle": "Delete folder",
+            "DeleteEmpty": "Delete the folder “{name}”?",
+            "DeleteContents": "The folder “{name}” is not empty: {clues} clues, {folders} subfolders. What should be done?",
+            "DeleteZonesWarning": "These templates are used by search zones on scenes ({count} zones). After deletion those zones stop working.",
+            "DeleteFolderOnly": "Delete only the folder, move its contents one level up",
+            "DeleteWithClues": "Delete the folder with its clues",
+            "DeleteWithUnpin": "Delete the folder and unpin its clues from the case",
+            "DeleteWithTemplates": "Delete the folder with its templates",
+            "LockedKept": "Clues of a closed case were not deleted and moved one level up: {count}.",
+            "CopiedTo": "Folder “{folder}” given to {name}. New clues: {count}.",
+            "CaseOnlyFromList": "Only folders from the clue list can be moved into a case."
         }
     }
 }

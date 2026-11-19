@@ -2,6 +2,16 @@
 
 Русская версия: `CHANGELOG.ru.md`.
 
+## 1.1.0 — 2026-11-19
+
+- Clue folders in three places: the player's clue list, the GM library and each case. A folder has a name, any color and an icon (from a set of Font Awesome icons or any image). Subfolders up to 4 levels, manual order by dragging (drop on the top edge of a folder to place it before, on the rest to put it inside). The folder tree is on the left with “All” and “No folder”; counters include subfolders; collapsed folders are remembered on each client.
+- A clue is in one folder. Moving: drag a clue onto a folder, “Move to folder” on the card, or “Move selected” in selection mode (the GM can now use selection mode in any player's list too).
+- Search looks through all folders, and found clues show their folder path; sorting works inside the open folder. Clues that are found, given by the GM or handed over by a player land in “No folder”.
+- Handing over a whole folder: the “Hand over the folder” button on a folder in your own list opens the usual recipient picker; the recipient accepts the folder only as a whole. The copy with its subfolders lands at the root; clues the recipient already has stay where they are and are not duplicated; a folder with the same name becomes “Name (2)”.
+- The GM drags a library folder or another player's folder onto a player (in the GM window or in Foundry's player list): the player gets the same folder with subfolders and clues.
+- Case folders: the GM and profilers create folders inside a case and drag a whole folder from their clue list into the case — the case gets the same structure, the clues are pinned to it, and clues already pinned elsewhere in the case move into the new folder. A player sees only case folders that contain their own clues. A closed case's folders do not change.
+- Deleting a folder that is not empty shows its contents and offers “Delete only the folder” (contents move one level up) or deleting it together with the clues (in the library — with the templates, and the number of affected search zones is shown; in a case — unpinning the clues). A player can only delete the folder itself. Clues of a closed case are never deleted: they move one level up.
+- Export and import include library folders and case folders; player folders, like player clues, are not exported.
 ## 1.0.0 — 2026-10-04
 
 - Removed the “Board mode” button from the “Detective” group: board mode turns on by itself when a board scene opens.

@@ -1,0 +1,21 @@
+<li class="folder-branch">
+    <div class="folder-node{{#if selected}} selected{{/if}}" data-folder-id="{{id}}" data-folder-action="select" style="--folder-color: {{color}}" {{#if canEdit}}draggable="true"{{/if}}>
+        <span class="folder-toggle" {{#if children.length}}data-folder-action="toggle"{{/if}}>{{#if children.length}}<i class="fa-solid {{#if collapsed}}fa-caret-right{{else}}fa-caret-down{{/if}}" inert></i>{{/if}}</span>
+        {{#if iconIsImage}}<img class="folder-icon" src="{{icon}}" alt="" draggable="false">{{else}}<i class="{{icon}} folder-icon" inert></i>{{/if}}
+        <span class="folder-name" data-tooltip="{{name}}">{{name}}</span>
+        <span class="folder-count">{{itemCount}}</span>
+        <span class="folder-buttons">
+            {{#if canTransfer}}<a data-folder-action="transfer" data-tooltip="{{localize 'DETECTIVE_STORY.ClueFolders.Transfer'}}"><i class="fa-solid fa-share" inert></i></a>{{/if}}
+            {{#if canAddChild}}<a data-folder-action="create" data-tooltip="{{localize 'DETECTIVE_STORY.ClueFolders.NewSubfolder'}}"><i class="fa-solid fa-plus" inert></i></a>{{/if}}
+            {{#if canEdit}}
+            <a data-folder-action="edit" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen" inert></i></a>
+            <a data-folder-action="delete" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash" inert></i></a>
+            {{/if}}
+        </span>
+    </div>
+    {{#if children.length}}
+    <ul class="folder-children" {{#if collapsed}}hidden{{/if}}>
+        {{#each children}}{{> dsr-folder-node}}{{/each}}
+    </ul>
+    {{/if}}
+</li>

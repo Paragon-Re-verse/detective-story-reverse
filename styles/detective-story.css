@@ -1836,3 +1836,243 @@
 .detective-story .gm-footer {
   flex-wrap: wrap;
 }
+
+/* ---------- Папки улик: дерево слева, содержимое справа ---------- */
+
+.detective-story .folder-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.detective-story .folder-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .clue-list-body .folder-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.detective-story.gm-window .gm-library.active {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detective-story .gm-library .template-list {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.detective-story .case-clues .folder-layout {
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.detective-story .dsr-folder-tree {
+  flex: 0 0 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.5rem 4px;
+  border-right: 1px solid var(--color-border);
+}
+
+.detective-story .case-clues .dsr-folder-tree,
+.detective-story .gm-library .dsr-folder-tree {
+  flex-basis: 170px;
+  padding-top: 0;
+}
+
+.detective-story .dsr-folder-tree ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.detective-story .dsr-folder-tree .folder-children {
+  padding-left: 12px;
+}
+
+.detective-story .folder-create-root {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.detective-story .folder-node {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.detective-story .folder-node:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.detective-story .folder-node.selected {
+  border-color: var(--color-text-accent);
+  background: rgba(238, 155, 58, 0.08);
+}
+
+.detective-story .folder-node.drag-over {
+  border-color: var(--color-text-accent);
+  background: rgba(238, 155, 58, 0.2);
+}
+
+.detective-story .folder-node.drop-before {
+  box-shadow: inset 0 2px 0 var(--color-text-accent);
+}
+
+.detective-story .folder-toggle {
+  flex: 0 0 10px;
+  text-align: center;
+}
+
+.detective-story .folder-icon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  color: var(--folder-color, var(--color-text-secondary));
+  object-fit: cover;
+  border: none;
+  border-radius: 2px;
+}
+
+.detective-story .folder-node .folder-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detective-story .folder-count {
+  flex: 0 0 auto;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-11, 11px);
+}
+
+.detective-story .folder-buttons {
+  display: none;
+  flex: 0 0 auto;
+  gap: 5px;
+  font-size: var(--font-size-11, 11px);
+}
+
+.detective-story .folder-node:hover .folder-buttons {
+  display: flex;
+}
+
+.detective-story .folder-node:hover .folder-count {
+  display: none;
+}
+
+/* Путь папки на карточке — только в «Все» и при поиске */
+.detective-story .clue-grid:not(.show-folder) .folder-chip,
+.detective-story .clue-grid:not(.show-folder) .folder-path,
+.detective-story .template-list:not(.show-folder) .folder-path,
+.detective-story .pinned-clues:not(.show-folder) .folder-path {
+  display: none;
+}
+
+.detective-story .folder-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(15, 12, 20, 0.85);
+  color: #f7f3e8;
+  font-size: 9px;
+  line-height: 16px;
+}
+
+.detective-story .clue-row-meta .folder-path {
+  margin-left: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detective-story .pinned-clue {
+  flex-direction: column;
+  align-items: center;
+}
+
+.detective-story .pinned-clue .folder-path {
+  max-width: 104px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-11, 11px);
+}
+
+.detective-story .move-pinned-button {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  z-index: 1;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  min-height: 22px;
+  border-radius: 50%;
+  font-size: 10px;
+}
+
+.detective-story .selection-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.detective-story .transfer-folder {
+  margin: 0 0 6px;
+  font-weight: bold;
+}
+
+/* Окно папки: набор иконок */
+.detective-story .folder-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 30px);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.detective-story .folder-icon-choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.detective-story .folder-icon-choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.detective-story .folder-icon-choice:has(input:checked) {
+  border-color: var(--color-text-accent);
+  box-shadow: 0 0 4px var(--color-shadow-highlight, rgba(255, 100, 0, 0.5));
+}
+
+.detective-story .folder-icon-choice:has(input:focus-visible) {
+  outline: 2px dashed var(--color-text-accent);
+}

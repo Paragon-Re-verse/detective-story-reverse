@@ -23,6 +23,21 @@ import { enrichText, formatDateTime } from "./view-helpers.js";
 import { openSuspectDossier } from "./suspect-dossier.js";
 import { openTimeline } from "./timeline.js";
 import { openClueView } from "./clue-view.js";
+import { getFolderScope, moveItemsToFolder, pinFolderToCase, FOLDER_SCOPES } from "../data/clue-folders.js";
+import { resolveFolderId, getFolderPath } from "../data/folder-tree.js";
+import {
+  prepareFolderTree,
+  attachFolderTree,
+  matchesSelectedFolder,
+  validateSelectedFolder,
+  pickFolderDialog,
+  readFolderDrag,
+  toRealFolderId,
+  ALL_FOLDERS
+} from "./folder-tree.js";
+
+/** Перетаскивание улики внутри дела (между его папками). */
+const PINNED_DRAG_TYPE = "application/x-detective-story-pinned";
 
 const { DialogV2 } = foundry.applications.api;
 
@@ -36,6 +51,7 @@ export class CaseJournalApplication extends DetectiveApplication {
     super({ ...options, id: "detective-story-case-journal" });
     this.selectedCaseId = null;
     this.editingDetails = false;
+    this.selectedCaseFolderId = ALL_FOLDERS;
   }
 
   static DEFAULT_OPTIONS = {
@@ -52,6 +68,7 @@ export class CaseJournalApplication extends DetectiveApplication {
       deleteCase: CaseJournalApplication.#onDeleteCase,
       openTimeline: CaseJournalApplication.#onOpenTimeline,
       unpinClue: CaseJournalApplication.#onUnpinClue,
+      movePinnedClue: CaseJournalApplication.#onMovePinnedClue,
       openPinnedClue: CaseJournalApplication.#onOpenPinnedClue,
       linkSuspect: CaseJournalApplication.#onLinkSuspect,
       unlinkSuspect: CaseJournalApplication.#onUnlinkSuspect,
@@ -142,13 +159,25 @@ export class CaseJournalApplication extends DetectiveApplication {
     const caseData = getCase(this.selectedCaseId);
     if (!caseData) return null;
     const managesCases = canManageCases();
+    this.caseFolders = caseData.folders;
+    this.selectedCaseFolderId = validateSelectedFolder(caseData.folders, this.selectedCaseFolderId);
     const pinnedClues = Object.values(caseData.pinned)
       .filter((pinnedClue) => managesCases || userHasClue(game.user, pinnedClue.originId))
       .map((pinnedClue) => ({
         ...pinnedClue,
         pinnedAtLabel: formatDateTime(pinnedClue.pinnedAt),
-        ownedByMe: userHasClue(game.user, pinnedClue.originId)
+        ownedByMe: userHasClue(game.user, pinnedClue.originId),
+        folderId: resolveFolderId(caseData.folders, pinnedClue.folderId) ?? "",
+        folderPath: getFolderPath(caseData.folders, pinnedClue.folderId)
       }));
+    // Игрок видит только папки, где есть его улики (п. 24): счётчики считаются по видимым уликам.
+    const visibleItemFolders = {};
+    for (const pinnedClue of pinnedClues) visibleItemFolders[pinnedClue.originId] = pinnedClue.folderId || null;
+    const folderTree = prepareFolderTree(getFolderScope(FOLDER_SCOPES.case, caseData.id), {
+      selectedFolderId: this.selectedCaseFolderId,
+      itemFolders: visibleItemFolders,
+      hideEmpty: !managesCases
+    });
     const linkedSuspects = caseData.suspectIds.map((suspectId) => {
       const suspect = getSuspect(suspectId);
       if (suspect) return suspect;
@@ -163,6 +192,7 @@ export class CaseJournalApplication extends DetectiveApplication {
       label: getCaseLabel(caseData),
       enrichedDescription: await enrichText(caseData.description),
       pinnedClues,
+      folderTree,
       linkedSuspects,
       availableSuspects,
       isClosed,
@@ -250,6 +280,24 @@ export class CaseJournalApplication extends DetectiveApplication {
   async _onRender(context, options) {
     await super._onRender(context, options);
     if (!options.parts?.includes("cases")) return;
+    attachFolderTree(this.element.querySelector(".case-clues"), {
+      getScope: () => getFolderScope(FOLDER_SCOPES.case, this.selectedCaseId),
+      onSelect: (folderId) => {
+        this.selectedCaseFolderId = folderId;
+        for (const nodeElement of this.element.querySelectorAll(".case-clues .folder-node")) {
+          nodeElement.classList.toggle("selected", nodeElement.dataset.folderId === folderId);
+        }
+        this.#applyCaseFolderFilter();
+      },
+      onDrop: (event, folderId) => this.#onDropIntoCase(event, folderId)
+    });
+    for (const pinnedElement of this.element.querySelectorAll(".pinned-clue[draggable='true']")) {
+      pinnedElement.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData(PINNED_DRAG_TYPE, pinnedElement.dataset.originId);
+        event.dataTransfer.effectAllowed = "move";
+      });
+    }
+    this.#applyCaseFolderFilter();
     const dropZone = this.element.querySelector(".pinned-dropzone");
     if (!dropZone) return;
     // Бросать можно на всю карточку дела, а не только на узкую полоску «Улики»: подсвечивается сама полоска.
@@ -261,13 +309,48 @@ export class CaseJournalApplication extends DetectiveApplication {
     dropTarget.addEventListener("dragleave", (event) => {
       if (!dropTarget.contains(event.relatedTarget)) dropZone.classList.remove("drag-over");
     });
-    dropTarget.addEventListener("drop", (event) => this.#onDropClue(event, dropZone));
+    dropTarget.addEventListener("drop", (event) => {
+      event.preventDefault();
+      dropZone.classList.remove("drag-over");
+      // На карточку дела вне дерева: в открытую папку. В «Все» уже прикреплённая улика остаётся в своей папке.
+      let folderId;
+      if (this.selectedCaseFolderId !== ALL_FOLDERS) folderId = toRealFolderId(this.selectedCaseFolderId);
+      this.#onDropIntoCase(event, folderId);
+    });
   }
 
-  /** @param {DragEvent} event @param {HTMLElement} dropZone */
-  async #onDropClue(event, dropZone) {
-    event.preventDefault();
-    dropZone.classList.remove("drag-over");
+  /** Показать улики выбранной папки дела, в «Все» — с путём папки. */
+  #applyCaseFolderFilter() {
+    this.element.querySelector(".pinned-clues")?.classList.toggle("show-folder", this.selectedCaseFolderId === ALL_FOLDERS);
+    for (const pinnedElement of this.element.querySelectorAll(".pinned-clue")) {
+      pinnedElement.hidden = !matchesSelectedFolder(this.caseFolders ?? {}, pinnedElement.dataset.folderId || null, this.selectedCaseFolderId);
+    }
+  }
+
+  /**
+   * Бросили в дело: улику из списка (прикрепить в папку), папку из своего списка (прикрепить целиком, п. 9)
+   * или улику этого дела (переложить в другую папку).
+   * @param {DragEvent} event
+   * @param {string|null|undefined} folderId - папка дела; undefined — не менять папку уже прикреплённой улики
+   */
+  async #onDropIntoCase(event, folderId) {
+    const caseScope = getFolderScope(FOLDER_SCOPES.case, this.selectedCaseId);
+    if (!caseScope) return;
+    const pinnedOriginId = event.dataTransfer.getData(PINNED_DRAG_TYPE);
+    if (pinnedOriginId) {
+      if (folderId === undefined) return;
+      await moveItemsToFolder(caseScope, [pinnedOriginId], folderId);
+      return;
+    }
+    const folderDrag = readFolderDrag(event);
+    if (folderDrag) {
+      if (folderDrag.scopeType !== FOLDER_SCOPES.user) {
+        ui.notifications.warn(localize("ClueFolders.CaseOnlyFromList"));
+        return;
+      }
+      await pinFolderToCase(this.selectedCaseId, game.users.get(folderDrag.scopeOwner), folderDrag.folderId, folderId ?? null);
+      return;
+    }
     let dropData;
     try {
       dropData = JSON.parse(event.dataTransfer.getData("text/plain"));
@@ -275,13 +358,14 @@ export class CaseJournalApplication extends DetectiveApplication {
       return;
     }
     if (dropData?.type !== "DetectiveStoryClue") return;
-    const pinned = await pinClueToCase(this.selectedCaseId, dropData.originId, dropData.ownerUserId);
+    const pinned = await pinClueToCase(this.selectedCaseId, dropData.originId, dropData.ownerUserId, folderId);
     if (pinned === false) ui.notifications.warn(localize("Case.PinOnlyOwn"));
   }
 
   static #onSelectCase(event, target) {
     this.selectedCaseId = target.closest("[data-case-id]").dataset.caseId;
     this.editingDetails = false;
+    this.selectedCaseFolderId = ALL_FOLDERS;
     this.changeTab("cases", "primary");
     this.render({ parts: ["cases"] });
   }
@@ -349,6 +433,14 @@ export class CaseJournalApplication extends DetectiveApplication {
   static async #onUnpinClue(event, target) {
     const originId = target.closest("[data-origin-id]").dataset.originId;
     await unpinClueFromCase(this.selectedCaseId, originId);
+  }
+
+  static async #onMovePinnedClue(event, target) {
+    const originId = target.closest("[data-origin-id]").dataset.originId;
+    const caseScope = getFolderScope(FOLDER_SCOPES.case, this.selectedCaseId);
+    if (!caseScope) return;
+    const folderId = await pickFolderDialog(caseScope);
+    if (folderId !== undefined) await moveItemsToFolder(caseScope, [originId], folderId);
   }
 
   static #onOpenPinnedClue(event, target) {
