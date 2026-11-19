@@ -28,7 +28,9 @@ const PARTIAL_TEMPLATES = {
   "dsr-clue-list-item": `${TEMPLATE_PATH}/partials/clue-list-item.hbs`,
   "dsr-detection-fields": `${TEMPLATE_PATH}/partials/detection-fields.hbs`,
   "dsr-swatches": `${TEMPLATE_PATH}/partials/swatches.hbs`,
-  "dsr-vhs-screen": `${TEMPLATE_PATH}/partials/vhs-screen.hbs`
+  "dsr-vhs-screen": `${TEMPLATE_PATH}/partials/vhs-screen.hbs`,
+  "dsr-folder-tree": `${TEMPLATE_PATH}/partials/folder-tree.hbs`,
+  "dsr-folder-node": `${TEMPLATE_PATH}/partials/folder-node.hbs`
 };
 
 /** Изменился список профайлеров: ГМ переписывает права общих журналов. */

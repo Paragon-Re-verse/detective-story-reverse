@@ -6,7 +6,7 @@ import { exportSuspects, createSuspectWithId, updateSuspect, listSuspects } from
 import { exportCases, createCaseWithId, replaceCaseData, listCases } from "./cases.js";
 
 /**
- * Экспорт и импорт данных ГМ: типы, шаблоны, подозреваемые, дела с таймлайнами.
+ * Экспорт и импорт данных ГМ: типы, шаблоны с папками библиотеки, подозреваемые, дела с таймлайнами и папками.
  * Не попадают: улики, заметки и попытки игроков, сцены и зоны, сами файлы картинок и аудио.
  */
 
@@ -21,6 +21,7 @@ export function buildExportData() {
     formatVersion: EXPORT_FORMAT_VERSION,
     exportedAt: new Date().toISOString(),
     clueTypes: exportCustomClueTypes(),
+    libraryFolders: foundry.utils.deepClone(getSetting(SETTING_KEYS.libraryFolders) ?? {}),
     templates: exportClueTemplates(),
     suspects: exportSuspects(),
     cases: exportCases()
@@ -49,8 +50,11 @@ export function parseImportText(text) {
   if (Number(importData.formatVersion) > EXPORT_FORMAT_VERSION) throw new InvalidImportError("NewerVersion");
   let clueTypes = {};
   if (importData.clueTypes && typeof importData.clueTypes === "object") clueTypes = importData.clueTypes;
+  let libraryFolders = {};
+  if (importData.libraryFolders && typeof importData.libraryFolders === "object") libraryFolders = importData.libraryFolders;
   return {
     clueTypes,
+    libraryFolders,
     templates: readEntryList(importData.templates),
     suspects: readEntryList(importData.suspects),
     cases: readEntryList(importData.cases)
@@ -86,6 +90,15 @@ export function countImportConflicts(importData) {
  */
 export async function applyImport(importData, conflictMode) {
   await importCustomClueTypes(importData.clueTypes);
+
+  // Папки библиотеки — по id, как и шаблоны: при «Заменить» совпавшие перезаписываются, при «Пропустить» остаются.
+  const libraryFolders = foundry.utils.deepClone(getSetting(SETTING_KEYS.libraryFolders) ?? {});
+  for (const [folderId, folder] of Object.entries(importData.libraryFolders)) {
+    if (typeof folder?.id !== "string" || folder.id !== folderId) continue;
+    if (libraryFolders[folderId] && conflictMode !== CONFLICT_MODES.replace) continue;
+    libraryFolders[folderId] = folder;
+  }
+  await setSetting(SETTING_KEYS.libraryFolders, libraryFolders);
 
   for (const template of importData.templates) {
     if (game.journal.has(template.id)) {
@@ -127,6 +140,7 @@ export async function resetModuleData({ includePlayerData }) {
   ];
   if (journalIds.length) await JournalEntry.deleteDocuments(journalIds);
   await setSetting(SETTING_KEYS.clueTypes, {});
+  await setSetting(SETTING_KEYS.libraryFolders, {});
   await setSetting(SETTING_KEYS.caseCounter, 0);
   if (!includePlayerData) return;
   for (const user of game.users) {

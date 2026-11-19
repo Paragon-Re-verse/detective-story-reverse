@@ -9,7 +9,7 @@
         <button type="button" data-action="toggleView" data-tooltip="{{#if isRowsView}}{{localize 'DETECTIVE_STORY.ClueList.ViewGrid'}}{{else}}{{localize 'DETECTIVE_STORY.ClueList.ViewRows'}}{{/if}}">
             <i class="fa-solid {{#if isRowsView}}fa-table-cells-large{{else}}fa-list{{/if}}" inert></i>
         </button>
-        {{#if canTransfer}}
+        {{#if canSelect}}
         <button type="button" data-action="toggleSelection" class="{{#if selectionMode}}active{{/if}}" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.SelectionMode'}}">
             <i class="fa-solid fa-list-check"></i>
         </button>
@@ -18,14 +18,26 @@
     {{#if selectionMode}}
     <div class="selection-bar">
         <span>{{localize "DETECTIVE_STORY.ClueList.Selected"}}: <strong data-selected-count>{{selectedCount}}</strong></span>
-        <button type="button" data-action="transferSelected" {{disabled (not selectedCount)}}>
-            <i class="fa-solid fa-share"></i> {{localize "DETECTIVE_STORY.ClueList.TransferSelected"}}
-        </button>
+        <span class="selection-buttons">
+            <button type="button" data-action="moveSelected" {{disabled (not selectedCount)}}>
+                <i class="fa-solid fa-folder-tree"></i> {{localize "DETECTIVE_STORY.ClueFolders.MoveSelected"}}
+            </button>
+            {{#if canTransfer}}
+            <button type="button" data-action="transferSelected" {{disabled (not selectedCount)}}>
+                <i class="fa-solid fa-share"></i> {{localize "DETECTIVE_STORY.ClueList.TransferSelected"}}
+            </button>
+            {{/if}}
+        </span>
     </div>
     {{/if}}
-    <ul class="clue-grid{{#if selectionMode}} selection-mode{{/if}}{{#if isRowsView}} view-rows{{/if}}">
-        {{#each clues}}{{> dsr-clue-list-item}}{{/each}}
-    </ul>
-    <p class="no-clues empty-message" {{#if hasClues}}hidden{{/if}}>{{localize "DETECTIVE_STORY.ClueList.Empty"}}</p>
-    <p class="filter-empty empty-message" hidden>{{localize "DETECTIVE_STORY.ClueList.NothingFound"}}</p>
+    <div class="folder-layout">
+        {{> dsr-folder-tree folderTree}}
+        <div class="folder-content">
+            <ul class="clue-grid{{#if selectionMode}} selection-mode{{/if}}{{#if isRowsView}} view-rows{{/if}}">
+                {{#each clues}}{{> dsr-clue-list-item}}{{/each}}
+            </ul>
+            <p class="no-clues empty-message" {{#if hasClues}}hidden{{/if}}>{{localize "DETECTIVE_STORY.ClueList.Empty"}}</p>
+            <p class="filter-empty empty-message" hidden>{{localize "DETECTIVE_STORY.ClueList.NothingFound"}}</p>
+        </div>
+    </div>
 </div>

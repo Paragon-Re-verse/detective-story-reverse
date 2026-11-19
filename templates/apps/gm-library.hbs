@@ -3,9 +3,11 @@
         <input type="search" name="librarySearch" value="{{librarySearch}}" placeholder="{{localize 'DETECTIVE_STORY.Library.Search'}}">
         <button type="button" data-action="newTemplate"><i class="fa-solid fa-plus"></i> {{localize "DETECTIVE_STORY.Library.New"}}</button>
     </header>
-    <ul class="template-list">
+    <div class="folder-layout">
+    {{> dsr-folder-tree folderTree}}
+    <ul class="template-list folder-content">
         {{#each templates}}
-        <li class="template-row" data-template-id="{{this.id}}" data-search="{{this.searchIndex}}" draggable="true" data-tooltip="{{localize 'DETECTIVE_STORY.Grant.DragHint'}}" data-tooltip-direction="LEFT">
+        <li class="template-row" data-template-id="{{this.id}}" data-folder-id="{{this.folderId}}" data-search="{{this.searchIndex}}" draggable="true" data-tooltip="{{localize 'DETECTIVE_STORY.Grant.DragHint'}}" data-tooltip-direction="LEFT">
             <img class="template-image" src="{{this.img}}" alt="" loading="lazy" draggable="false">
             <div class="template-info">
                 <a class="template-name" data-action="editTemplate">{{this.name}}</a>
@@ -13,11 +15,13 @@
                     <span><img src="{{this.typeIcon}}" alt=""> {{this.typeName}}</span>
                     <span><i class="fa-solid fa-map"></i> {{this.zoneModeLabel}}</span>
                     <span><i class="fa-solid fa-thumbtack"></i> {{this.kindLabel}}</span>
+                    {{#if this.folderPath}}<span class="folder-path"><i class="fa-solid fa-folder"></i> {{this.folderPath}}</span>{{/if}}
                 </div>
                 {{#if this.tags.length}}<div class="tags">{{#each this.tags}}<span class="tag">{{this}}</span>{{/each}}</div>{{/if}}
             </div>
             <div class="template-buttons">
                 <button type="button" class="icon" data-action="grantTemplate" data-tooltip="{{localize 'DETECTIVE_STORY.Grant.Button'}}"><i class="fa-solid fa-gift"></i></button>
+                <button type="button" class="icon" data-action="moveTemplate" data-tooltip="{{localize 'DETECTIVE_STORY.ClueFolders.MoveTo'}}"><i class="fa-solid fa-folder-tree"></i></button>
                 <button type="button" class="icon" data-action="editTemplate" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen"></i></button>
                 <button type="button" class="icon" data-action="deleteTemplate" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash"></i></button>
             </div>
@@ -26,4 +30,5 @@
         <li class="empty-message">{{localize "DETECTIVE_STORY.Library.Empty"}}</li>
         {{/each}}
     </ul>
+    </div>
 </section>

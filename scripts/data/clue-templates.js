@@ -122,7 +122,8 @@ function readTemplate(journalEntry) {
     id: journalEntry.id,
     ...summary,
     detection: normalizeDetection(stored.detection),
-    visual: normalizeVisual(stored.visual)
+    visual: normalizeVisual(stored.visual),
+    folderId: stored.folderId ?? null
   };
 }
 
@@ -150,17 +151,17 @@ export function listClueTemplates() {
  */
 function buildTemplateFlag(templateData) {
   const summary = normalizeSummary(templateData);
-  return {
-    name: summary.name,
-    flag: {
-      img: summary.img,
-      typeId: summary.typeId,
-      description: summary.description,
-      tags: summary.tags,
-      detection: normalizeDetection(templateData.detection),
-      visual: normalizeVisual(templateData.visual)
-    }
+  const flag = {
+    img: summary.img,
+    typeId: summary.typeId,
+    description: summary.description,
+    tags: summary.tags,
+    detection: normalizeDetection(templateData.detection),
+    visual: normalizeVisual(templateData.visual)
   };
+  // Редактор папку не передаёт: тогда поле не пишется и шаблон остаётся в своей папке. Импорт передаёт.
+  if ("folderId" in templateData) flag.folderId = templateData.folderId ?? null;
+  return { name: summary.name, flag };
 }
 
 /**

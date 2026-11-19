@@ -26,6 +26,18 @@ import { openTemplateEditor, openPlayerClueEditor } from "./clue-editor.js";
 import { editClueTypeDialog } from "./clue-type-dialog.js";
 import { pickRecipients } from "./transfer-dialogs.js";
 import { openEventLog } from "./event-log.js";
+import { getFolderScope, moveItemsToFolder, copyFolderToUser, FOLDER_SCOPES } from "../data/clue-folders.js";
+import { resolveFolderId, getFolderPath } from "../data/folder-tree.js";
+import {
+  prepareFolderTree,
+  attachFolderTree,
+  matchesSelectedFolder,
+  validateSelectedFolder,
+  pickFolderDialog,
+  isFolderDrag,
+  readFolderDrag,
+  ALL_FOLDERS
+} from "./folder-tree.js";
 
 const { DialogV2 } = foundry.applications.api;
 const { renderTemplate } = foundry.applications.handlebars;
@@ -62,12 +74,30 @@ async function grantTemplateByDrop(templateId, userId) {
 }
 
 /**
- * Зона броска шаблона на элементе с data-user-id (строка игрока в окне ГМ или в списке игроков Foundry).
+ * Бросили папку на игрока: папка библиотеки или папка другого игрока копируется ему целиком (пп. 11, 33).
+ * @param {DragEvent} event
+ * @param {string} userId
+ */
+async function copyFolderByDrop(event, userId) {
+  const folderDrag = readFolderDrag(event);
+  const playerUser = game.users.get(userId);
+  if (!folderDrag || !playerUser) return;
+  if (playerUser.isGM) {
+    ui.notifications.warn(localize("Grant.OnlyPlayers"));
+    return;
+  }
+  if (folderDrag.scopeType !== FOLDER_SCOPES.library && folderDrag.scopeType !== FOLDER_SCOPES.user) return;
+  const sourceScope = getFolderScope(folderDrag.scopeType, folderDrag.scopeOwner);
+  if (sourceScope) await copyFolderToUser(sourceScope, folderDrag.folderId, playerUser);
+}
+
+/**
+ * Зона броска шаблона или папки на элементе с data-user-id (строка игрока в окне ГМ или в списке игроков Foundry).
  * @param {HTMLElement} element
  */
 function attachTemplateDrop(element) {
   element.addEventListener("dragover", (event) => {
-    if (!isTemplateDrag(event)) return;
+    if (!isTemplateDrag(event) && !isFolderDrag(event)) return;
     event.preventDefault();
     element.classList.add("template-drop-target");
   });
@@ -75,6 +105,12 @@ function attachTemplateDrop(element) {
     if (!element.contains(event.relatedTarget)) element.classList.remove("template-drop-target");
   });
   element.addEventListener("drop", (event) => {
+    if (isFolderDrag(event)) {
+      event.preventDefault();
+      element.classList.remove("template-drop-target");
+      copyFolderByDrop(event, element.dataset.userId);
+      return;
+    }
     if (!isTemplateDrag(event)) return;
     event.preventDefault();
     element.classList.remove("template-drop-target");
@@ -100,6 +136,7 @@ export class GameMasterWindow extends DetectiveApplication {
     super({ ...options, id: "detective-story-gm-window" });
     this.selectedPlayerId = getPlayerUsers()[0]?.id ?? null;
     this.librarySearch = "";
+    this.selectedLibraryFolderId = ALL_FOLDERS;
   }
 
   static DEFAULT_OPTIONS = {
@@ -120,6 +157,7 @@ export class GameMasterWindow extends DetectiveApplication {
       editTemplate: GameMasterWindow.#onEditTemplate,
       deleteTemplate: GameMasterWindow.#onDeleteTemplate,
       grantTemplate: GameMasterWindow.#onGrantTemplate,
+      moveTemplate: GameMasterWindow.#onMoveTemplate,
       newType: GameMasterWindow.#onNewType,
       editType: GameMasterWindow.#onEditType,
       deleteType: GameMasterWindow.#onDeleteType,
@@ -133,7 +171,7 @@ export class GameMasterWindow extends DetectiveApplication {
   static PARTS = {
     tabs: { template: "templates/generic/tab-navigation.hbs" },
     players: { template: `${TEMPLATE_PATH}/apps/gm-players.hbs`, scrollable: [".player-details"] },
-    library: { template: `${TEMPLATE_PATH}/apps/gm-library.hbs`, scrollable: [".template-list"] },
+    library: { template: `${TEMPLATE_PATH}/apps/gm-library.hbs`, scrollable: [".template-list", ".dsr-folder-tree"] },
     types: { template: `${TEMPLATE_PATH}/apps/gm-types.hbs`, scrollable: [".type-list"] },
     footer: { template: `${TEMPLATE_PATH}/apps/gm-footer.hbs` }
   };
@@ -160,12 +198,19 @@ export class GameMasterWindow extends DetectiveApplication {
       partContext.players = this.#preparePlayers();
       partContext.selectedPlayer = this.#prepareSelectedPlayer();
     } else if (partId === "library") {
+      this.libraryFolders = this.libraryScope.readFolders();
+      this.selectedLibraryFolderId = validateSelectedFolder(this.libraryFolders, this.selectedLibraryFolderId);
       partContext.templates = this.#prepareTemplates();
       partContext.librarySearch = this.librarySearch;
+      partContext.folderTree = prepareFolderTree(this.libraryScope, { selectedFolderId: this.selectedLibraryFolderId });
     } else if (partId === "types") {
       partContext.clueTypes = getClueTypeList();
     }
     return partContext;
+  }
+
+  get libraryScope() {
+    return getFolderScope(FOLDER_SCOPES.library);
   }
 
   #preparePlayers() {
@@ -217,6 +262,8 @@ export class GameMasterWindow extends DetectiveApplication {
         typeIcon: clueType.icon,
         zoneModeLabel: localize(`ZoneMode.${template.detection.zoneMode}`),
         kindLabel: localize(`Kind.${template.visual.kind}`),
+        folderId: resolveFolderId(this.libraryFolders, template.folderId) ?? "",
+        folderPath: getFolderPath(this.libraryFolders, template.folderId),
         searchIndex: [template.name, ...template.tags].join(" ").toLocaleLowerCase(game.i18n.lang)
       };
     });
@@ -258,6 +305,7 @@ export class GameMasterWindow extends DetectiveApplication {
     this.subscribe("updateSetting", (setting) => {
       if (setting.key === `${MODULE_ID}.${SETTING_KEYS.clueTypes}`) this.queuePartRender("players", "library", "types");
       if (setting.key === `${MODULE_ID}.${SETTING_KEYS.profilers}`) this.queuePartRender("players");
+      if (setting.key === `${MODULE_ID}.${SETTING_KEYS.libraryFolders}`) this.queuePartRender("library");
     });
   }
 
@@ -269,6 +317,20 @@ export class GameMasterWindow extends DetectiveApplication {
     }
     if (options.parts?.includes("tabs")) this.#attachTabSpring();
     if (!options.parts?.includes("library")) return;
+    attachFolderTree(this.element.querySelector(".gm-library"), {
+      getScope: () => this.libraryScope,
+      onSelect: (folderId) => {
+        this.selectedLibraryFolderId = folderId;
+        for (const nodeElement of this.element.querySelectorAll(".gm-library .folder-node")) {
+          nodeElement.classList.toggle("selected", nodeElement.dataset.folderId === folderId);
+        }
+        this.#applyLibraryFilter();
+      },
+      onDrop: async (event, folderId) => {
+        const templateId = event.dataTransfer.getData(TEMPLATE_DRAG_TYPE);
+        if (templateId) await moveItemsToFolder(this.libraryScope, [templateId], folderId);
+      }
+    });
     for (const templateRow of this.element.querySelectorAll(".template-row[draggable]")) {
       templateRow.addEventListener("dragstart", (event) => {
         event.dataTransfer.setData(TEMPLATE_DRAG_TYPE, templateRow.dataset.templateId);
@@ -290,14 +352,14 @@ export class GameMasterWindow extends DetectiveApplication {
     if (!playersTab) return;
     let springTimer = null;
     playersTab.addEventListener("dragenter", (event) => {
-      if (!isTemplateDrag(event) || springTimer) return;
+      if ((!isTemplateDrag(event) && !isFolderDrag(event)) || springTimer) return;
       springTimer = window.setTimeout(() => {
         springTimer = null;
         this.changeTab("players", "primary");
       }, TAB_SPRING_DELAY_MS);
     });
     playersTab.addEventListener("dragover", (event) => {
-      if (isTemplateDrag(event)) event.preventDefault();
+      if (isTemplateDrag(event) || isFolderDrag(event)) event.preventDefault();
     });
     playersTab.addEventListener("dragleave", () => {
       window.clearTimeout(springTimer);
@@ -305,9 +367,14 @@ export class GameMasterWindow extends DetectiveApplication {
     });
   }
 
+  /** Поиск идёт по всем папкам (у найденного шаблона виден путь папки), без поиска — только выбранная папка. */
   #applyLibraryFilter() {
+    const searching = Boolean(this.librarySearch);
+    this.element.querySelector(".template-list")?.classList.toggle("show-folder", searching || this.selectedLibraryFolderId === ALL_FOLDERS);
     for (const rowElement of this.element.querySelectorAll(".template-row")) {
-      rowElement.hidden = Boolean(this.librarySearch) && !rowElement.dataset.search.includes(this.librarySearch);
+      let visible = matchesSelectedFolder(this.libraryFolders ?? {}, rowElement.dataset.folderId || null, this.selectedLibraryFolderId);
+      if (searching) visible = rowElement.dataset.search.includes(this.librarySearch);
+      rowElement.hidden = !visible;
     }
   }
 
@@ -409,6 +476,12 @@ export class GameMasterWindow extends DetectiveApplication {
     if (!recipientIds) return;
     const addedCount = await grantCluesFromTemplates([templateId], recipientIds);
     ui.notifications.info(format("Grant.Done", { count: addedCount }));
+  }
+
+  static async #onMoveTemplate(event, target) {
+    const templateId = target.closest("[data-template-id]").dataset.templateId;
+    const folderId = await pickFolderDialog(this.libraryScope);
+    if (folderId !== undefined) await moveItemsToFolder(this.libraryScope, [templateId], folderId);
   }
 
   static async #onNewType() {

@@ -1,0 +1,24 @@
+<aside class="dsr-folder-tree" data-scope-type="{{scopeType}}" data-scope-owner="{{scopeOwner}}">
+    {{#if canEdit}}
+    <button type="button" class="folder-create-root" data-folder-action="create"><i class="fa-solid fa-folder-plus" inert></i> {{localize "DETECTIVE_STORY.ClueFolders.New"}}</button>
+    {{/if}}
+    <ul class="folder-branches">
+        <li class="folder-branch">
+            <div class="folder-node virtual{{#if selectedAll}} selected{{/if}}" data-folder-id="__all" data-folder-action="select">
+                <span class="folder-toggle"></span>
+                <i class="fa-solid fa-layer-group folder-icon" inert></i>
+                <span class="folder-name">{{localize "DETECTIVE_STORY.ClueFolders.All"}}</span>
+                <span class="folder-count">{{allCount}}</span>
+            </div>
+        </li>
+        <li class="folder-branch">
+            <div class="folder-node virtual{{#if selectedNone}} selected{{/if}}" data-folder-id="__none" data-folder-action="select">
+                <span class="folder-toggle"></span>
+                <i class="fa-regular fa-folder folder-icon" inert></i>
+                <span class="folder-name">{{localize "DETECTIVE_STORY.ClueFolders.None"}}</span>
+                <span class="folder-count">{{noneCount}}</span>
+            </div>
+        </li>
+        {{#each nodes}}{{> dsr-folder-node}}{{/each}}
+    </ul>
+</aside>

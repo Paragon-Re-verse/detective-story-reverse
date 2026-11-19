@@ -31,6 +31,7 @@ function readCase(journalEntry) {
     description: String(stored.description ?? ""),
     status,
     pinned: stored.pinned ?? {},
+    folders: stored.folders ?? {},
     suspectIds: Array.isArray(stored.suspectIds) ? stored.suspectIds : [],
     archivedSuspects: stored.archivedSuspects ?? {},
     timeline: { events: stored.timeline?.events ?? {} },
@@ -82,6 +83,7 @@ async function createCaseAsGameMaster(requester, { title, description }) {
           description: String(description ?? ""),
           status: CASE_STATUS.open,
           pinned: {},
+          folders: {},
           suspectIds: [],
           timeline: { events: {} },
           createdAt: Date.now(),
@@ -121,7 +123,7 @@ async function updateCaseFlag(caseId, changes, title) {
  * в окнах, ловит и диалог, открытый до того, как дело закрыли.
  * @returns {Promise<boolean>} false — дело закрыто, ничего не записано
  */
-async function updateOpenCaseFlag(caseId, changes, title) {
+export async function updateOpenCaseFlag(caseId, changes, title) {
   if (getCase(caseId)?.status === CASE_STATUS.closed) {
     ui.notifications.warn(localize("Case.ClosedReadOnly"));
     return false;
@@ -151,7 +153,7 @@ export async function setCaseClosed(caseId, closed) {
 }
 
 /** Дело для журнала событий: номер и название (подпись собирается при показе, на языке читателя). @param {object} caseData */
-function describeCase(caseData) {
+export function describeCase(caseData) {
   return { caseNumber: caseData.number, caseTitle: caseData.title };
 }
 
@@ -168,9 +170,10 @@ export async function deleteCase(caseId) {
  * @param {string} caseId
  * @param {string} originId
  * @param {string} [ownerUserId] - чей список улик был источником перетаскивания
+ * @param {string|null} [folderId] - папка дела; без неё улика остаётся в своей папке (или в корне, если новая)
  * @returns {Promise<boolean|null>} null — дело закрыто (уведомление уже показано)
  */
-export async function pinClueToCase(caseId, originId, ownerUserId) {
+export async function pinClueToCase(caseId, originId, ownerUserId, folderId) {
   if (!canManageCases()) return false;
   if (getCase(caseId)?.status === CASE_STATUS.closed) {
     ui.notifications.warn(localize("Case.ClosedReadOnly"));
@@ -183,20 +186,29 @@ export async function pinClueToCase(caseId, originId, ownerUserId) {
     if (!sourceClue) sourceClue = getClueTemplate(originId);
   }
   if (!sourceClue) return false;
-  await updateCaseFlag(caseId, {
-    [`pinned.${originId}`]: {
-      originId,
-      name: sourceClue.name,
-      img: sourceClue.img,
-      description: sourceClue.description,
-      pinnedBy: game.user.id,
-      pinnedByName: game.user.name,
-      pinnedAt: Date.now()
-    }
-  });
+  const pinnedRecord = buildPinnedClue(originId, sourceClue);
+  if (folderId !== undefined) pinnedRecord.folderId = folderId;
+  await updateCaseFlag(caseId, { [`pinned.${originId}`]: pinnedRecord });
   const caseData = getCase(caseId);
   if (caseData) await logEvent(LOG_EVENTS.pinned, { clue: sourceClue.name, ...describeCase(caseData) });
   return true;
+}
+
+/**
+ * Запись прикреплённой улики (снимок названия, картинки и описания).
+ * @param {string} originId
+ * @param {{name: string, img: string, description: string}} sourceClue
+ */
+export function buildPinnedClue(originId, sourceClue) {
+  return {
+    originId,
+    name: sourceClue.name,
+    img: sourceClue.img,
+    description: sourceClue.description,
+    pinnedBy: game.user.id,
+    pinnedByName: game.user.name,
+    pinnedAt: Date.now()
+  };
 }
 
 /** @param {string} caseId @param {string} originId */

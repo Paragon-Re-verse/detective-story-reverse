@@ -1,0 +1,24 @@
+<div class="form-group">
+    <label>{{localize "DETECTIVE_STORY.ClueFolders.Name"}}</label>
+    <div class="form-fields"><input type="text" name="name" value="{{folder.name}}" maxlength="100" autofocus></div>
+</div>
+<div class="form-group">
+    <label>{{localize "DETECTIVE_STORY.ClueFolders.Color"}}</label>
+    <div class="form-fields"><input type="color" name="color" value="{{folder.color}}"></div>
+</div>
+<fieldset class="folder-icon-picker">
+    <legend>{{localize "DETECTIVE_STORY.ClueFolders.Icon"}}</legend>
+    <div class="folder-icon-grid">
+        {{#each icons}}
+        <label class="folder-icon-choice">
+            <input type="radio" name="faIcon" value="{{this.icon}}" {{checked this.selected}}>
+            <i class="{{this.icon}}" inert></i>
+        </label>
+        {{/each}}
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.ClueFolders.IconImage"}}</label>
+        <div class="form-fields"><file-picker name="iconImage" type="image" value="{{iconImage}}"></file-picker></div>
+        <p class="hint">{{localize "DETECTIVE_STORY.ClueFolders.IconImageHint"}}</p>
+    </div>
+</fieldset>

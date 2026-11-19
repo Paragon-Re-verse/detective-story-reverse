@@ -19,6 +19,7 @@ The module is a deep rework of the Investigation Re:Verse prototype. The board e
 - **Search zones.** Any tile becomes a zone on the “Clue” tab of its settings. Modes “Background, no token” and “Battle map with token” (with a distance check). Skill, ability or formula rolls through dnd5e, a limited number of attempts, remaining attempts are hidden from players. The GM sees labels above zones: clue, check, DC, radius and attempts.
 - **Focus mode.** Each player turns it on; zones of the current scene where they haven't found anything yet are highlighted. A cursor hint: “Examine”, “Select your token” or “Get closer: ≈ N ft more”.
 - **Player clue list.** Tiles or rows, sorting (newest, by name, by type, by case), search by name and tags, type filter, “new” badge, personal notes (with an icon on the card), “Show in chat”, “Place on the board”, handing over one clue or a selection.
+- **Clue folders** in the player's list, the GM library and every case: name, color, an icon or image, subfolders up to 4 levels, manual order, drag and drop. A whole folder can be handed to another player, given by the GM to a player, or moved by a profiler from their list into a case.
 - **Giving and handing over.** The GM gives clues instantly (including to offline players), also by dragging a template from the library onto a player. Players hand clues to each other without a GM: “Yes / No” windows one at a time, a duplicate warning, and a whisper to the GM.
 - **Discovery animation** in the middle of the screen (can be turned off in the module settings).
 - **Suspect dossiers** with personal notes for each player. A deleted dossier stays in its cases as an archived suspect.
@@ -41,6 +42,8 @@ The module is a deep rework of the Investigation Re:Verse prototype. The board e
 | Creating cases | yes | by setting | no |
 | Editing cases and timelines | yes | yes | read |
 | Deleting board cards | yes | no | no |
+| Folders in a clue list | any player's | own | own |
+| Case folders | yes | yes | read |
 
 Profilers are chosen in the module settings. The restrictions rely on Foundry permissions: a player writes only to their own flags, shared journals belong to the GM and profilers, and actions relayed through the GM (socketlib) are checked on the GM's side.
 
