@@ -2,6 +2,10 @@
 
 Русская версия: `CHANGELOG.ru.md`.
 
+## 1.2.1 — 2026-11-21
+
+- Screenshots in the GM Guide (pages 3, 6, 10, 11, 12), in Russian and English.
+
 ## 1.2.0 — 2026-11-20
 
 - Clue chains: a search zone can require clues (“Requires clues” on the “Clue” tab of the tile). Until a player has all of them, the zone does not exist for that player: it isn't highlighted in focus mode and clicking it does nothing, no attempts are spent. Each player's own clues count; another player can hand over the “key”. The GM's zone label shows “Requires: …”.
