@@ -1,0 +1,20 @@
+<div class="dsr-picker">
+    <div class="picker-toolbar">
+        <input type="search" class="picker-search" placeholder="{{localize 'DETECTIVE_STORY.Common.Search'}}" aria-label="{{localize 'DETECTIVE_STORY.Common.Search'}}">
+        {{#if toggleLabel}}<label class="checkbox picker-toggle"><input type="checkbox" data-picker-toggle> {{toggleLabel}}</label>{{/if}}
+    </div>
+    <ul class="picker-grid">
+        {{#each items}}
+        <li data-search="{{this.searchIndex}}"{{#if this.extra}} data-extra hidden{{/if}}>
+            <label class="picker-chip{{#if this.badge}} has-badge{{/if}}" data-tooltip="{{this.name}}">
+                <input type="checkbox" name="{{../name}}" value="{{this.id}}" {{checked this.selected}}>
+                {{#if this.img}}<img src="{{this.img}}" alt="" loading="lazy">{{/if}}
+                <span class="picker-name">{{this.name}}</span>
+                {{#if this.badge}}<span class="picker-badge">{{this.badge}}</span>{{/if}}
+            </label>
+        </li>
+        {{else}}
+        <li class="empty-message">{{emptyText}}</li>
+        {{/each}}
+    </ul>
+</div>

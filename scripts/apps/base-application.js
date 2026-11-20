@@ -55,7 +55,7 @@ export class DetectiveApplication extends HandlebarsApplicationMixin(Application
     super._onClose(options);
     for (const [hookName, hookId] of this.#hookSubscriptions) Hooks.off(hookName, hookId);
     this.#hookSubscriptions = [];
-    this.#rememberPosition();
+    if (this.options.window?.positioned !== false) this.#rememberPosition();
   }
 
   #rememberPosition() {
@@ -69,6 +69,32 @@ export class DetectiveApplication extends HandlebarsApplicationMixin(Application
     savedPositions[this.id] = rememberedPosition;
     setSetting(SETTING_KEYS.windowPositions, savedPositions);
   }
+}
+
+/**
+ * Окно, которое можно показать внутри другого окна (вкладка дела): без рамки и собственного положения,
+ * элемент вставляется в заданный контейнер. Тот же класс в обычном режиме — отдельное окно.
+ * @param {typeof DetectiveApplication} BaseApplication
+ */
+export function EmbeddedMixin(BaseApplication) {
+  return class EmbeddedApplication extends BaseApplication {
+    static DEFAULT_OPTIONS = {
+      classes: ["embedded-panel"],
+      window: { frame: false, positioned: false }
+    };
+
+    /** Вставить (или переставить после перерисовки хозяина) в контейнер. @param {HTMLElement} hostElement */
+    attachTo(hostElement) {
+      this.hostElement = hostElement;
+      if (this.rendered && this.element.parentElement !== hostElement) hostElement.replaceChildren(this.element);
+    }
+
+    /** @inheritDoc */
+    _insertElement(element) {
+      if (!this.hostElement) return super._insertElement(element);
+      this.hostElement.replaceChildren(element);
+    }
+  };
 }
 
 /**

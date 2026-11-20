@@ -1,0 +1,25 @@
+<section class="tab{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    <p class="hint">{{localize "DETECTIVE_STORY.Levels.EditorHint"}}</p>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Levels.Count"}}</label>
+        <div class="form-fields"><select name="levelCount">{{selectOptions levelCountChoices selected=levelCount}}</select></div>
+    </div>
+    <fieldset class="level-slot level-one">
+        <legend>{{localize "DETECTIVE_STORY.Levels.LevelN" number=1}}</legend>
+        <p class="hint">{{localize "DETECTIVE_STORY.Levels.LevelOneHint"}}</p>
+    </fieldset>
+    {{#each levelSlots}}
+    <fieldset class="level-slot" data-level-number="{{this.number}}" {{#unless this.active}}hidden{{/unless}}>
+        <legend>{{localize "DETECTIVE_STORY.Levels.LevelN" number=this.number}}</legend>
+        <div class="form-group">
+            <label>{{localize "DETECTIVE_STORY.Detection.Check"}}</label>
+            <div class="form-fields">{{> dsr-check-field name=(concat "levels." this.index ".check") value=this.check checkSuggestions=../checkSuggestions}}</div>
+        </div>
+        <div class="form-group">
+            <label>{{localize "DETECTIVE_STORY.Detection.Difficulty"}}</label>
+            <div class="form-fields"><input type="text" name="levels.{{this.index}}.dc" value="{{this.dc}}"></div>
+        </div>
+        <prose-mirror name="levels.{{this.index}}.text" value="{{this.text}}"></prose-mirror>
+    </fieldset>
+    {{/each}}
+</section>

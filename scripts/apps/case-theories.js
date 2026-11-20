@@ -1,6 +1,6 @@
 import { MODULE_ID, TEMPLATE_PATH } from "../constants.js";
 import { localize, format } from "../i18n.js";
-import { DetectiveApplication, openSingleton } from "./base-application.js";
+import { DetectiveApplication, openSingleton, EmbeddedMixin } from "./base-application.js";
 import { isProfiler } from "../permissions.js";
 import {
   getCase,
@@ -11,15 +11,18 @@ import {
   closeCaseWithSolution,
   compareTheory,
   getArchivedSuspect,
+  canManageCase,
   CASE_STATUS,
   THEORY_VERDICTS
 } from "../data/cases.js";
-import { getSuspect, listSuspects } from "../data/suspects.js";
+import { getSuspect } from "../data/suspects.js";
 import { listPlayerClues, getPlayerClue } from "../data/player-clues.js";
 import { getClueTemplate, listClueTemplates } from "../data/clue-templates.js";
 import { listCaseClueIds } from "../data/case-progress.js";
 import { formatDateTime } from "./view-helpers.js";
 import { escapeText } from "../chat.js";
+import { offerSuspectShelving, buildSuspectPickerItems } from "./suspect-shelving.js";
+import { attachPickers, toPickerItem } from "./view-helpers.js";
 
 const { DialogV2 } = foundry.applications.api;
 const { renderTemplate } = foundry.applications.handlebars;
@@ -32,7 +35,7 @@ const { renderTemplate } = foundry.applications.handlebars;
 export class CaseTheoriesApplication extends DetectiveApplication {
   /** @param {string} caseId */
   constructor(caseId, options = {}) {
-    super({ ...options, id: CaseTheoriesApplication.buildId(caseId) });
+    super({ id: CaseTheoriesApplication.buildId(caseId), ...options });
     this.caseId = caseId;
   }
 
@@ -87,7 +90,7 @@ export class CaseTheoriesApplication extends DetectiveApplication {
     return Object.assign(context, {
       isGameMaster,
       isClosed,
-      canSubmit: isProfiler() && !isClosed,
+      canSubmit: isProfiler() && canManageCase(caseData) && !isClosed,
       theories,
       showSolution: isGameMaster || solution.revealed,
       solution: { ...describeVersion(solution), text: solution.text, revealed: solution.revealed, isEmpty: solutionIsEmpty }
@@ -108,13 +111,11 @@ export class CaseTheoriesApplication extends DetectiveApplication {
   static async #onSubmitTheory() {
     const caseData = getCase(this.caseId);
     if (!caseData) return;
-    let suspects = caseData.suspectIds.map((suspectId) => getSuspect(suspectId)).filter(Boolean);
-    if (!suspects.length) suspects = listSuspects();
     // Улики версии — из своего списка; прикреплённые к делу идут первыми.
     const ownClues = listPlayerClues(game.user).sort((first, second) => Number(Boolean(caseData.pinned[second.originId])) - Number(Boolean(caseData.pinned[first.originId])));
     const formValues = await theoryFormDialog({
       title: localize("Theories.Submit"),
-      suspects: suspects.map((suspect) => ({ id: suspect.id, name: suspect.name, portrait: suspect.portrait })),
+      linkedSuspectIds: caseData.suspectIds,
       clues: ownClues.map((playerClue) => ({ id: playerClue.originId, name: playerClue.name, img: playerClue.img, tags: playerClue.tags }))
     });
     if (!formValues) return;
@@ -133,7 +134,7 @@ export class CaseTheoriesApplication extends DetectiveApplication {
     if (!templates.length) templates = listClueTemplates();
     const formValues = await theoryFormDialog({
       title: localize("Theories.EditSolution"),
-      suspects: listSuspects().map((suspect) => ({ id: suspect.id, name: suspect.name, portrait: suspect.portrait })),
+      linkedSuspectIds: caseData.suspectIds,
       clues: templates.map((template) => ({ id: template.id, name: template.name, img: template.img, tags: template.tags })),
       initial: caseData.solution,
       showText: true
@@ -146,6 +147,7 @@ export class CaseTheoriesApplication extends DetectiveApplication {
     if (reveal === null) return;
     await closeCaseWithSolution(this.caseId, reveal);
     if (reveal) await postSolutionToChat(this.caseId);
+    await offerSuspectShelving(this.caseId);
   }
 
   static async #onRevealSolution() {
@@ -206,16 +208,13 @@ function describeVersion(version) {
  * Форма версии или разгадки: подозреваемые, мотив, способ, улики (с поиском), для разгадки — текст развязки.
  * @returns {Promise<{suspectIds: string[], clueIds: string[], motive: string, method: string, text: string}|null>}
  */
-async function theoryFormDialog({ title, suspects, clues, initial = null, showText = false }) {
+async function theoryFormDialog({ title, linkedSuspectIds, clues, initial = null, showText = false }) {
   const selectedSuspects = new Set(initial?.suspectIds ?? []);
   const selectedClues = new Set(initial?.clueIds ?? []);
   const content = await renderTemplate(`${TEMPLATE_PATH}/apps/theory-form.hbs`, {
-    suspects: suspects.map((suspect) => ({ ...suspect, selected: selectedSuspects.has(suspect.id) })),
-    clues: clues.map((clue) => ({
-      ...clue,
-      selected: selectedClues.has(clue.id),
-      searchIndex: [clue.name, ...(clue.tags ?? [])].join(" ").toLocaleLowerCase(game.i18n.lang)
-    })),
+    suspects: buildSuspectPickerItems(linkedSuspectIds, selectedSuspects),
+    suspectToggleLabel: localize("Suspect.SearchShelved"),
+    clues: clues.map((clue) => toPickerItem({ ...clue, selected: selectedClues.has(clue.id) })),
     motive: initial?.motive ?? "",
     method: initial?.method ?? "",
     text: initial?.text ?? "",
@@ -226,15 +225,7 @@ async function theoryFormDialog({ title, suspects, clues, initial = null, showTe
     classes: ["detective-story", "theory-form-dialog"],
     position: { width: 520 },
     content,
-    render: (event, dialog) => {
-      const searchInput = dialog.element.querySelector("input[name='clueSearch']");
-      searchInput?.addEventListener("input", () => {
-        const searchText = searchInput.value.trim().toLocaleLowerCase(game.i18n.lang);
-        for (const rowElement of dialog.element.querySelectorAll("[data-search]")) {
-          rowElement.hidden = Boolean(searchText) && !rowElement.dataset.search.includes(searchText);
-        }
-      });
-    },
+    render: (event, dialog) => attachPickers(dialog.element),
     buttons: [
       {
         action: "save",
@@ -319,3 +310,6 @@ export async function onCaseSolutionRevealed(journalEntry, changes) {
 export function openCaseTheories(caseId) {
   return openSingleton(CaseTheoriesApplication.buildId(caseId), () => new CaseTheoriesApplication(caseId));
 }
+
+/** Тот же вид внутри вкладки журнала дела. */
+export class EmbeddedTheories extends EmbeddedMixin(CaseTheoriesApplication) {}

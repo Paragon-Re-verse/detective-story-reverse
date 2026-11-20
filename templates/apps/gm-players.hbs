@@ -26,52 +26,58 @@
                 <button type="button" data-action="grantToPlayer"><i class="fa-solid fa-gift"></i> {{localize "DETECTIVE_STORY.Grant.Button"}}</button>
             </div>
         </header>
-        <h4>{{localize "DETECTIVE_STORY.GameMasterWindow.PlayerClues"}} ({{selectedPlayer.clues.length}})</h4>
-        <ul class="mini-clue-list">
-            {{#each selectedPlayer.clues}}
-            <li data-origin-id="{{this.originId}}">
-                <img src="{{this.img}}" alt="" loading="lazy">
-                <a class="clue-name" data-action="viewPlayerClue">{{this.name}}</a>
-                <span class="clue-type"><img src="{{this.typeIcon}}" alt=""> {{this.typeName}}</span>
-                <span class="lock-slot">{{#if this.locked}}<i class="fa-solid fa-lock" data-tooltip="{{localize 'DETECTIVE_STORY.Case.ClueLocked'}}"></i>{{/if}}</span>
-                <button type="button" class="icon" data-action="editPlayerClue" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen"></i></button>
-                <button type="button" class="icon" data-action="deletePlayerClue" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash"></i></button>
-            </li>
-            {{else}}
-            <li class="empty-message">{{localize "DETECTIVE_STORY.GameMasterWindow.NoClues"}}</li>
-            {{/each}}
-        </ul>
-        <h4 class="zones-header">
-            {{localize "DETECTIVE_STORY.GameMasterWindow.Attempts"}}
-            <button type="button" data-action="resetAllZones"><i class="fa-solid fa-rotate-left"></i> {{localize "DETECTIVE_STORY.GameMasterWindow.ResetAllZones"}}</button>
-        </h4>
-        <table class="zone-table">
-            <thead>
-                <tr>
-                    <th>{{localize "DETECTIVE_STORY.GameMasterWindow.Scene"}}</th>
-                    <th>{{localize "DETECTIVE_STORY.GameMasterWindow.Clue"}}</th>
-                    <th>{{localize "DETECTIVE_STORY.GameMasterWindow.AttemptsColumn"}}</th>
-                    <th>{{localize "DETECTIVE_STORY.GameMasterWindow.Found"}}</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each selectedPlayer.zones}}
-                <tr data-tile-id="{{this.tileId}}" class="{{#if this.touched}}touched{{/if}}">
-                    <td>{{this.sceneName}}</td>
-                    <td>{{this.templateName}}</td>
-                    <td>{{this.attemptsLabel}}</td>
-                    <td>{{#if this.found}}<i class="fa-solid fa-check"></i>{{/if}}</td>
-                    <td class="zone-buttons">
-                        <button type="button" class="icon" data-action="resetZone" data-tooltip="{{localize 'DETECTIVE_STORY.GameMasterWindow.ResetForPlayer'}}"><i class="fa-solid fa-rotate-left"></i></button>
-                        <button type="button" class="icon" data-action="resetZoneAllPlayers" data-tooltip="{{localize 'DETECTIVE_STORY.GameMasterWindow.ResetForAll'}}"><i class="fa-solid fa-users"></i></button>
-                    </td>
-                </tr>
-                {{else}}
-                <tr><td colspan="5" class="empty-message">{{localize "DETECTIVE_STORY.GameMasterWindow.NoZones"}}</td></tr>
-                {{/each}}
-            </tbody>
-        </table>
+        <div class="player-filters">
+            <select name="playerCaseFilter" data-tooltip="{{localize 'DETECTIVE_STORY.GameMasterWindow.CaseFilter'}}">{{selectOptions caseFilterChoices selected=playerCaseFilter}}</select>
+            <input type="search" name="playerClueSearch" value="{{playerClueSearch}}" placeholder="{{localize 'DETECTIVE_STORY.ClueList.Search'}}">
+        </div>
+        <details class="gm-section" open>
+            <summary>{{localize "DETECTIVE_STORY.GameMasterWindow.PlayerClues"}} ({{selectedPlayer.clues.length}})</summary>
+            <ul class="mini-clue-list">
+                {{#each selectedPlayer.clues}}{{> dsr-mini-clue}}{{else}}<li class="empty-message">{{localize "DETECTIVE_STORY.GameMasterWindow.NoClues"}}</li>{{/each}}
+            </ul>
+        </details>
+        {{#if selectedPlayer.otherClues.length}}
+        <details class="gm-section">
+            <summary>{{localize "DETECTIVE_STORY.GameMasterWindow.NoCase"}} ({{selectedPlayer.otherClues.length}})</summary>
+            <ul class="mini-clue-list">
+                {{#each selectedPlayer.otherClues}}{{> dsr-mini-clue}}{{/each}}
+            </ul>
+        </details>
+        {{/if}}
+        <details class="gm-section" open>
+            <summary class="zones-header">
+                {{localize "DETECTIVE_STORY.GameMasterWindow.Attempts"}} ({{selectedPlayer.zones.length}})
+                <label class="checkbox"><input type="checkbox" name="onlyTouchedZones" {{checked onlyTouchedZones}}> {{localize "DETECTIVE_STORY.GameMasterWindow.OnlyTouched"}}</label>
+                <button type="button" data-action="resetAllZones"><i class="fa-solid fa-rotate-left"></i> {{localize "DETECTIVE_STORY.GameMasterWindow.ResetAllZones"}}</button>
+            </summary>
+            <table class="zone-table">
+                <thead>
+                    <tr>
+                        <th>{{localize "DETECTIVE_STORY.GameMasterWindow.Scene"}}</th>
+                        <th>{{localize "DETECTIVE_STORY.GameMasterWindow.Clue"}}</th>
+                        <th>{{localize "DETECTIVE_STORY.GameMasterWindow.AttemptsColumn"}}</th>
+                        <th>{{localize "DETECTIVE_STORY.GameMasterWindow.Found"}}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each selectedPlayer.zones}}
+                    <tr data-tile-id="{{this.tileId}}" class="{{#if this.touched}}touched{{/if}}">
+                        <td>{{this.sceneName}}</td>
+                        <td>{{this.templateName}}</td>
+                        <td>{{this.attemptsLabel}}</td>
+                        <td>{{#if this.found}}<i class="fa-solid fa-check"></i>{{/if}}</td>
+                        <td class="zone-buttons">
+                            <button type="button" class="icon" data-action="resetZone" data-tooltip="{{localize 'DETECTIVE_STORY.GameMasterWindow.ResetForPlayer'}}"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button type="button" class="icon" data-action="resetZoneAllPlayers" data-tooltip="{{localize 'DETECTIVE_STORY.GameMasterWindow.ResetForAll'}}"><i class="fa-solid fa-users"></i></button>
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr><td colspan="5" class="empty-message">{{localize "DETECTIVE_STORY.GameMasterWindow.NoZones"}}</td></tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </details>
         {{else}}
         <p class="empty-message">{{localize "DETECTIVE_STORY.GameMasterWindow.SelectPlayer"}}</p>
         {{/if}}

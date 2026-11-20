@@ -6,6 +6,7 @@
         <input type="search" name="search" value="{{searchText}}" placeholder="{{localize 'DETECTIVE_STORY.ClueList.Search'}}">
         <select name="typeFilter">{{selectOptions typeChoices selected=typeFilter}}</select>
         <select name="sortMode" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.SortBy'}}">{{selectOptions sortChoices selected=sortMode}}</select>
+        <button type="button" data-action="toggleCurrentCases" class="{{#if onlyCurrentCases}}active{{/if}}" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.OnlyCurrentCases'}}"><i class="fa-solid fa-folder-open"></i></button>
         <button type="button" data-action="toggleView" data-tooltip="{{#if isRowsView}}{{localize 'DETECTIVE_STORY.ClueList.ViewGrid'}}{{else}}{{localize 'DETECTIVE_STORY.ClueList.ViewRows'}}{{/if}}">
             <i class="fa-solid {{#if isRowsView}}fa-table-cells-large{{else}}fa-list{{/if}}" inert></i>
         </button>

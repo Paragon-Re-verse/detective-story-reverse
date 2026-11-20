@@ -8,6 +8,7 @@
             <li class="case-row{{#if this.selected}} selected{{/if}}" data-case-id="{{this.id}}" data-action="selectCase">
                 <span class="case-badge">{{localize "DETECTIVE_STORY.Case.NumberBadge" number=this.number}}</span>
                 <span class="case-title">{{this.title}}</span>
+                {{#if this.memberCount}}<span class="case-members-count" data-tooltip="{{this.memberNames}}"><i class="fa-solid fa-users" inert></i> {{this.memberCount}}</span>{{/if}}
             </li>
             {{else}}
             <li class="empty-message">{{localize "DETECTIVE_STORY.Case.NoOpenCases"}}</li>
@@ -24,14 +25,11 @@
             <h2><span class="case-badge large" data-tooltip="{{label}}">{{localize "DETECTIVE_STORY.Case.NumberBadge" number=number}}</span> {{title}}</h2>
             {{/if}}
             <div class="case-buttons">
-                <button type="button" data-action="openTimeline"><i class="fa-solid fa-timeline"></i> {{localize "DETECTIVE_STORY.Timeline.Title"}}</button>
-                {{#if ../canManageCases}}
-                <button type="button" data-action="openTheories"><i class="fa-solid fa-lightbulb"></i> {{localize "DETECTIVE_STORY.Theories.Title"}}</button>
-                <button type="button" data-action="openProgress"><i class="fa-solid fa-chart-simple"></i> {{localize "DETECTIVE_STORY.Progress.Title"}}</button>
+                {{#if managesCases}}
                 {{#if isClosed}}
-                <button type="button" data-action="reopenCase"><i class="fa-solid fa-lock-open"></i> {{localize "DETECTIVE_STORY.Case.Reopen"}}</button>
+                <button type="button" class="icon" data-action="reopenCase" data-tooltip="{{localize 'DETECTIVE_STORY.Case.Reopen'}}"><i class="fa-solid fa-lock-open"></i></button>
                 {{else}}
-                <button type="button" data-action="closeCase"><i class="fa-solid fa-lock"></i> {{localize "DETECTIVE_STORY.Case.Close"}}</button>
+                <button type="button" class="icon" data-action="closeCase" data-tooltip="{{localize 'DETECTIVE_STORY.Case.Close'}}"><i class="fa-solid fa-lock"></i></button>
                 {{/if}}
                 {{/if}}
                 {{#if ../isGameMaster}}
@@ -39,6 +37,16 @@
                 {{/if}}
             </div>
         </header>
+        <nav class="case-subtabs">
+            {{#each subtabs}}
+            <a class="case-subtab{{#if this.active}} active{{/if}}" data-action="selectSubtab" data-subtab="{{this.id}}"><i class="{{this.icon}}" inert></i> {{this.label}}</a>
+            {{/each}}
+            {{#if popoutSubtab}}
+            <a class="case-popout" data-action="popoutSubtab" data-tooltip="{{localize 'DETECTIVE_STORY.Case.Popout'}}"><i class="fa-solid fa-up-right-from-square" inert></i></a>
+            {{/if}}
+        </nav>
+
+        {{#if (eq subtab "overview")}}
         <section class="case-section case-description">
             <h3>
                 {{localize "DETECTIVE_STORY.Case.Description"}}
@@ -51,8 +59,36 @@
             <div class="case-text">{{{enrichedDescription}}}</div>
             {{/if}}
         </section>
+        <section class="case-section case-members">
+            <h3>{{localize "DETECTIVE_STORY.Case.Members"}}</h3>
+            <ul class="chip-list">
+                {{#each members}}
+                <li class="chip" data-user-id="{{this.id}}"><img src="{{this.portrait}}" alt=""> {{this.name}}</li>
+                {{else}}
+                <li class="hint">{{localize "DETECTIVE_STORY.Case.NoMembers"}}</li>
+                {{/each}}
+                {{#if ../isGameMaster}}<li><button type="button" class="chip-add" data-action="editMembers" data-tooltip="{{localize 'DETECTIVE_STORY.Case.EditMembers'}}"><i class="fa-solid fa-user-gear"></i></button></li>{{/if}}
+            </ul>
+        </section>
+        <section class="case-section case-suspects">
+            <h3>{{localize "DETECTIVE_STORY.Case.Suspects"}}</h3>
+            <ul class="chip-list">
+                {{#each linkedSuspects}}
+                <li class="chip suspect-chip{{#if this.archived}} archived{{/if}}{{#if this.shelved}} shelved{{/if}}" data-suspect-id="{{this.id}}">
+                    <a data-action="openSuspect"><img src="{{this.portrait}}" alt=""> {{this.name}}</a>
+                    {{#if this.archived}}<i class="fa-solid fa-box-archive" data-tooltip="{{localize 'DETECTIVE_STORY.Suspect.ArchivedNote'}}"></i>{{/if}}
+                    {{#if ../canEdit}}<button type="button" class="chip-remove" data-action="unlinkSuspect" data-tooltip="{{localize 'DETECTIVE_STORY.Case.Unlink'}}"><i class="fa-solid fa-xmark" inert></i></button>{{/if}}
+                </li>
+                {{else}}
+                <li class="hint">{{localize "DETECTIVE_STORY.Case.NoSuspects"}}</li>
+                {{/each}}
+                {{#if canEdit}}<li><button type="button" class="chip-add" data-action="linkSuspects" data-tooltip="{{localize 'DETECTIVE_STORY.Case.Link'}}"><i class="fa-solid fa-user-plus"></i></button></li>{{/if}}
+            </ul>
+        </section>
+        {{/if}}
+
+        {{#if (eq subtab "clues")}}
         <section class="case-section case-clues">
-            <h3>{{localize "DETECTIVE_STORY.Case.Clues"}}</h3>
             <div class="folder-layout">
             {{> dsr-folder-tree folderTree}}
             <ul class="pinned-clues folder-content{{#if canDrop}} pinned-dropzone{{/if}}">
@@ -75,27 +111,9 @@
             </ul>
             </div>
         </section>
-        <section class="case-section case-suspects">
-            <h3>{{localize "DETECTIVE_STORY.Case.Suspects"}}</h3>
-            <ul class="linked-suspects">
-                {{#each linkedSuspects}}
-                <li data-suspect-id="{{this.id}}"{{#if this.archived}} class="archived"{{/if}}>
-                    <img src="{{this.portrait}}" alt="" loading="lazy">
-                    <a data-action="openSuspect">{{this.name}}</a>
-                    {{#if this.archived}}<span class="archived-label" data-tooltip="{{localize 'DETECTIVE_STORY.Suspect.ArchivedNote'}}"><i class="fa-solid fa-box-archive" inert></i> {{localize "DETECTIVE_STORY.Suspect.Archived"}}</span>{{/if}}
-                    {{#if ../canEdit}}<button type="button" class="icon" data-action="unlinkSuspect" data-tooltip="{{localize 'DETECTIVE_STORY.Case.Unlink'}}"><i class="fa-solid fa-xmark"></i></button>{{/if}}
-                </li>
-                {{else}}
-                <li class="empty-message">{{localize "DETECTIVE_STORY.Case.NoSuspects"}}</li>
-                {{/each}}
-            </ul>
-            {{#if canEdit}}{{#if availableSuspects.length}}
-            <div class="link-suspect">
-                <select name="suspectToLink">{{#each availableSuspects}}<option value="{{this.id}}">{{this.name}}</option>{{/each}}</select>
-                <button type="button" data-action="linkSuspect"><i class="fa-solid fa-link"></i> {{localize "DETECTIVE_STORY.Case.Link"}}</button>
-            </div>
-            {{/if}}{{/if}}
-        </section>
+        {{/if}}
+
+        {{#if embeddedSubtab}}<div class="case-panel-host" data-subtab="{{subtab}}"></div>{{/if}}
         {{else}}
         <p class="empty-message">{{localize "DETECTIVE_STORY.Case.SelectCase"}}</p>
         {{/with}}

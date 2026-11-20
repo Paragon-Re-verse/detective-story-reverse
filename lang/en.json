@@ -10,7 +10,8 @@
             "Ok": "Got it",
             "Select": "Select",
             "Online": "Online",
-            "Quoted": "“{text}”"
+            "Quoted": "“{text}”",
+            "Search": "Search"
         },
         "Roles": {
             "Profiler": "Profiler"
@@ -224,7 +225,8 @@
             "DifficultyHint": "A number or a formula. Not shown to players.",
             "RollMode": "Roll mode",
             "MaxAttempts": "Attempts",
-            "MaxAttemptsHint": "Attempts per player; 0 means unlimited."
+            "MaxAttemptsHint": "Attempts per player; 0 means unlimited.",
+            "CustomFormula": "Custom formula…"
         },
         "Search": {
             "NoTemplate": "This zone has no clue.",
@@ -250,7 +252,9 @@
         "Chat": {
             "PlayerFoundClue": "<strong>{player}</strong>: clue found — <strong>{clue}</strong>.",
             "TransferAccepted": "<strong>{sender}</strong> → <strong>{recipient}</strong>, clues: {clues}. Accepted.",
-            "TransferDeclined": "<strong>{sender}</strong> → <strong>{recipient}</strong>, clues: {clues}. Declined."
+            "TransferDeclined": "<strong>{sender}</strong> → <strong>{recipient}</strong>, clues: {clues}. Declined.",
+            "LevelStudied": "{player} studies “{clue}”: level {level} opened ({total} vs DC {dc}).",
+            "LevelStudyFailed": "{player} studies “{clue}”: level {level} not opened ({total} vs DC {dc})."
         },
         "ClueList": {
             "Title": "Clue list",
@@ -279,7 +283,10 @@
                 "case": "By case"
             },
             "ViewRows": "Show as rows",
-            "ViewGrid": "Show as tiles"
+            "ViewGrid": "Show as tiles",
+            "More": "More",
+            "OnlyCurrentCases": "Only current cases",
+            "Open": "Open"
         },
         "ClueView": {
             "Title": "Clue",
@@ -306,7 +313,8 @@
             "Tabs": {
                 "summary": "Summary",
                 "detection": "Detection",
-                "visual": "Visuals"
+                "visual": "Visuals",
+                "levels": "Levels"
             }
         },
         "Visual": {
@@ -374,7 +382,13 @@
             "NoZones": "No search zones yet.",
             "ResetAllZones": "Reset all",
             "ResetForPlayer": "Reset for this player",
-            "ResetForAll": "Reset for all players in this zone"
+            "ResetForAll": "Reset for all players in this zone",
+            "CaseFilter": "Case",
+            "FilterActiveCases": "Open cases",
+            "FilterAll": "All clues",
+            "FilterPlayerCases": "Player's cases",
+            "NoCase": "No case",
+            "OnlyTouched": "only with attempts"
         },
         "Library": {
             "Search": "Search by name and tags",
@@ -435,10 +449,18 @@
             "ArchiveHint": "Closed cases. Pick a case to open or reopen it.",
             "ArchiveEmpty": "The archive is empty.",
             "ClosedStamp": "Case closed",
-            "ArchivedSuspects": "Archived suspects",
-            "ArchivedSuspectsEmpty": "No archived suspects.",
+            "ArchivedSuspects": "Deleted dossiers",
+            "ArchivedSuspectsEmpty": "No deleted dossiers.",
             "ClosedReadOnly": "The case is closed: reopen it first to change it.",
-            "NoCluesAll": "The case has no clues."
+            "NoCluesAll": "The case has no clues.",
+            "EditMembers": "Case members",
+            "Members": "Members",
+            "NoMembers": "No members set — every player sees the case.",
+            "Popout": "Open in a separate window",
+            "Subtabs": {
+                "overview": "Overview",
+                "clues": "Clues"
+            }
         },
         "CaseJournal": {
             "Title": "Case journal",
@@ -461,10 +483,22 @@
             "MyNotesHint": "Only you can see these.",
             "DeleteTitle": "Delete dossier",
             "DeleteConfirm": "Delete the suspect's dossier?",
-            "Archived": "archived",
+            "Archived": "dossier deleted",
             "ArchivedNote": "The dossier was deleted. This is a snapshot taken at deletion, kept in the case.",
             "Deleted": "This suspect's dossier was deleted.",
-            "DeleteArchiveNote": "The suspect is linked to cases: {cases}. They will stay there as an archived suspect."
+            "DeleteArchiveNote": "The suspect is linked to cases: {cases}. A snapshot of the dossier stays in them.",
+            "Filter": {
+                "active": "Active",
+                "all": "All",
+                "inCase": "In case: {label} “{title}”",
+                "shelved": "Archived"
+            },
+            "SearchShelved": "Search the archive",
+            "Shelve": "Archive",
+            "Unshelve": "Restore from archive",
+            "ShelveAfterClose": "Archive these suspects?",
+            "ShelvedBadge": "archived",
+            "ShelvedNote": "This dossier is archived: hidden from lists, not deleted."
         },
         "Timeline": {
             "Title": "Timeline",
@@ -497,7 +531,6 @@
             "Approximate": "Approximate time",
             "Location": "Place",
             "Color": "Color",
-            "UseColor": "Custom color",
             "Visibility": "Visibility",
             "VisibilityHint": "“By clue”: players who have at least one of the checked clues see the event.",
             "VisibilityChoices": {
@@ -510,7 +543,9 @@
             "NoCaseClues": "No clues are pinned to the case.",
             "DayLabel": "Day {day}, {time}",
             "DayShort": "Day {day}",
-            "NoTime": "No time set"
+            "NoTime": "No time set",
+            "NoColor": "No color",
+            "OtherColor": "Another color"
         },
         "Permissions": {
             "Title": "Player permissions on the board",
@@ -589,7 +624,8 @@
                 "granted": "Given by the GM",
                 "pinned": "Pinned to a case",
                 "caseClosed": "Cases closed",
-                "caseReopened": "Cases reopened"
+                "caseReopened": "Cases reopened",
+                "levelOpened": "Opened levels"
             },
             "Text": {
                 "found": "Found: “{clue}” (scene “{scene}”)",
@@ -603,7 +639,8 @@
                 "granted": "Given → {recipient}: {clues}",
                 "pinned": "Pinned to {case}: “{clue}”",
                 "caseClosed": "Closed {case}",
-                "caseReopened": "Reopened {case}"
+                "caseReopened": "Reopened {case}",
+                "levelOpened": "Level {level} of “{clue}” → {player}"
             }
         },
         "Stamps": {
@@ -658,7 +695,10 @@
             "DeleteWithTemplates": "Delete the folder with its templates",
             "LockedKept": "Clues of a closed case were not deleted and moved one level up: {count}.",
             "CopiedTo": "Folder “{folder}” given to {name}. New clues: {count}.",
-            "CaseOnlyFromList": "Only folders from the clue list can be moved into a case."
+            "CaseOnlyFromList": "Only folders from the clue list can be moved into a case.",
+            "HideTree": "Hide folders",
+            "ShowTree": "Show folders",
+            "RightClickHint": "Right-click a folder for subfolder, edit, delete. Drag the panel edge to resize."
         },
         "Theories": {
             "Title": "Theories",
@@ -719,6 +759,30 @@
             "Folders": "Library folders",
             "NoFolders": "The library has no folders.",
             "Templates": "Individual templates"
+        },
+        "Levels": {
+            "Close": "Close level",
+            "Open": "Open level",
+            "Count": "Number of levels",
+            "Dc": "DC {dc}",
+            "EditorHint": "Level 1 is the clue description, open right away. Levels 2–6 are opened by the GM or by the player with “Study” (a check against the level's difficulty).",
+            "LevelOneHint": "The description from the “Summary” tab. A player gets it open as soon as they receive the clue.",
+            "ForHolders": "Levels for players…",
+            "HoldersDone": "Changed for players: {count}.",
+            "HoldersHint": "Tick the players who have this clue.",
+            "HoldersTitle": "Levels of “{clue}”",
+            "Level": "Level",
+            "LevelN": "Level {number}",
+            "Manage": "Levels…",
+            "NoExtraLevels": "The clue has a single level.",
+            "NoHolders": "Nobody has this clue yet.",
+            "NotStudied": "Not studied",
+            "Opened": "Clue “{clue}”: level {level} opened.",
+            "PlayerHint": "Checked levels are open for the player.",
+            "PlayerTitle": "Levels: {clue} — {player}",
+            "Progress": "Levels open",
+            "Study": "Study: level {number} ({check})",
+            "StudyFailed": "It didn't work."
         }
     }
 }

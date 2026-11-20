@@ -17,8 +17,10 @@ import {
   getKindChoices,
   getFontChoices,
   getInkSwatches,
-  getTintSwatches
+  getTintSwatches,
+  attachCheckFields
 } from "./view-helpers.js";
+import { MAX_CLUE_LEVELS, normalizeLevels } from "../data/clue-levels.js";
 import { editClueTypeDialog } from "./clue-type-dialog.js";
 import { renderCardMiniPreview } from "./card-mini-preview.js";
 import { pickRecipients } from "./transfer-dialogs.js";
@@ -37,6 +39,8 @@ export class ClueEditorApplication extends DetectiveApplication {
     this.templateId = target.templateId ?? null;
     this.ownerUser = target.ownerUser ?? null;
     this.originId = target.originId ?? null;
+    /** Папка библиотеки для новой улики (открытая в библиотеке папка). */
+    this.newFolderId = target.folderId ?? null;
   }
 
   static buildId({ templateId, ownerUser, originId }) {
@@ -63,6 +67,7 @@ export class ClueEditorApplication extends DetectiveApplication {
   static PARTS = {
     tabs: { template: "templates/generic/tab-navigation.hbs" },
     summary: { template: `${TEMPLATE_PATH}/apps/clue-editor-summary.hbs`, scrollable: [""] },
+    levels: { template: `${TEMPLATE_PATH}/apps/clue-editor-levels.hbs`, scrollable: [""] },
     detection: { template: `${TEMPLATE_PATH}/apps/clue-editor-detection.hbs`, scrollable: [""] },
     visual: { template: `${TEMPLATE_PATH}/apps/clue-editor-visual.hbs`, scrollable: [""] },
     footer: { template: "templates/generic/form-footer.hbs" }
@@ -72,6 +77,7 @@ export class ClueEditorApplication extends DetectiveApplication {
     sheet: {
       tabs: [
         { id: "summary", icon: "fa-solid fa-file-lines", label: fullKey("Editor.Tabs.summary") },
+        { id: "levels", icon: "fa-solid fa-layer-group", label: fullKey("Editor.Tabs.levels") },
         { id: "detection", icon: "fa-solid fa-magnifying-glass", label: fullKey("Editor.Tabs.detection") },
         { id: "visual", icon: "fa-solid fa-thumbtack", label: fullKey("Editor.Tabs.visual") }
       ],
@@ -88,7 +94,7 @@ export class ClueEditorApplication extends DetectiveApplication {
     if (this.isPlayerCopy) {
       const playerClue = getPlayerClue(this.ownerUser, this.originId);
       if (!playerClue) return null;
-      return { ...playerClue, detection: defaultDetection() };
+      return { ...playerClue, detection: defaultDetection(), levels: readCopyLevels(playerClue) };
     }
     if (this.templateId) return getClueTemplate(this.templateId);
     return {
@@ -98,7 +104,8 @@ export class ClueEditorApplication extends DetectiveApplication {
       description: "",
       tags: [],
       detection: defaultDetection(),
-      visual: defaultVisual()
+      visual: defaultVisual(),
+      levels: []
     };
   }
 
@@ -130,10 +137,22 @@ export class ClueEditorApplication extends DetectiveApplication {
     const clueData = this.#loadClueData() ?? {};
     const typeChoices = { "": localize("Editor.NoType") };
     for (const clueType of getClueTypeList()) typeChoices[clueType.id] = clueType.name;
+    const levels = normalizeLevels(clueData.levels);
+    const levelCountChoices = {};
+    for (let count = 1; count <= MAX_CLUE_LEVELS; count += 1) levelCountChoices[count] = String(count);
+    // Все пять дополнительных уровней есть в форме всегда; лишние скрыты и отбрасываются при сохранении.
+    const levelSlots = [];
+    for (let index = 0; index < MAX_CLUE_LEVELS - 1; index += 1) {
+      const level = levels[index] ?? { text: "", check: "inv", dc: "15" };
+      levelSlots.push({ ...level, index, number: index + 2, active: index < levels.length });
+    }
     let saveLabel = "Common.Save";
     if (!this.templateId && !this.isPlayerCopy) saveLabel = "Editor.Create";
     return Object.assign(context, {
       clue: clueData,
+      levelCount: levels.length + 1,
+      levelCountChoices,
+      levelSlots,
       tagsValue: (clueData.tags ?? []).join(","),
       typeChoices,
       zoneModeChoices: getZoneModeChoices(),
@@ -171,6 +190,15 @@ export class ClueEditorApplication extends DetectiveApplication {
     const kindSelect = this.element.querySelector("select[name='visual.kind']");
     kindSelect?.addEventListener("change", () => this.#syncKindFields());
     this.#syncKindFields();
+    attachCheckFields(this.element);
+    const levelCountSelect = this.element.querySelector("select[name='levelCount']");
+    const syncLevelSlots = () => {
+      const levelCount = Number(levelCountSelect?.value) || 1;
+      for (const slotElement of this.element.querySelectorAll(".level-slot[data-level-number]")) {
+        slotElement.hidden = Number(slotElement.dataset.levelNumber) > levelCount;
+      }
+    };
+    levelCountSelect?.addEventListener("change", syncLevelSlots);
     const modeSelect = this.element.querySelector("select[name='detection.zoneMode']");
     modeSelect?.addEventListener("change", () => this.#syncRadiusField());
     this.#syncRadiusField();
@@ -212,13 +240,19 @@ export class ClueEditorApplication extends DetectiveApplication {
   /** @this {ClueEditorApplication} */
   static async #onSubmit(event, form, formData) {
     const submitted = foundry.utils.expandObject(formData.object);
+    const levelCount = Number(submitted.levelCount) || 1;
+    const submittedLevels = Object.entries(submitted.levels ?? {})
+      .sort(([firstIndex], [secondIndex]) => Number(firstIndex) - Number(secondIndex))
+      .map(([, level]) => level)
+      .slice(0, levelCount - 1);
     const clueContent = {
       name: submitted.name,
       img: submitted.img,
       typeId: submitted.typeId,
       description: submitted.description,
       tags: submitted.tags,
-      visual: submitted.visual ?? {}
+      visual: submitted.visual ?? {},
+      levels: normalizeLevels(submittedLevels)
     };
     if (this.isPlayerCopy) {
       await updatePlayerClueContent(this.ownerUser, this.originId, clueContent);
@@ -228,7 +262,7 @@ export class ClueEditorApplication extends DetectiveApplication {
     if (this.templateId) {
       await updateClueTemplate(this.templateId, templateData);
     } else {
-      this.templateId = await createClueTemplate(templateData);
+      this.templateId = await createClueTemplate({ ...templateData, folderId: this.newFolderId });
       ui.notifications.info(localize("Editor.Created"));
     }
   }
@@ -255,9 +289,15 @@ export class ClueEditorApplication extends DetectiveApplication {
   }
 }
 
+/** Уровни копии игрока для формы: свои после правки ГМ, иначе текущие из шаблона. */
+function readCopyLevels(playerClue) {
+  if (playerClue.customLevels) return playerClue.levelsSnapshot ?? [];
+  return getClueTemplate(playerClue.originId)?.levels ?? playerClue.levelsSnapshot ?? [];
+}
+
 /** Открыть редактор шаблона (без id — новый шаблон). @param {string} [templateId] */
-export function openTemplateEditor(templateId) {
-  const target = { templateId };
+export function openTemplateEditor(templateId, { folderId = null } = {}) {
+  const target = { templateId, folderId };
   return openSingleton(ClueEditorApplication.buildId(target), () => new ClueEditorApplication(target));
 }
 

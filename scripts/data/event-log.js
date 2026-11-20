@@ -24,7 +24,8 @@ export const LOG_EVENTS = {
   granted: "granted",
   pinned: "pinned",
   caseClosed: "caseClosed",
-  caseReopened: "caseReopened"
+  caseReopened: "caseReopened",
+  levelOpened: "levelOpened"
 };
 
 /**

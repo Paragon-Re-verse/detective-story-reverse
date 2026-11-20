@@ -13,6 +13,12 @@ import { placeClueOnBoard } from "../board/clue-cards.js";
 import { openClueView } from "./clue-view.js";
 import { openPlayerClueEditor } from "./clue-editor.js";
 import { startTransfer, startFolderTransfer } from "./transfer-dialogs.js";
+import { describeLevelProgress } from "../data/clue-levels.js";
+import { listActiveCasesFor } from "../data/cases.js";
+import { listCaseClueIds } from "../data/case-progress.js";
+import { attachContextMenu } from "./context-menu.js";
+import { showBoardContextMenu } from "../board/threads.js";
+import { editPlayerLevelsDialog } from "./level-dialogs.js";
 import { getFolderScope, moveItemsToFolder, FOLDER_SCOPES } from "../data/clue-folders.js";
 import { resolveFolderId, getFolderPath } from "../data/folder-tree.js";
 import {
@@ -54,6 +60,8 @@ export class ClueListApplication extends DetectiveApplication {
     this.searchText = "";
     this.typeFilter = "";
     this.selectedFolderId = ALL_FOLDERS;
+    /** «Только текущие дела»: улики открытых дел, где игрок участник (п. 18). */
+    this.onlyCurrentCases = false;
   }
 
   /** Окно одно: ГМ переключает в нём игроков, игрок видит только свой список. */
@@ -87,7 +95,9 @@ export class ClueListApplication extends DetectiveApplication {
       toggleView: ClueListApplication.#onToggleView,
       transferSelected: ClueListApplication.#onTransferSelected,
       moveClue: ClueListApplication.#onMoveClue,
-      moveSelected: ClueListApplication.#onMoveSelected
+      moveSelected: ClueListApplication.#onMoveSelected,
+      toggleCurrentCases: ClueListApplication.#onToggleCurrentCases,
+      openMenu: ClueListApplication.#onOpenMenu
     }
   };
 
@@ -118,6 +128,11 @@ export class ClueListApplication extends DetectiveApplication {
     const context = await super._prepareContext(options);
     this.caseIndex = buildCaseIndex();
     this.folders = this.folderScope.readFolders();
+    this.currentCaseClueIds = new Set();
+    for (const caseData of listActiveCasesFor(this.ownerUser)) {
+      for (const originId of Object.keys(caseData.pinned)) this.currentCaseClueIds.add(originId);
+      for (const originId of listCaseClueIds(caseData)) this.currentCaseClueIds.add(originId);
+    }
     this.selectedFolderId = validateSelectedFolder(this.folders, this.selectedFolderId);
     const clueItems = listPlayerClues(this.ownerUser).map((playerClue) => this.#buildItemContext(playerClue));
     const typeChoices = { "": localize("ClueList.AllTypes") };
@@ -139,6 +154,7 @@ export class ClueListApplication extends DetectiveApplication {
       ownerUserId: this.ownerUser.id,
       canTransfer: this.isOwnList,
       canSelect: this.isOwnList || game.user.isGM,
+      onlyCurrentCases: this.onlyCurrentCases,
       folderTree: this.#prepareFolderTree(),
       selectionMode: this.selectionMode,
       selectedCount: this.selectedOriginIds.size,
@@ -180,6 +196,8 @@ export class ClueListApplication extends DetectiveApplication {
       folderId: resolveFolderId(this.folders ?? {}, playerClue.folderId) ?? "",
       folderPath: getFolderPath(this.folders ?? {}, playerClue.folderId),
       canMove: this.isOwnList || game.user.isGM,
+      levelLabel: describeLevelLabel(playerClue),
+      inCurrentCase: this.currentCaseClueIds?.has(playerClue.originId) ?? false,
       locked: caseTags.some((caseTag) => caseTag.closed)
     };
   }
@@ -246,6 +264,7 @@ export class ClueListApplication extends DetectiveApplication {
       onDrop: (event, folderId) => this.#onDropOnFolder(event, folderId),
       onTransfer: (folderId) => startFolderTransfer(folderId)
     });
+    attachContextMenu(this.element.querySelector(".clue-grid"), ".clue-item", (itemElement) => this.#buildClueMenu(itemElement));
     for (const itemElement of this.element.querySelectorAll(".clue-item")) this.#attachDrag(itemElement);
     this.#applySort();
     this.#applyFilters();
@@ -328,7 +347,8 @@ export class ClueListApplication extends DetectiveApplication {
       const matchesSearch = !this.searchText || itemElement.dataset.search.includes(this.searchText);
       const matchesType = !this.typeFilter || itemElement.dataset.typeId === this.typeFilter;
       const matchesFolder = ignoreFolder || matchesSelectedFolder(this.folders ?? {}, itemElement.dataset.folderId || null, this.selectedFolderId);
-      const visible = matchesSearch && matchesType && matchesFolder;
+      const matchesCases = !this.onlyCurrentCases || itemElement.dataset.current === "1";
+      const visible = matchesSearch && matchesType && matchesFolder && matchesCases;
       itemElement.hidden = !visible;
       if (visible) visibleCount += 1;
     }
@@ -500,6 +520,45 @@ export class ClueListApplication extends DetectiveApplication {
     if (confirmed) await deletePlayerClue(this.ownerUser, playerClue.originId);
   }
 
+  /** Пункты меню улики: всё, что не поместилось на карточку (п. Б5). */
+  #buildClueMenu(itemElement) {
+    const playerClue = this.#getClue(itemElement);
+    if (!playerClue) return [];
+    const call = (handler) => () => handler.call(this, null, itemElement);
+    const menuItems = [
+      { icon: "fa-solid fa-file-magnifying-glass", label: localize("ClueList.Open"), callback: call(ClueListApplication.#onOpenClue) },
+      { icon: "fa-solid fa-comment", label: localize("ClueList.ShowInChat"), callback: call(ClueListApplication.#onShowInChat) }
+    ];
+    if (this.isOwnList) {
+      menuItems.push({ icon: "fa-solid fa-thumbtack", label: localize("ClueList.PlaceOnBoard"), callback: call(ClueListApplication.#onPlaceOnBoard) });
+      menuItems.push({ icon: "fa-solid fa-share", label: localize("ClueList.Transfer"), callback: call(ClueListApplication.#onTransferClue) });
+    }
+    if (this.isOwnList || game.user.isGM) {
+      menuItems.push({ icon: "fa-solid fa-folder-tree", label: localize("ClueFolders.MoveTo"), callback: call(ClueListApplication.#onMoveClue) });
+    }
+    if (game.user.isGM) {
+      if (describeLevelProgress(playerClue).total > 1) {
+        menuItems.push({ icon: "fa-solid fa-layer-group", label: localize("Levels.Manage"), callback: () => editPlayerLevelsDialog(this.ownerUser, playerClue.originId) });
+      }
+      menuItems.push({ icon: "fa-solid fa-pen", label: localize("Common.Edit"), callback: call(ClueListApplication.#onEditClue) });
+      menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: call(ClueListApplication.#onDeleteClue) });
+    }
+    return menuItems;
+  }
+
+  /** Кнопка «…» на карточке открывает то же меню, что и правый клик. */
+  static #onOpenMenu(event, target) {
+    const itemElement = target.closest(".clue-item");
+    const bounds = target.getBoundingClientRect();
+    showBoardContextMenu(bounds.left, bounds.bottom, this.#buildClueMenu(itemElement));
+  }
+
+  static #onToggleCurrentCases(event, target) {
+    this.onlyCurrentCases = !this.onlyCurrentCases;
+    target.classList.toggle("active", this.onlyCurrentCases);
+    this.#applyFilters();
+  }
+
   static async #onMoveClue(event, target) {
     const playerClue = this.#getClue(target);
     if (!playerClue) return;
@@ -535,6 +594,13 @@ export class ClueListApplication extends DetectiveApplication {
     this.selectedOriginIds.clear();
     this.render();
   }
+}
+
+/** «2/4» для значка уровней на карточке; пусто, если у улики один уровень. */
+function describeLevelLabel(playerClue) {
+  const levelProgress = describeLevelProgress(playerClue);
+  if (levelProgress.total < 2) return "";
+  return `${levelProgress.open}/${levelProgress.total}`;
 }
 
 /**

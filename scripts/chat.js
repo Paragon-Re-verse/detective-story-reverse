@@ -2,6 +2,7 @@ import { TEMPLATE_PATH } from "./constants.js";
 import { getClueType } from "./data/clue-types.js";
 import { enrichText } from "./apps/view-helpers.js";
 import { logEvent, LOG_EVENTS } from "./data/event-log.js";
+import { getClueLevels, getLevelLabel } from "./data/clue-levels.js";
 
 const { renderTemplate } = foundry.applications.handlebars;
 
@@ -33,16 +34,21 @@ export async function whisperGameMasters(htmlContent, noteStyle) {
 }
 
 /**
- * Общее сообщение «Показать в чате»: иконка, название, тип, описание. Без личных заметок.
+ * Общее сообщение «Показать в чате»: иконка, название, тип, описание и все открытые уровни (п. 9). Без личных заметок.
  * @param {{name: string, img: string, typeId: string, description: string}} clue
  */
 export async function postClueToChat(clue) {
   const clueType = getClueType(clue.typeId);
   const enrichedDescription = await enrichText(clue.description);
+  const levels = [];
+  for (const level of getClueLevels(clue)) {
+    if (level.number > 1 && level.open) levels.push({ label: getLevelLabel(level.number), html: await enrichText(level.text) });
+  }
   const content = await renderTemplate(`${TEMPLATE_PATH}/partials/chat-clue.hbs`, {
     clue,
     clueType,
-    enrichedDescription
+    enrichedDescription,
+    levels
   });
   await ChatMessage.create({
     content,

@@ -8,7 +8,12 @@ import { listPlayerClues, getPlayerClue, deletePlayerClue, grantCluesFromTemplat
 import { listClueTemplates, deleteClueTemplate, getClueTemplate } from "../data/clue-templates.js";
 import { getClueType, getClueTypeList, deleteCustomClueType } from "../data/clue-types.js";
 import { listAllZones, getZoneState, resetZoneForUsers, resetAllZonesForUser } from "../data/zones.js";
-import { isClueLockedByClosedCase, buildCaseIndex, CASE_STATUS } from "../data/cases.js";
+import { isClueLockedByClosedCase, buildCaseIndex, listCases, canSeeCase, getCaseLabel, CASE_STATUS } from "../data/cases.js";
+import { buildCaseClueSets } from "../data/case-progress.js";
+import { describeLevelProgress } from "../data/clue-levels.js";
+import { editPlayerLevelsDialog, setLevelForHoldersDialog } from "./level-dialogs.js";
+import { attachContextMenu } from "./context-menu.js";
+import { showBoardContextMenu } from "../board/threads.js";
 import { getUserCharacterName } from "../data/transfers.js";
 import {
   downloadExport,
@@ -36,6 +41,7 @@ import {
   pickFolderDialog,
   isFolderDrag,
   readFolderDrag,
+  toRealFolderId,
   ALL_FOLDERS
 } from "./folder-tree.js";
 
@@ -137,6 +143,12 @@ export class GameMasterWindow extends DetectiveApplication {
     this.selectedPlayerId = getPlayerUsers()[0]?.id ?? null;
     this.librarySearch = "";
     this.selectedLibraryFolderId = ALL_FOLDERS;
+    /** Фильтр по делу (п. 15): auto — дела выбранного игрока, case:<id>, all. */
+    this.playerCaseFilter = "auto";
+    this.playerClueSearch = "";
+    this.onlyTouchedZones = true;
+    /** Библиотека: active — улики открытых дел и улики вне дел, case:<id>, all. */
+    this.libraryCaseFilter = "active";
   }
 
   static DEFAULT_OPTIONS = {
@@ -158,6 +170,8 @@ export class GameMasterWindow extends DetectiveApplication {
       deleteTemplate: GameMasterWindow.#onDeleteTemplate,
       grantTemplate: GameMasterWindow.#onGrantTemplate,
       moveTemplate: GameMasterWindow.#onMoveTemplate,
+      editPlayerLevels: GameMasterWindow.#onEditPlayerLevels,
+      openTemplateMenu: GameMasterWindow.#onOpenTemplateMenu,
       newType: GameMasterWindow.#onNewType,
       editType: GameMasterWindow.#onEditType,
       deleteType: GameMasterWindow.#onDeleteType,
@@ -197,12 +211,18 @@ export class GameMasterWindow extends DetectiveApplication {
     if (partId === "players") {
       partContext.players = this.#preparePlayers();
       partContext.selectedPlayer = this.#prepareSelectedPlayer();
+      partContext.caseFilterChoices = this.#buildCaseFilterChoices("auto", localize("GameMasterWindow.FilterPlayerCases"));
+      partContext.playerCaseFilter = this.playerCaseFilter;
+      partContext.playerClueSearch = this.playerClueSearch;
+      partContext.onlyTouchedZones = this.onlyTouchedZones;
     } else if (partId === "library") {
       this.libraryFolders = this.libraryScope.readFolders();
       this.selectedLibraryFolderId = validateSelectedFolder(this.libraryFolders, this.selectedLibraryFolderId);
       partContext.templates = this.#prepareTemplates();
       partContext.librarySearch = this.librarySearch;
       partContext.folderTree = prepareFolderTree(this.libraryScope, { selectedFolderId: this.selectedLibraryFolderId });
+      partContext.libraryCaseFilterChoices = this.#buildCaseFilterChoices("active", localize("GameMasterWindow.FilterActiveCases"));
+      partContext.libraryCaseFilter = this.libraryCaseFilter;
     } else if (partId === "types") {
       partContext.clueTypes = getClueTypeList();
     }
@@ -228,35 +248,98 @@ export class GameMasterWindow extends DetectiveApplication {
     });
   }
 
+  /** Варианты фильтра по делу: «по умолчанию», открытые дела и «Все». */
+  #buildCaseFilterChoices(defaultKey, defaultLabel) {
+    const choices = { [defaultKey]: defaultLabel };
+    for (const caseData of listCases({ includeClosed: false })) {
+      choices[`case:${caseData.id}`] = `${getCaseLabel(caseData)} ${format("Common.Quoted", { text: caseData.title })}`;
+    }
+    choices.all = localize("GameMasterWindow.FilterAll");
+    return choices;
+  }
+
+  /**
+   * Какие улики показать при фильтре: null — все. Иначе множество улик выбранных дел.
+   * @param {string} filter
+   * @param {User|null} playerUser - для «дел игрока»
+   */
+  #resolveCaseClueFilter(filter, playerUser, caseClueSets) {
+    if (filter === "all") return null;
+    let caseIds = [];
+    if (filter.startsWith("case:")) {
+      caseIds = [filter.slice("case:".length)];
+    } else {
+      caseIds = listCases({ includeClosed: false })
+        .filter((caseData) => !playerUser || canSeeCase(caseData, playerUser))
+        .map((caseData) => caseData.id);
+    }
+    const clueIds = new Set();
+    for (const caseId of caseIds) {
+      for (const clueId of caseClueSets.sets.get(caseId) ?? []) clueIds.add(clueId);
+    }
+    return clueIds;
+  }
+
   #prepareSelectedPlayer() {
     const playerUser = game.users.get(this.selectedPlayerId);
     if (!playerUser) return null;
     const caseIndex = buildCaseIndex();
-    const clues = listPlayerClues(playerUser).map((playerClue) => {
+    const caseClueSets = buildCaseClueSets();
+    if (this.playerCaseFilter !== "auto" && this.playerCaseFilter !== "all" && !caseClueSets.sets.has(this.playerCaseFilter.slice(5))) this.playerCaseFilter = "auto";
+    const filterClueIds = this.#resolveCaseClueFilter(this.playerCaseFilter, playerUser, caseClueSets);
+    const clues = [];
+    const otherClues = [];
+    for (const playerClue of listPlayerClues(playerUser)) {
       const clueType = getClueType(playerClue.typeId);
       const locked = (caseIndex.get(playerClue.originId) ?? []).some((caseData) => caseData.status === CASE_STATUS.closed);
-      return { ...playerClue, typeName: clueType.name, typeIcon: clueType.icon, locked };
-    });
-    const zones = listAllZones().map(({ scene, tile, zone, templateName }) => {
-      const zoneState = getZoneState(playerUser, tile.id);
-      let attemptsLabel = format("GameMasterWindow.AttemptsOf", { used: zoneState.attempts, max: zone.detection.maxAttempts });
-      if (!zone.detection.maxAttempts) attemptsLabel = format("GameMasterWindow.AttemptsUnlimited", { used: zoneState.attempts });
-      return {
-        tileId: tile.id,
-        sceneName: scene.name,
-        templateName,
-        attemptsLabel,
-        found: zoneState.found,
-        touched: zoneState.attempts > 0 || zoneState.found
+      const levelProgress = describeLevelProgress(playerClue);
+      let levelLabel = "";
+      if (levelProgress.total > 1) levelLabel = `${levelProgress.open}/${levelProgress.total}`;
+      const clueEntry = {
+        ...playerClue,
+        typeName: clueType.name,
+        typeIcon: clueType.icon,
+        locked,
+        levelLabel,
+        searchIndex: [playerClue.name, ...(playerClue.tags ?? [])].join(" ").toLocaleLowerCase(game.i18n.lang)
       };
-    });
-    return { id: playerUser.id, name: playerUser.name, characterName: getUserCharacterName(playerUser), clues, zones };
+      // Улики вне всех дел — свёрнутой группой «Без дела» (п. 17); улики других дел скрыты.
+      if (!filterClueIds || filterClueIds.has(playerClue.originId)) {
+        clues.push(clueEntry);
+      } else if (!caseClueSets.inAnyCase.has(playerClue.originId)) {
+        otherClues.push(clueEntry);
+      }
+    }
+    const zones = listAllZones()
+      .filter(({ zone }) => !filterClueIds || filterClueIds.has(zone.templateId))
+      .map(({ scene, tile, zone, templateName }) => {
+        const zoneState = getZoneState(playerUser, tile.id);
+        let attemptsLabel = format("GameMasterWindow.AttemptsOf", { used: zoneState.attempts, max: zone.detection.maxAttempts });
+        if (!zone.detection.maxAttempts) attemptsLabel = format("GameMasterWindow.AttemptsUnlimited", { used: zoneState.attempts });
+        return {
+          tileId: tile.id,
+          sceneName: scene.name,
+          templateName,
+          attemptsLabel,
+          found: zoneState.found,
+          touched: zoneState.attempts > 0 || zoneState.found
+        };
+      })
+      .filter((zoneEntry) => !this.onlyTouchedZones || zoneEntry.touched);
+    return { id: playerUser.id, name: playerUser.name, characterName: getUserCharacterName(playerUser), clues, otherClues, zones };
   }
 
   #prepareTemplates() {
+    const caseClueSets = buildCaseClueSets();
+    if (this.libraryCaseFilter.startsWith("case:") && !caseClueSets.sets.has(this.libraryCaseFilter.slice(5))) this.libraryCaseFilter = "active";
+    const filterClueIds = this.#resolveCaseClueFilter(this.libraryCaseFilter, null, caseClueSets);
     return listClueTemplates().map((template) => {
       const clueType = getClueType(template.typeId);
+      // Улики закрытых и чужих дел скрыты; улики вне дел видны всегда — иначе новая улика пропала бы из виду.
+      const caseVisible = !filterClueIds || filterClueIds.has(template.id) || !caseClueSets.inAnyCase.has(template.id);
       return {
+        caseVisible,
+        levelCount: template.levels.length + 1,
         ...template,
         typeName: clueType.name,
         typeIcon: clueType.icon,
@@ -314,6 +397,7 @@ export class GameMasterWindow extends DetectiveApplication {
     await super._onRender(context, options);
     if (options.parts?.includes("players")) {
       for (const playerRow of this.element.querySelectorAll(".player-row[data-user-id]")) attachTemplateDrop(playerRow);
+      this.#attachPlayerFilters();
     }
     if (options.parts?.includes("tabs")) this.#attachTabSpring();
     if (!options.parts?.includes("library")) return;
@@ -331,6 +415,11 @@ export class GameMasterWindow extends DetectiveApplication {
         if (templateId) await moveItemsToFolder(this.libraryScope, [templateId], folderId);
       }
     });
+    this.element.querySelector("select[name='libraryCaseFilter']")?.addEventListener("change", (event) => {
+      this.libraryCaseFilter = event.target.value;
+      this.render({ parts: ["library"] });
+    });
+    attachContextMenu(this.element.querySelector(".template-list"), ".template-row", (rowElement) => this.#buildTemplateMenu(rowElement));
     for (const templateRow of this.element.querySelectorAll(".template-row[draggable]")) {
       templateRow.addEventListener("dragstart", (event) => {
         event.dataTransfer.setData(TEMPLATE_DRAG_TYPE, templateRow.dataset.templateId);
@@ -372,10 +461,49 @@ export class GameMasterWindow extends DetectiveApplication {
     const searching = Boolean(this.librarySearch);
     this.element.querySelector(".template-list")?.classList.toggle("show-folder", searching || this.selectedLibraryFolderId === ALL_FOLDERS);
     for (const rowElement of this.element.querySelectorAll(".template-row")) {
-      let visible = matchesSelectedFolder(this.libraryFolders ?? {}, rowElement.dataset.folderId || null, this.selectedLibraryFolderId);
+      let visible = rowElement.dataset.caseVisible === "1" && matchesSelectedFolder(this.libraryFolders ?? {}, rowElement.dataset.folderId || null, this.selectedLibraryFolderId);
       if (searching) visible = rowElement.dataset.search.includes(this.librarySearch);
       rowElement.hidden = !visible;
     }
+  }
+
+  /** Фильтры вкладки «Игроки»: дело, поиск по уликам, «только зоны с попытками». */
+  #attachPlayerFilters() {
+    this.element.querySelector("select[name='playerCaseFilter']")?.addEventListener("change", (event) => {
+      this.playerCaseFilter = event.target.value;
+      this.render({ parts: ["players"] });
+    });
+    this.element.querySelector("input[name='onlyTouchedZones']")?.addEventListener("change", (event) => {
+      this.onlyTouchedZones = event.target.checked;
+      this.render({ parts: ["players"] });
+    });
+    // Галочка внутри <summary>: клик по ней не должен сворачивать раздел.
+    this.element.querySelector("input[name='onlyTouchedZones']")?.closest("label")?.addEventListener("click", (event) => event.stopPropagation());
+    const searchInput = this.element.querySelector("input[name='playerClueSearch']");
+    const applySearch = () => {
+      this.playerClueSearch = searchInput.value.trim().toLocaleLowerCase(game.i18n.lang);
+      for (const rowElement of this.element.querySelectorAll(".mini-clue-list [data-search]")) {
+        rowElement.hidden = Boolean(this.playerClueSearch) && !rowElement.dataset.search.includes(this.playerClueSearch);
+      }
+    };
+    searchInput?.addEventListener("input", foundry.utils.debounce(applySearch, SEARCH_DEBOUNCE_MS));
+    if (searchInput) applySearch();
+  }
+
+  /** Меню строки библиотеки (п. Б7): выдать, править, уровни у игроков, переместить, удалить. */
+  #buildTemplateMenu(rowElement) {
+    const call = (handler) => () => handler.call(this, null, rowElement);
+    const templateId = rowElement.dataset.templateId;
+    const menuItems = [
+      { icon: "fa-solid fa-gift", label: localize("Grant.Button"), callback: call(GameMasterWindow.#onGrantTemplate) },
+      { icon: "fa-solid fa-pen", label: localize("Common.Edit"), callback: call(GameMasterWindow.#onEditTemplate) }
+    ];
+    if (Number(rowElement.dataset.levelCount) > 1) {
+      menuItems.push({ icon: "fa-solid fa-layer-group", label: localize("Levels.ForHolders"), callback: () => setLevelForHoldersDialog(templateId) });
+    }
+    menuItems.push({ icon: "fa-solid fa-folder-tree", label: localize("ClueFolders.MoveTo"), callback: call(GameMasterWindow.#onMoveTemplate) });
+    menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: call(GameMasterWindow.#onDeleteTemplate) });
+    return menuItems;
   }
 
   get selectedPlayer() {
@@ -450,8 +578,19 @@ export class GameMasterWindow extends DetectiveApplication {
     ui.notifications.info(localize("Notify.AttemptsReset"));
   }
 
+  /** Новая улика — сразу в открытой папке библиотеки (п. Б8). */
   static #onNewTemplate() {
-    openTemplateEditor();
+    openTemplateEditor(undefined, { folderId: toRealFolderId(this.selectedLibraryFolderId) });
+  }
+
+  static #onOpenTemplateMenu(event, target) {
+    const bounds = target.getBoundingClientRect();
+    showBoardContextMenu(bounds.left, bounds.bottom, this.#buildTemplateMenu(target.closest(".template-row")));
+  }
+
+  static async #onEditPlayerLevels(event, target) {
+    const originId = target.closest("[data-origin-id]").dataset.originId;
+    if (this.selectedPlayer) await editPlayerLevelsDialog(this.selectedPlayer, originId);
   }
 
   static #onEditTemplate(event, target) {

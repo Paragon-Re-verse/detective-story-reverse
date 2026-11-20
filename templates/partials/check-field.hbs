@@ -1,0 +1,7 @@
+<div class="check-field">
+    <select class="check-select" aria-label="{{localize 'DETECTIVE_STORY.Detection.Check'}}">
+        {{#each checkSuggestions}}<option value="{{this.value}}" {{#if (eq this.value ../value)}}selected{{/if}}>{{this.label}}</option>{{/each}}
+        <option value="" data-formula>{{localize "DETECTIVE_STORY.Detection.CustomFormula"}}</option>
+    </select>
+    <input type="text" name="{{name}}" value="{{value}}" class="check-formula" placeholder="1d20 + @abilities.int.mod">
+</div>

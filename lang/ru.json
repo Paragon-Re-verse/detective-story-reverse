@@ -10,7 +10,8 @@
             "Ok": "Понятно",
             "Select": "Выбрать",
             "Online": "В сети",
-            "Quoted": "«{text}»"
+            "Quoted": "«{text}»",
+            "Search": "Поиск"
         },
         "Roles": {
             "Profiler": "Профайлер"
@@ -220,7 +221,8 @@
             "DifficultyHint": "Число или формула. Игроку не показывается.",
             "RollMode": "Режим броска",
             "MaxAttempts": "Попытки",
-            "MaxAttemptsHint": "Сколько попыток у каждого игрока; 0 — без ограничения."
+            "MaxAttemptsHint": "Сколько попыток у каждого игрока; 0 — без ограничения.",
+            "CustomFormula": "Своя формула…"
         },
         "Search": {
             "NoTemplate": "У этой зоны нет улики.",
@@ -246,7 +248,9 @@
         "Chat": {
             "PlayerFoundClue": "<strong>{player}</strong>: найдена улика <strong>{clue}</strong>.",
             "TransferAccepted": "<strong>{sender}</strong> → <strong>{recipient}</strong>, улики: {clues}. Принято.",
-            "TransferDeclined": "<strong>{sender}</strong> → <strong>{recipient}</strong>, улики: {clues}. Отклонено."
+            "TransferDeclined": "<strong>{sender}</strong> → <strong>{recipient}</strong>, улики: {clues}. Отклонено.",
+            "LevelStudied": "{player} изучает «{clue}»: уровень {level} открыт ({total} против СЛ {dc}).",
+            "LevelStudyFailed": "{player} изучает «{clue}»: уровень {level} не открыт ({total} против СЛ {dc})."
         },
         "ClueList": {
             "Title": "Список улик",
@@ -275,7 +279,10 @@
                 "case": "По делу"
             },
             "ViewRows": "Показать строками",
-            "ViewGrid": "Показать плиткой"
+            "ViewGrid": "Показать плиткой",
+            "More": "Ещё",
+            "OnlyCurrentCases": "Только текущие дела",
+            "Open": "Открыть"
         },
         "ClueView": {
             "Title": "Улика",
@@ -302,7 +309,8 @@
             "Tabs": {
                 "summary": "Сводка",
                 "detection": "Обнаружение",
-                "visual": "Визуализация"
+                "visual": "Визуализация",
+                "levels": "Уровни"
             }
         },
         "Visual": {
@@ -370,7 +378,13 @@
             "NoZones": "Зон поиска пока нет.",
             "ResetAllZones": "Сбросить все",
             "ResetForPlayer": "Сбросить этому игроку",
-            "ResetForAll": "Сбросить всем игрокам на этой зоне"
+            "ResetForAll": "Сбросить всем игрокам на этой зоне",
+            "CaseFilter": "Дело",
+            "FilterActiveCases": "Открытые дела",
+            "FilterAll": "Все улики",
+            "FilterPlayerCases": "Дела игрока",
+            "NoCase": "Без дела",
+            "OnlyTouched": "только с попытками"
         },
         "Library": {
             "Search": "Поиск по названию и тегам",
@@ -430,11 +444,19 @@
             "ArchiveHint": "Закрытые дела. Выберите дело, чтобы открыть его или переоткрыть.",
             "ArchiveEmpty": "Архив пуст.",
             "ClosedStamp": "Дело закрыто",
-            "ArchivedSuspects": "Архивные подозреваемые",
-            "ArchivedSuspectsEmpty": "Архивных подозреваемых нет.",
+            "ArchivedSuspects": "Удалённые досье",
+            "ArchivedSuspectsEmpty": "Удалённых досье нет.",
             "ClosedReadOnly": "Дело закрыто: чтобы изменить его, сначала переоткройте.",
             "NoCluesAll": "В деле нет улик.",
-            "NumberBadge": "№{number}"
+            "NumberBadge": "№{number}",
+            "EditMembers": "Участники дела",
+            "Members": "Участники",
+            "NoMembers": "Участники не заданы — дело видят все игроки.",
+            "Popout": "Открыть в отдельном окне",
+            "Subtabs": {
+                "overview": "Обзор",
+                "clues": "Улики"
+            }
         },
         "CaseJournal": {
             "Title": "Журнал дела",
@@ -457,10 +479,22 @@
             "MyNotesHint": "Видны только вам.",
             "DeleteTitle": "Удалить досье",
             "DeleteConfirm": "Удалить досье подозреваемого?",
-            "Archived": "в архиве",
+            "Archived": "досье удалено",
             "ArchivedNote": "Досье удалено. Это снимок на момент удаления, он хранится в деле.",
             "Deleted": "Досье этого подозреваемого удалено.",
-            "DeleteArchiveNote": "Подозреваемый привязан к делам: {cases}. В них он останется архивным подозреваемым."
+            "DeleteArchiveNote": "Подозреваемый привязан к делам: {cases}. В них останется снимок досье.",
+            "Filter": {
+                "active": "Активные",
+                "all": "Все",
+                "inCase": "В деле: {label} «{title}»",
+                "shelved": "В архиве"
+            },
+            "SearchShelved": "Искать в архиве",
+            "Shelve": "В архив",
+            "Unshelve": "Вернуть из архива",
+            "ShelveAfterClose": "Отправить подозреваемых в архив?",
+            "ShelvedBadge": "в архиве",
+            "ShelvedNote": "Досье в архиве: оно скрыто из списков, но не удалено."
         },
         "Timeline": {
             "Title": "Таймлайн",
@@ -493,7 +527,6 @@
             "Approximate": "Время примерное",
             "Location": "Место",
             "Color": "Цвет",
-            "UseColor": "Свой цвет",
             "Visibility": "Видимость",
             "VisibilityHint": "«По улике» — событие видят игроки, у которых есть хотя бы одна из отмеченных улик.",
             "VisibilityChoices": {
@@ -506,7 +539,9 @@
             "NoCaseClues": "К делу не прикреплено улик.",
             "DayLabel": "День {day}, {time}",
             "DayShort": "День {day}",
-            "NoTime": "Время не указано"
+            "NoTime": "Время не указано",
+            "NoColor": "Без цвета",
+            "OtherColor": "Другой цвет"
         },
         "Permissions": {
             "Title": "Права игроков на доске",
@@ -585,7 +620,8 @@
                 "granted": "Выдано ведущим",
                 "pinned": "Прикреплено к делу",
                 "caseClosed": "Закрытие дел",
-                "caseReopened": "Переоткрытие дел"
+                "caseReopened": "Переоткрытие дел",
+                "levelOpened": "Открытые уровни"
             },
             "Text": {
                 "found": "Находка: «{clue}» (сцена «{scene}»)",
@@ -599,7 +635,8 @@
                 "granted": "Выдача → {recipient}: {clues}",
                 "pinned": "К делу {case}: «{clue}»",
                 "caseClosed": "Закрыто {case}",
-                "caseReopened": "Переоткрыто {case}"
+                "caseReopened": "Переоткрыто {case}",
+                "levelOpened": "Уровень {level} улики «{clue}» → {player}"
             }
         },
         "Packs": {
@@ -658,7 +695,10 @@
             "DeleteWithTemplates": "Удалить папку вместе с шаблонами",
             "LockedKept": "Улики закрытого дела не удалены и подняты на уровень выше: {count}.",
             "CopiedTo": "Папка «{folder}» передана: {name}. Новых улик: {count}.",
-            "CaseOnlyFromList": "В дело переносятся только папки из списка улик."
+            "CaseOnlyFromList": "В дело переносятся только папки из списка улик.",
+            "HideTree": "Скрыть папки",
+            "ShowTree": "Показать папки",
+            "RightClickHint": "Правый клик по папке — подпапка, правка, удаление. Край панели можно тянуть."
         },
         "Theories": {
             "Title": "Версии",
@@ -719,6 +759,30 @@
             "Folders": "Папки библиотеки",
             "NoFolders": "В библиотеке нет папок.",
             "Templates": "Отдельные шаблоны"
+        },
+        "Levels": {
+            "Close": "Закрыть уровень",
+            "Open": "Открыть уровень",
+            "Count": "Число уровней",
+            "Dc": "СЛ {dc}",
+            "EditorHint": "Уровень 1 — описание улики, он открыт сразу. Уровни 2–6 открывает ГМ или сам игрок кнопкой «Изучить» (проверка против сложности уровня).",
+            "LevelOneHint": "Описание с вкладки «Сводка». Открыт у игрока сразу при получении улики.",
+            "ForHolders": "Уровни у игроков…",
+            "HoldersDone": "Изменено у игроков: {count}.",
+            "HoldersHint": "Отметьте игроков, у которых есть эта улика.",
+            "HoldersTitle": "Уровни улики «{clue}»",
+            "Level": "Уровень",
+            "LevelN": "Уровень {number}",
+            "Manage": "Уровни…",
+            "NoExtraLevels": "У улики один уровень.",
+            "NoHolders": "Этой улики пока нет ни у кого.",
+            "NotStudied": "Не изучено",
+            "Opened": "Улика «{clue}»: открыт уровень {level}.",
+            "PlayerHint": "Отмеченные уровни открыты у игрока.",
+            "PlayerTitle": "Уровни: {clue} — {player}",
+            "Progress": "Открыто уровней",
+            "Study": "Изучить: уровень {number} ({check})",
+            "StudyFailed": "Не получилось."
         }
     }
 }

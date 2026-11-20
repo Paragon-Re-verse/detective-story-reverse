@@ -33,7 +33,8 @@ function normalizeSuspect(suspectData = {}) {
 function readSuspect(journalEntry) {
   const stored = journalEntry.flags[MODULE_ID][SUSPECT_FLAG];
   const { flag } = normalizeSuspect(stored);
-  return { id: journalEntry.id, name: journalEntry.name, ...flag, canEdit: journalEntry.isOwner && canEditSuspects() };
+  // shelved — досье в архиве (п. 15): не удалено, просто скрыто из списков по умолчанию.
+  return { id: journalEntry.id, name: journalEntry.name, ...flag, shelved: Boolean(stored.shelved), canEdit: journalEntry.isOwner && canEditSuspects() };
 }
 
 export function listSuspects() {
@@ -59,6 +60,7 @@ async function createSuspectAsGameMaster(requester, suspectData, { id } = {}) {
   assertPermission(canEditSuspects(requester));
   const folder = await ensureModuleFolder(FOLDER_KEYS.suspects);
   const { name, flag } = normalizeSuspect(suspectData);
+  if (suspectData.shelved) flag.shelved = true;
   const createData = {
     name,
     folder: folder?.id ?? null,
@@ -95,6 +97,17 @@ export async function updateSuspect(suspectId, suspectData) {
   if (!journalEntry || !canEditSuspects()) return;
   const { name, flag } = normalizeSuspect(suspectData);
   await journalEntry.update({ name, [`flags.${MODULE_ID}.${SUSPECT_FLAG}`]: flag });
+}
+
+/**
+ * Отправить досье в архив или вернуть (ГМ и профайлер). Досье не удаляется: заметки и привязки к делам остаются.
+ * @param {string} suspectId
+ * @param {boolean} shelved
+ */
+export async function setSuspectShelved(suspectId, shelved) {
+  const journalEntry = game.journal.get(suspectId);
+  if (!journalEntry || !canEditSuspects() || !journalEntry.isOwner) return;
+  await journalEntry.update({ [`flags.${MODULE_ID}.${SUSPECT_FLAG}.shelved`]: Boolean(shelved) });
 }
 
 /**

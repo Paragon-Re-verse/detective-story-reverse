@@ -16,7 +16,27 @@
             {{#if caseLabels.length}}<div class="case-tags">{{#each caseLabels}}<span class="case-tag">{{this}}</span>{{/each}}</div>{{/if}}
         </div>
     </div>
+    {{#if hasLevels}}
+    <section class="clue-levels">
+        {{#each levels}}
+        <article class="clue-level{{#unless this.open}} locked{{/unless}}">
+            <header class="level-header">
+                <span class="level-label">{{this.label}}</span>
+                {{#if this.showLockedDetails}}<span class="level-check">{{this.checkLabel}} · {{localize "DETECTIVE_STORY.Levels.Dc" dc=this.dc}}</span>{{/if}}
+                {{#if this.canToggle}}
+                <button type="button" class="icon" data-action="toggleLevel" data-level="{{this.number}}" data-tooltip="{{#if this.open}}{{localize 'DETECTIVE_STORY.Levels.Close'}}{{else}}{{localize 'DETECTIVE_STORY.Levels.Open'}}{{/if}}"><i class="fa-solid {{#if this.open}}fa-lock-open{{else}}fa-lock{{/if}}" inert></i></button>
+                {{/if}}
+            </header>
+            {{#if this.html}}<div class="level-text">{{{this.html}}}</div>{{else}}<p class="level-locked"><i class="fa-solid fa-lock" inert></i> {{localize "DETECTIVE_STORY.Levels.NotStudied"}}</p>{{/if}}
+        </article>
+        {{/each}}
+        {{#if nextLevel}}
+        <button type="button" class="study-button" data-action="studyLevel"><i class="fa-solid fa-book-open-reader"></i> {{localize "DETECTIVE_STORY.Levels.Study" number=nextLevel.number check=nextLevel.checkLabel}}</button>
+        {{/if}}
+    </section>
+    {{else}}
     <section class="clue-description">{{{enrichedDescription}}}</section>
+    {{/if}}
     <section class="clue-notes">
         <h3>{{localize "DETECTIVE_STORY.ClueView.Notes"}}</h3>
         {{#if isOwner}}

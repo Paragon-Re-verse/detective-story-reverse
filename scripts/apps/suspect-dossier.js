@@ -2,7 +2,7 @@ import { TEMPLATE_PATH, BOARD_ASSET_PATH } from "../constants.js";
 import { localize, format, fullKey } from "../i18n.js";
 import { DetectiveApplication, openSingleton } from "./base-application.js";
 import { canEditSuspects } from "../permissions.js";
-import { getSuspect, createSuspect, updateSuspect, deleteSuspect, getSuspectNotes, setSuspectNotes } from "../data/suspects.js";
+import { setSuspectShelved, getSuspect, createSuspect, updateSuspect, deleteSuspect, getSuspectNotes, setSuspectNotes } from "../data/suspects.js";
 import { listCasesWithSuspect, getArchivedSuspect, getCaseLabel } from "../data/cases.js";
 import { enrichText } from "./view-helpers.js";
 
@@ -40,7 +40,8 @@ export class SuspectDossierApplication extends DetectiveApplication {
     },
     actions: {
       toggleEdit: SuspectDossierApplication.#onToggleEdit,
-      deleteSuspect: SuspectDossierApplication.#onDeleteSuspect
+      deleteSuspect: SuspectDossierApplication.#onDeleteSuspect,
+      toggleShelved: SuspectDossierApplication.#onToggleShelved
     }
   };
 
@@ -129,6 +130,11 @@ export class SuspectDossierApplication extends DetectiveApplication {
     if (!canEditSuspects()) return;
     this.editing = !this.editing;
     this.render();
+  }
+
+  static async #onToggleShelved() {
+    const suspect = getSuspect(this.suspectId);
+    if (suspect) await setSuspectShelved(this.suspectId, !suspect.shelved);
   }
 
   static async #onDeleteSuspect() {

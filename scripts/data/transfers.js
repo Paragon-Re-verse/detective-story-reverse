@@ -2,6 +2,7 @@ import { readUserSection, writeUserEntry, deleteUserEntries } from "./user-flags
 import { getPlayerClue, buildPlayerClue, addCluesToUser, userHasClue, CLUE_SOURCES } from "./player-clues.js";
 import { logEvent, LOG_EVENTS } from "./event-log.js";
 import { addFolderWithClues } from "./clue-folders.js";
+import { mergeOpenLevels } from "./clue-levels.js";
 
 /**
  * Передача улик между игроками без ведущего:
@@ -45,9 +46,13 @@ export async function sendTransfers(recipientIds, originIds, folder = null) {
         typeId: playerClue.typeId,
         description: playerClue.description,
         tags: playerClue.tags,
-        visual: playerClue.visual
+        visual: playerClue.visual,
+        levels: playerClue.levelsSnapshot ?? []
       },
-      notes: playerClue.notes ?? ""
+      notes: playerClue.notes ?? "",
+      // Открытые у отправителя уровни переходят вместе с уликой (п. 5).
+      openLevels: playerClue.openLevels ?? {},
+      customLevels: Boolean(playerClue.customLevels)
     };
   }
   if (foundry.utils.isEmpty(transferredClues)) return 0;
@@ -111,18 +116,25 @@ export async function answerTransfer(transfer, accepted) {
   let addedIds = [];
   if (accepted) {
     const clueRecords = Object.entries(transfer.clues ?? {}).map(([originId, transferredClue]) => {
-      return buildPlayerClue(
+      const clueRecord = buildPlayerClue(
         originId,
         transferredClue.content,
         { source: CLUE_SOURCES.player, name: transfer.senderName },
         transferredClue.notes
       );
+      clueRecord.openLevels = { ...(transferredClue.openLevels ?? {}) };
+      clueRecord.customLevels = Boolean(transferredClue.customLevels);
+      return clueRecord;
     });
     // Папка принимается только целиком: копия с подпапками ложится в корень (пп. 12, 30).
     if (transfer.folder?.folders?.[transfer.folder.rootId]) {
       addedIds = await addFolderWithClues(recipient, transfer.folder, clueRecords);
     } else {
       addedIds = await addCluesToUser(recipient, clueRecords);
+    }
+    // Улика уже была: открытые уровни объединяются.
+    for (const [originId, transferredClue] of Object.entries(transfer.clues ?? {})) {
+      if (!addedIds.includes(originId)) await mergeOpenLevels(recipient, originId, transferredClue.openLevels);
     }
   }
   await writeUserEntry(recipient, RECEIPTS_SECTION, transfer.id, {

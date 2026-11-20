@@ -6,7 +6,7 @@ import { initializeSocket } from "./socket.js";
 import { registerSceneControls, registerKeybindings } from "./controls.js";
 import { getChangedSectionKeys } from "./data/user-flags.js";
 import { ensureAllModuleFolders, getModuleFolderIds } from "./data/folders.js";
-import { countNewPlayerClues } from "./data/player-clues.js";
+import { countNewPlayerClues, getPlayerClue } from "./data/player-clues.js";
 import { syncCollaboratorOwnership } from "./data/shared-journals.js";
 import { initializeZoneClicks, initializeZoneHoverHint, hideZoneHint } from "./canvas/zone-search.js";
 import { refreshZone, refreshAllZones, resetHighlightsForNewCanvas } from "./canvas/focus-mode.js";
@@ -32,7 +32,10 @@ const PARTIAL_TEMPLATES = {
   "dsr-vhs-screen": `${TEMPLATE_PATH}/partials/vhs-screen.hbs`,
   "dsr-folder-tree": `${TEMPLATE_PATH}/partials/folder-tree.hbs`,
   "dsr-folder-node": `${TEMPLATE_PATH}/partials/folder-node.hbs`,
-  "dsr-theory-summary": `${TEMPLATE_PATH}/partials/theory-summary.hbs`
+  "dsr-theory-summary": `${TEMPLATE_PATH}/partials/theory-summary.hbs`,
+  "dsr-check-field": `${TEMPLATE_PATH}/partials/check-field.hbs`,
+  "dsr-picker": `${TEMPLATE_PATH}/partials/picker.hbs`,
+  "dsr-mini-clue": `${TEMPLATE_PATH}/partials/mini-clue.hbs`
 };
 
 /** Изменился список профайлеров: ГМ переписывает права общих журналов. */
@@ -89,6 +92,7 @@ Hooks.on("updateUser", (user, changes) => {
   if (!changes.flags?.[MODULE_ID]) return;
   if (user.id === game.user.id) {
     if (getChangedSectionKeys(changes, "clues")) {
+      notifyOpenedLevels(user, changes);
       onOwnCluesChanged();
       refreshAllZones();
       hideZoneHint();
@@ -100,6 +104,17 @@ Hooks.on("updateUser", (user, changes) => {
   }
   if (getChangedSectionKeys(changes, "outbox") || getChangedSectionKeys(changes, "receipts")) synchronizeTransfers();
 });
+
+/** Игроку открыли уровень улики (ГМ или сам через «Изучить») — уведомление (п. 8). */
+function notifyOpenedLevels(user, changes) {
+  for (const [originId, clueChanges] of Object.entries(changes.flags[MODULE_ID].clues ?? {})) {
+    for (const [levelKey, isOpen] of Object.entries(clueChanges?.openLevels ?? {})) {
+      if (levelKey.startsWith("-=") || isOpen !== true) continue;
+      const clueName = getPlayerClue(user, originId)?.name ?? "";
+      ui.notifications.info(format("Levels.Opened", { clue: clueName, level: levelKey }));
+    }
+  }
+}
 
 Hooks.on("canvasReady", () => resetHighlightsForNewCanvas());
 Hooks.on("drawTile", (tileObject) => refreshZone(tileObject));

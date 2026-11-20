@@ -8,12 +8,15 @@ import {
   describeFolderContents,
   getCollapsedFolderIds,
   setFolderCollapsed,
+  getTreeLayout,
+  setTreeLayout,
   isImageIcon,
   DEFAULT_FOLDER_COLOR,
   DEFAULT_FOLDER_ICON,
   FOLDER_SCOPES
 } from "../data/clue-folders.js";
 import { MAX_FOLDER_DEPTH, buildFolderNodes, flattenFolderNodes, resolveFolderId } from "../data/folder-tree.js";
+import { attachContextMenu } from "./context-menu.js";
 
 const { DialogV2 } = foundry.applications.api;
 const { renderTemplate } = foundry.applications.handlebars;
@@ -101,6 +104,7 @@ export function prepareFolderTree(scope, { selectedFolderId, itemFolders = scope
   return {
     scopeType: scope.type,
     scopeOwner: scope.ownerId,
+    layout: getTreeLayout(scope.type),
     canEdit,
     nodes,
     allCount: folderIds.length,
@@ -162,39 +166,62 @@ export function attachFolderTree(container, { getScope, onSelect, onDrop, onTran
     const folderId = actionElement.closest("[data-folder-id]")?.dataset.folderId ?? null;
     const scope = getScope();
     if (!scope) return;
-    switch (actionElement.dataset.folderAction) {
-      case "select":
-        onSelect(folderId);
-        break;
-      case "toggle": {
-        const childList = actionElement.closest(".folder-branch")?.querySelector(":scope > .folder-children");
-        if (!childList) break;
-        childList.hidden = !childList.hidden;
-        actionElement.querySelector("i")?.classList.toggle("fa-caret-right", childList.hidden);
-        actionElement.querySelector("i")?.classList.toggle("fa-caret-down", !childList.hidden);
-        await setFolderCollapsed(scope.key, folderId, childList.hidden);
-        break;
-      }
-      case "create": {
-        const input = await editFolderDialog(null);
-        if (input) await createFolder(scope, toRealFolderId(folderId), input);
-        break;
-      }
-      case "edit": {
-        const folder = scope.readFolders()[folderId];
-        if (!folder) break;
-        const input = await editFolderDialog(folder);
-        if (input) await updateFolder(scope, folderId, input);
-        break;
-      }
-      case "delete":
-        await confirmAndDeleteFolder(scope, folderId);
-        break;
-      case "transfer":
-        await onTransfer?.(folderId);
-        break;
+    if (actionElement.dataset.folderAction === "select") {
+      onSelect(folderId);
+      return;
     }
+    if (actionElement.dataset.folderAction === "collapseTree") {
+      const treeElement = actionElement.closest(".dsr-folder-tree");
+      const hidden = !treeElement.classList.contains("collapsed");
+      treeElement.classList.toggle("collapsed", hidden);
+      const iconElement = actionElement.querySelector("i");
+      iconElement?.classList.toggle("fa-angles-right", hidden);
+      iconElement?.classList.toggle("fa-angles-left", !hidden);
+      await setTreeLayout(scope.type, { hidden });
+      return;
+    }
+    if (actionElement.dataset.folderAction === "toggle") {
+      const childList = actionElement.closest(".folder-branch")?.querySelector(":scope > .folder-children");
+      if (!childList) return;
+      childList.hidden = !childList.hidden;
+      actionElement.querySelector("i")?.classList.toggle("fa-caret-right", childList.hidden);
+      actionElement.querySelector("i")?.classList.toggle("fa-caret-down", !childList.hidden);
+      await setFolderCollapsed(scope.key, folderId, childList.hidden);
+      return;
+    }
+    await runFolderAction(scope, actionElement.dataset.folderAction, folderId, onTransfer);
   });
+
+  // Действия с папкой — по правому клику (п. Б6): подпапка, правка, передача, удаление.
+  attachContextMenu(container, ".dsr-folder-tree .folder-node[data-can-edit], .dsr-folder-tree .folder-node[data-can-transfer]", (nodeElement) => {
+    const scope = getScope();
+    const folderId = nodeElement.dataset.folderId;
+    if (!scope) return [];
+    const run = (action) => () => runFolderAction(scope, action, folderId, onTransfer);
+    const menuItems = [];
+    if ("canAdd" in nodeElement.dataset) menuItems.push({ icon: "fa-solid fa-folder-plus", label: localize("ClueFolders.NewSubfolder"), callback: run("create") });
+    if ("canEdit" in nodeElement.dataset) menuItems.push({ icon: "fa-solid fa-pen", label: localize("Common.Edit"), callback: run("edit") });
+    if ("canTransfer" in nodeElement.dataset) menuItems.push({ icon: "fa-solid fa-share", label: localize("ClueFolders.Transfer"), callback: run("transfer") });
+    if ("canEdit" in nodeElement.dataset) menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: run("delete") });
+    return menuItems;
+  });
+
+  // Ширина дерева меняется перетаскиванием края (CSS resize) и запоминается.
+  const treeElement = container.querySelector(".dsr-folder-tree");
+  if (treeElement && "ResizeObserver" in window) {
+    const saveWidth = foundry.utils.debounce((width) => {
+      const scope = getScope();
+      if (scope && width > 60) setTreeLayout(scope.type, { width: Math.round(width) });
+    }, 400);
+    let firstObservation = true;
+    new ResizeObserver((entries) => {
+      if (firstObservation) {
+        firstObservation = false;
+        return;
+      }
+      if (!entries[0].target.classList.contains("collapsed")) saveWidth(entries[0].contentRect.width);
+    }).observe(treeElement);
+  }
 
   container.addEventListener("dragstart", (event) => {
     const nodeElement = event.target.closest?.(".dsr-folder-tree .folder-node[draggable='true']");
@@ -249,6 +276,23 @@ export function attachFolderTree(container, { getScope, onSelect, onDrop, onTran
     }
     await onDrop?.(event, targetId);
   });
+}
+
+/** Действие с папкой из кнопки или меню по правому клику. */
+async function runFolderAction(scope, action, folderId, onTransfer) {
+  if (action === "create") {
+    const input = await editFolderDialog(null);
+    if (input) await createFolder(scope, toRealFolderId(folderId), input);
+  } else if (action === "edit") {
+    const folder = scope.readFolders()[folderId];
+    if (!folder) return;
+    const input = await editFolderDialog(folder);
+    if (input) await updateFolder(scope, folderId, input);
+  } else if (action === "delete") {
+    await confirmAndDeleteFolder(scope, folderId);
+  } else if (action === "transfer") {
+    await onTransfer?.(folderId);
+  }
 }
 
 /**

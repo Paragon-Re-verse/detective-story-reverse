@@ -100,6 +100,7 @@ function readCase(journalEntry) {
     pinned: stored.pinned ?? {},
     folders: stored.folders ?? {},
     suspectIds: Array.isArray(stored.suspectIds) ? stored.suspectIds : [],
+    memberIds: readIdList(stored.memberIds),
     archivedSuspects: stored.archivedSuspects ?? {},
     timeline: readTimeline(stored.timeline),
     theories: Object.fromEntries(Object.entries(stored.theories ?? {}).map(([theoryId, theory]) => [theoryId, readTheory(theory)])),
@@ -119,6 +120,34 @@ function readTimeline(storedTimeline = {}) {
     events[eventId] = normalizeTimelineEvent({ ...storedEvent, id: storedEvent?.id || eventId });
   }
   return { mode, events };
+}
+
+/**
+ * Видит ли пользователь дело. Несколько групп игроков могут вести разные дела в одном мире (п. 16):
+ * у дела есть участники, и игрок видит только дела, где он участник. Дело без участников видят все.
+ * @param {object} caseData
+ * @param {User} [user]
+ */
+export function canSeeCase(caseData, user = game.user) {
+  if (!caseData) return false;
+  if (user.isGM || !caseData.memberIds.length) return true;
+  return caseData.memberIds.includes(user.id);
+}
+
+/** Ведёт ли пользователь дело: ГМ — любое, профайлер — дела, которые он видит. */
+export function canManageCase(caseData, user = game.user) {
+  return canManageCases(user) && canSeeCase(caseData, user);
+}
+
+/** Открытые дела, которые ведёт игрок, — «текущие дела» в его списке улик (п. 18). */
+export function listActiveCasesFor(user = game.user) {
+  return listCases({ includeClosed: false }).filter((caseData) => canSeeCase(caseData, user));
+}
+
+/** Участники дела (задаёт ГМ). */
+export function setCaseMembers(caseId, memberIds) {
+  if (!game.user.isGM) return false;
+  return updateCaseFlag(caseId, { memberIds: readIdList(memberIds) });
 }
 
 /** Подпись дела: «Дело №1». */
@@ -165,6 +194,7 @@ async function createCaseAsGameMaster(requester, { title, description }) {
           status: CASE_STATUS.open,
           pinned: {},
           folders: {},
+          memberIds: [],
           suspectIds: [],
           timeline: { events: {} },
           createdAt: Date.now(),
@@ -190,7 +220,7 @@ export function createCase(caseInput) {
  */
 async function updateCaseFlag(caseId, changes, title) {
   const journalEntry = game.journal.get(caseId);
-  if (!journalEntry || !canManageCases() || !journalEntry.isOwner) return;
+  if (!journalEntry || !canManageCase(getCase(caseId)) || !journalEntry.isOwner) return;
   const update = {};
   for (const [path, value] of Object.entries(changes)) {
     update[`flags.${MODULE_ID}.${CASE_FLAG}.${path}`] = value;
@@ -255,7 +285,7 @@ export async function deleteCase(caseId) {
  * @returns {Promise<boolean|null>} null — дело закрыто (уведомление уже показано)
  */
 export async function pinClueToCase(caseId, originId, ownerUserId, folderId) {
-  if (!canManageCases()) return false;
+  if (!canManageCase(getCase(caseId))) return false;
   if (getCase(caseId)?.status === CASE_STATUS.closed) {
     ui.notifications.warn(localize("Case.ClosedReadOnly"));
     return null;

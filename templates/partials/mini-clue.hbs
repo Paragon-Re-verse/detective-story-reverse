@@ -1,0 +1,9 @@
+<li data-origin-id="{{originId}}" data-search="{{searchIndex}}">
+    <img src="{{img}}" alt="" loading="lazy">
+    <a class="clue-name" data-action="viewPlayerClue">{{name}}</a>
+    <span class="clue-type"><img src="{{typeIcon}}" alt=""> {{typeName}}</span>
+    {{#if levelLabel}}<button type="button" class="level-button" data-action="editPlayerLevels" data-tooltip="{{localize 'DETECTIVE_STORY.Levels.Manage'}}"><i class="fa-solid fa-layer-group" inert></i> {{levelLabel}}</button>{{/if}}
+    <span class="lock-slot">{{#if locked}}<i class="fa-solid fa-lock" data-tooltip="{{localize 'DETECTIVE_STORY.Case.ClueLocked'}}"></i>{{/if}}</span>
+    <button type="button" class="icon" data-action="editPlayerClue" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen"></i></button>
+    <button type="button" class="icon" data-action="deletePlayerClue" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash"></i></button>
+</li>

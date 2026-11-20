@@ -1,9 +1,11 @@
 import { getSetting, SETTING_KEYS } from "../settings.js";
 import { getPlayerUsers } from "../permissions.js";
 import { listClueTemplates, getClueTemplate } from "./clue-templates.js";
-import { userHasClue } from "./player-clues.js";
+import { userHasClue, getPlayerClue } from "./player-clues.js";
+import { describeLevelProgress } from "./clue-levels.js";
 import { listAllZones, getZoneState, isZoneLockedFor } from "./zones.js";
 import { listItemsInSubtree } from "./folder-tree.js";
+import { listCases } from "./cases.js";
 
 /**
  * Прогресс дела: какие улики относятся к делу и кто из игроков их нашёл.
@@ -65,7 +67,13 @@ export function buildCaseProgress(caseData, { onlyFound = false } = {}) {
       }
       if (unlimited) maxAttempts = 0;
       const locked = zoneEntries.length > 0 && zoneEntries.every((zoneEntry) => isZoneLockedFor(zoneEntry.zone, player));
-      return { userId: player.id, found: userHasClue(player, templateId), attempts, maxAttempts, locked };
+      const found = userHasClue(player, templateId);
+      let levelLabel = "";
+      if (found) {
+        const levelProgress = describeLevelProgress(getPlayerClue(player, templateId));
+        if (levelProgress.total > 1) levelLabel = `${levelProgress.open}/${levelProgress.total}`;
+      }
+      return { userId: player.id, found, attempts, maxAttempts, locked, levelLabel };
     });
     const foundCount = cells.filter((cell) => cell.found).length;
     if (onlyFound && !foundCount) continue;
@@ -86,4 +94,19 @@ export function buildCaseProgress(caseData, { onlyFound = false } = {}) {
     total: rows.length,
     foundByGroup: rows.filter((row) => row.foundCount > 0).length
   };
+}
+
+/**
+ * Состав всех дел за один проход: «id дела → улики» и множество улик, которые относятся хоть к одному делу.
+ * Нужен окну ГМ, чтобы в длинной кампании показывать только улики текущих дел (п. 15).
+ */
+export function buildCaseClueSets() {
+  const sets = new Map();
+  const inAnyCase = new Set();
+  for (const caseData of listCases()) {
+    const clueIds = new Set([...listCaseClueIds(caseData), ...Object.keys(caseData.pinned)]);
+    sets.set(caseData.id, clueIds);
+    for (const clueId of clueIds) inAnyCase.add(clueId);
+  }
+  return { sets, inAnyCase };
 }

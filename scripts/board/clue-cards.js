@@ -1,4 +1,5 @@
 import { MODULE_ID, BOARD_ASSET_PATH, DEFAULT_FONT, INK_COLORS, STICKY_TINTS, VIDEO_CASSETTE_IMAGE, VIDEO_CASSETTE_RATIO } from "../constants.js";
+import { getClueLevels, getLevelLabel } from "../data/clue-levels.js";
 import { localize } from "../i18n.js";
 import { getEffectiveScale, getBoardSetting, BOARD_SETTING_KEYS } from "./board-settings.js";
 import { createCards } from "./board-relay.js";
@@ -127,7 +128,15 @@ export async function createFreeCard(kind, position = {}, cardFlags = {}) {
 export async function placeClueOnBoard(playerClue, position = {}) {
   const visual = playerClue.visual ?? {};
   const kind = visual.kind || "photo";
-  const plainDescription = toPlainText(playerClue.description);
+  // Описание карточки — уровень 1 и все открытые у игрока уровни (п. 9).
+  const descriptionParts = getClueLevels(playerClue)
+    .filter((level) => level.open)
+    .map((level) => {
+      if (level.number === 1) return toPlainText(level.text);
+      return `${getLevelLabel(level.number)}. ${toPlainText(level.text)}`;
+    })
+    .filter((part) => part.trim().length > 0);
+  const plainDescription = descriptionParts.join("\n\n");
   const cardFlags = {
     originId: playerClue.originId,
     snapshot: { name: playerClue.name, img: playerClue.img, description: plainDescription },

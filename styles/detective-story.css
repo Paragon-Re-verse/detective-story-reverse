@@ -2030,7 +2030,11 @@
 }
 
 .detective-story .dsr-folder-tree {
-  flex: 0 0 190px;
+  flex: 0 0 auto;
+  width: 190px;
+  min-width: 120px;
+  max-width: 50%;
+  resize: horizontal;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -2042,7 +2046,7 @@
 
 .detective-story .case-clues .dsr-folder-tree,
 .detective-story .gm-library .dsr-folder-tree {
-  flex-basis: 170px;
+  width: 170px;
   padding-top: 0;
 }
 
@@ -2465,4 +2469,480 @@
 
 .detective-story .solution-reveal h3 {
   border: none;
+}
+
+/* ---------- 1.2.1: дерево папок — шапка, сворачивание ---------- */
+
+.detective-story .folder-tree-header {
+  display: flex;
+  gap: 4px;
+}
+
+.detective-story .folder-tree-header .folder-create-root {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.detective-story .folder-tree-toggle {
+  flex: 0 0 28px;
+}
+
+/* Свёрнутое дерево — узкая полоска с кнопкой; ширина из запомненного inline-стиля здесь не действует. */
+.detective-story .dsr-folder-tree.collapsed {
+  width: 36px !important;
+  min-width: 36px;
+  resize: none;
+  overflow: hidden;
+}
+
+.detective-story .dsr-folder-tree.collapsed > :not(.folder-tree-header),
+.detective-story .dsr-folder-tree.collapsed .folder-create-root {
+  display: none;
+}
+
+.detective-story .folder-tree-hint {
+  margin: auto 0 0;
+  font-size: var(--font-size-10, 10px);
+}
+
+/* ---------- Уровни улики ---------- */
+
+.detective-story .clue-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detective-story .clue-level {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-text-accent);
+  border-radius: 6px;
+}
+
+.detective-story .clue-level.locked {
+  border-left-color: var(--color-text-subtle);
+  opacity: 0.8;
+}
+
+.detective-story .level-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+}
+
+.detective-story .level-check {
+  color: var(--color-text-subtle);
+  font-weight: normal;
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .level-header button {
+  margin-left: auto;
+}
+
+.detective-story .level-locked {
+  margin: 4px 0 0;
+  color: var(--color-text-subtle);
+  font-style: italic;
+}
+
+.detective-story .study-button {
+  align-self: flex-start;
+  width: auto;
+}
+
+.detective-story .level-slot {
+  margin-bottom: 8px;
+}
+
+.detective-story .level-slot prose-mirror {
+  display: block;
+  height: 160px;
+}
+
+.detective-story .level-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(15, 12, 20, 0.85);
+  color: #f7f3e8;
+  font-size: 10px;
+  line-height: 16px;
+}
+
+.detective-story .level-button {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 24px;
+  padding: 0 6px;
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .level-progress {
+  font-size: var(--font-size-11, 11px);
+}
+
+.detective-story-chat .clue-chat-level {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed currentColor;
+}
+
+/* ---------- Поле «Проверка» ---------- */
+
+.detective-story .check-field {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+}
+
+.detective-story .check-field select,
+.detective-story .check-field input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- Сетка выбора ---------- */
+
+.detective-story .dsr-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detective-story .picker-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detective-story .picker-toolbar .picker-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .picker-toggle {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.detective-story .picker-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.detective-story .picker-grid .empty-message {
+  grid-column: 1 / -1;
+}
+
+.detective-story .picker-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px 2px 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .picker-chip:has(input:checked) {
+  border-color: var(--color-text-accent);
+  background: rgba(238, 155, 58, 0.12);
+}
+
+.detective-story .picker-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.detective-story .picker-chip img {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  object-fit: cover;
+  border: none;
+  border-radius: 50%;
+}
+
+.detective-story .picker-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detective-story .picker-badge {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-10, 10px);
+}
+
+/* ---------- Журнал дела: вкладки дела, плашки ---------- */
+
+.detective-story .case-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.detective-story .case-subtabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .case-subtab {
+  padding: 4px 10px;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.detective-story .case-subtab.active {
+  border-bottom-color: var(--color-text-accent);
+  font-weight: bold;
+}
+
+.detective-story .case-popout {
+  margin-left: auto;
+  padding: 4px 8px;
+}
+
+.detective-story .case-members-count {
+  margin-left: auto;
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-11, 11px);
+}
+
+.detective-story .chip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.detective-story .chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+}
+
+.detective-story .chip img {
+  width: 26px;
+  height: 26px;
+  object-fit: cover;
+  object-position: top;
+  border: none;
+  border-radius: 50%;
+}
+
+.detective-story .chip a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.detective-story .chip.archived,
+.detective-story .chip.shelved {
+  opacity: 0.7;
+}
+
+.detective-story .chip-remove {
+  display: none;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 10px;
+}
+
+.detective-story .chip:hover .chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detective-story .chip-add {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  padding: 0;
+}
+
+/* Встроенные окна: таймлайн, версии, прогресс */
+.detective-story .case-panel-host {
+  flex: 1;
+  display: flex;
+  min-height: 380px;
+}
+
+.detective-story .case-panel-host > .embedded-panel {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  inset: auto;
+  flex: 1;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  background: none;
+  z-index: auto;
+}
+
+/* Полароиды дела: кнопки и путь папки — при наведении (пп. Б2, Б3) */
+.detective-story .pinned-clue .move-pinned-button,
+.detective-story .pinned-clue .unpin-button,
+.detective-story .pinned-clues.show-folder .pinned-clue .folder-path {
+  visibility: hidden;
+}
+
+.detective-story .pinned-clue:hover .move-pinned-button,
+.detective-story .pinned-clue:hover .unpin-button,
+.detective-story .pinned-clues.show-folder .pinned-clue:hover .folder-path {
+  visibility: visible;
+}
+
+/* ---------- Подозреваемые: архив и фильтр ---------- */
+
+.detective-story .suspects-toolbar input[type="search"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .suspects-toolbar select {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 220px;
+}
+
+.detective-story .suspect-card.shelved img {
+  filter: grayscale(0.8);
+}
+
+.detective-story .shelved-badge,
+.detective-story .shelved-note {
+  color: var(--color-text-subtle);
+  font-size: var(--font-size-11, 11px);
+}
+
+/* ---------- Окно ГМ ---------- */
+
+.detective-story .player-filters {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.detective-story .player-filters select {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 260px;
+}
+
+.detective-story .player-filters input {
+  flex: 1;
+  min-width: 0;
+}
+
+.detective-story .gm-section {
+  margin-bottom: 8px;
+}
+
+.detective-story .gm-section > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  font-weight: bold;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detective-story .gm-section > summary label {
+  margin-left: auto;
+  font-weight: normal;
+  font-size: var(--font-size-12, 12px);
+}
+
+.detective-story .gm-section > summary button {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+.detective-story .library-toolbar select {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 220px;
+}
+
+/* ---------- Палитра цвета события ---------- */
+
+.detective-story .color-palette {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.detective-story .swatch-chip.no-color {
+  background: linear-gradient(135deg, transparent 45%, #b3261e 45%, #b3261e 55%, transparent 55%);
+}
+
+.detective-story .swatch.custom-color {
+  gap: 0;
+}
+
+.detective-story .swatch.custom-color input[type="color"] {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  width: 32px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+}
+
+.detective-story .swatch.custom-color:has(input[type="radio"]:checked) input[type="color"] {
+  outline: 2px solid var(--color-text-accent);
+  outline-offset: 1px;
+}
+
+/* ---------- Прогресс: без полос ---------- */
+
+.detective-story .progress-table tbody tr,
+.detective-story .progress-table tbody tr:nth-child(odd),
+.detective-story .progress-table tbody tr:nth-child(even) {
+  background: none;
+}
+
+.detective-story .progress-table tbody tr:hover {
+  background: rgba(127, 127, 127, 0.08);
 }

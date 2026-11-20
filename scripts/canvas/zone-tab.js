@@ -3,7 +3,7 @@ import { fullKey, localize } from "../i18n.js";
 import { getZone, zoneFieldName, resetZoneForUsers } from "../data/zones.js";
 import { listClueTemplates, getClueTemplate, defaultDetection } from "../data/clue-templates.js";
 import { getPlayerUsers } from "../permissions.js";
-import { getZoneModeChoices, getRollModeChoices, getCheckSuggestions } from "../apps/view-helpers.js";
+import { getZoneModeChoices, getRollModeChoices, getCheckSuggestions, attachCheckFields, syncCheckField } from "../apps/view-helpers.js";
 
 /**
  * Вкладка «Улика» в штатном окне настройки Tile: выбор шаблона и переопределение настроек
@@ -88,9 +88,11 @@ export function onRenderTileConfig(application, element) {
       const inputElement = tabElement.querySelector(`[name="${zoneFieldName(`detection.${field}`)}"]`);
       if (inputElement) inputElement.value = value;
     }
+    for (const fieldElement of tabElement.querySelectorAll(".check-field")) syncCheckField(fieldElement);
     syncRadiusVisibility(tabElement);
   });
 
+  attachCheckFields(tabElement);
   const modeSelect = tabElement.querySelector(`[name="${zoneFieldName("detection.zoneMode")}"]`);
   modeSelect?.addEventListener("change", () => syncRadiusVisibility(tabElement));
   syncRadiusVisibility(tabElement);

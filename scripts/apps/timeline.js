@@ -1,7 +1,6 @@
 import { TEMPLATE_PATH } from "../constants.js";
 import { localize, format } from "../i18n.js";
-import { DetectiveApplication, openSingleton } from "./base-application.js";
-import { canManageCases } from "../permissions.js";
+import { DetectiveApplication, openSingleton, EmbeddedMixin } from "./base-application.js";
 import {
   getCase,
   getCaseLabel,
@@ -11,6 +10,7 @@ import {
   setTimelineMode,
   isTimelineEventVisible,
   getArchivedSuspect,
+  canManageCase,
   TIMELINE_VISIBILITY,
   CASE_STATUS
 } from "../data/cases.js";
@@ -25,10 +25,11 @@ import {
   layoutTimeline
 } from "../data/timeline-layout.js";
 import { listCaseClueIds } from "../data/case-progress.js";
-import { getSuspect, listSuspects } from "../data/suspects.js";
+import { getSuspect } from "../data/suspects.js";
 import { userHasClue, getPlayerClue, getPlayerClues } from "../data/player-clues.js";
 import { getClueTemplate } from "../data/clue-templates.js";
-import { formatDateTime, enrichText } from "./view-helpers.js";
+import { formatDateTime, enrichText, attachPickers, toPickerItem } from "./view-helpers.js";
+import { buildSuspectPickerItems } from "./suspect-shelving.js";
 import { openClueView } from "./clue-view.js";
 import { openSuspectDossier } from "./suspect-dossier.js";
 
@@ -45,6 +46,8 @@ const DRAG_SNAP_MINUTES = 5;
 /** Сдвиг меньше этого — клик, а не перетаскивание. */
 const DRAG_THRESHOLD_PX = 4;
 const DEFAULT_EVENT_COLOR = "#c9593f";
+/** Готовые цвета событий (п. 12); любой другой — через «Другой…». */
+const EVENT_COLORS = ["#c9593f", "#d9a21b", "#5fbf6a", "#3a8fd9", "#8e5bd9", "#d94f8e", "#7a7a7a", "#3b2f22"];
 
 /**
  * Хронологическая карта дела. События раскладываются сами: по реальному времени (с масштабом) или на равных
@@ -55,7 +58,7 @@ const DEFAULT_EVENT_COLOR = "#c9593f";
 export class TimelineApplication extends DetectiveApplication {
   /** @param {string} caseId */
   constructor(caseId, options = {}) {
-    super({ ...options, id: TimelineApplication.buildId(caseId) });
+    super({ id: TimelineApplication.buildId(caseId), ...options });
     this.caseId = caseId;
     this.scale = TIMELINE_SCALES.time;
     /** Пикселей на минуту; null — вписать в окно. */
@@ -93,7 +96,7 @@ export class TimelineApplication extends DetectiveApplication {
 
   get canEdit() {
     const caseData = getCase(this.caseId);
-    return Boolean(caseData) && canManageCases() && caseData.status !== CASE_STATUS.closed;
+    return Boolean(caseData) && canManageCase(caseData) && caseData.status !== CASE_STATUS.closed;
   }
 
   /** Видимые пользователю события с разобранным временем. */
@@ -113,7 +116,8 @@ export class TimelineApplication extends DetectiveApplication {
     const times = events.flatMap((timelineEvent) => [timelineEvent.startMinutes, timelineEvent.endMinutes]).filter((minutes) => minutes !== null);
     let range = 1;
     if (times.length) range = Math.max(1, Math.max(...times) - Math.min(...times));
-    const visibleWidth = Math.max(300, (this.position.width ?? 980) - CARD_WIDTH - 60);
+    const availableWidth = this.hostElement?.clientWidth || this.position.width || 980;
+    const visibleWidth = Math.max(300, availableWidth - CARD_WIDTH - 60);
     const fitPixelsPerMinute = visibleWidth / range;
     const maximum = MAX_TRACK_WIDTH / range;
     let pixelsPerMinute = this.pixelsPerMinute ?? fitPixelsPerMinute;
@@ -420,30 +424,25 @@ function describeTick(minutes, mode, step) {
  */
 async function editTimelineEventDialog(caseId, timelineEvent, prefill = {}) {
   const caseData = getCase(caseId);
-  if (!caseData || !canManageCases()) return;
+  if (!caseData || !canManageCase(caseData)) return;
   const mode = caseData.timeline.mode;
   const eventData = timelineEvent ?? { id: "", title: "", description: "", start: "", end: "", approximate: false, location: "", color: "", image: "", clueIds: [], suspectIds: [], visibility: TIMELINE_VISIBILITY.visible, ...prefill };
   const selectedSuspects = new Set(eventData.suspectIds);
   const selectedClues = new Set(eventData.clueIds);
-  let suspects = caseData.suspectIds.map((suspectId) => getSuspect(suspectId)).filter(Boolean);
-  if (!suspects.length) suspects = listSuspects();
-  for (const suspectId of selectedSuspects) {
-    if (!suspects.some((suspect) => suspect.id === suspectId)) {
-      const suspect = getSuspect(suspectId) ?? getArchivedSuspect(suspectId);
-      if (suspect) suspects.push(suspect);
-    }
-  }
   const content = await renderTemplate(`${TEMPLATE_PATH}/apps/timeline-event.hbs`, {
     event: eventData,
     isDayMode: mode === TIMELINE_MODES.day,
     start: splitDayValue(eventData.start),
     end: splitDayValue(eventData.end),
-    colorValue: eventData.color || DEFAULT_EVENT_COLOR,
-    hasColor: Boolean(eventData.color),
+    noColor: !eventData.color,
+    colorChoices: EVENT_COLORS.map((value) => ({ value, selected: value === eventData.color })),
+    customSelected: Boolean(eventData.color) && !EVENT_COLORS.includes(eventData.color),
+    customValue: eventData.color || DEFAULT_EVENT_COLOR,
     isGameMaster: game.user.isGM,
     visibilityChoices: Object.fromEntries(Object.values(TIMELINE_VISIBILITY).map((visibility) => [visibility, `DETECTIVE_STORY.Timeline.VisibilityChoices.${visibility}`])),
-    suspects: suspects.map((suspect) => ({ id: suspect.id, name: suspect.name, portrait: suspect.portrait, selected: selectedSuspects.has(suspect.id) })),
-    clues: listEventClueChoices(caseData, selectedClues)
+    suspects: buildSuspectPickerItems(caseData.suspectIds, selectedSuspects),
+    suspectToggleLabel: localize("Suspect.SearchShelved"),
+    clues: listEventClueChoices(caseData, selectedClues).map((clue) => toPickerItem(clue))
   });
   let title = localize("Timeline.NewEvent");
   if (timelineEvent) title = localize("Timeline.EditEvent");
@@ -452,6 +451,7 @@ async function editTimelineEventDialog(caseId, timelineEvent, prefill = {}) {
     classes: ["detective-story", "timeline-event-dialog"],
     position: { width: 520 },
     content,
+    render: (event, dialog) => attachPickers(dialog.element),
     buttons: [
       {
         action: "save",
@@ -500,8 +500,8 @@ function readEventForm(form, mode) {
     start = elements.start?.value ?? "";
     end = elements.end?.value ?? "";
   }
-  let color = "";
-  if (elements.useColor?.checked) color = elements.color?.value ?? "";
+  let color = form.querySelector("input[name='colorChoice']:checked")?.value ?? "";
+  if (color === "custom") color = elements.customColor?.value ?? "";
   const checkedValues = (name) => [...form.querySelectorAll(`input[name='${name}']:checked`)].map((input) => input.value);
   return {
     title: elements.title?.value ?? "",
@@ -522,3 +522,6 @@ function readEventForm(form, mode) {
 export function openTimeline(caseId) {
   return openSingleton(TimelineApplication.buildId(caseId), () => new TimelineApplication(caseId));
 }
+
+/** Тот же вид внутри вкладки журнала дела. */
+export class EmbeddedTimeline extends EmbeddedMixin(TimelineApplication) {}

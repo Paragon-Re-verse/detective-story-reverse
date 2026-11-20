@@ -42,9 +42,12 @@
     </div>
     <div class="form-group">
         <label>{{localize "DETECTIVE_STORY.Timeline.Color"}}</label>
-        <div class="form-fields">
-            <input type="color" name="color" value="{{colorValue}}">
-            <label class="checkbox"><input type="checkbox" name="useColor" {{checked hasColor}}> {{localize "DETECTIVE_STORY.Timeline.UseColor"}}</label>
+        <div class="form-fields color-palette">
+            <label class="swatch" data-tooltip="{{localize 'DETECTIVE_STORY.Timeline.NoColor'}}"><input type="radio" name="colorChoice" value="" {{checked noColor}}><span class="swatch-chip no-color"></span></label>
+            {{#each colorChoices}}
+            <label class="swatch"><input type="radio" name="colorChoice" value="{{this.value}}" {{checked this.selected}}><span class="swatch-chip" style="--swatch-color: {{this.value}}"></span></label>
+            {{/each}}
+            <label class="swatch custom-color" data-tooltip="{{localize 'DETECTIVE_STORY.Timeline.OtherColor'}}"><input type="radio" name="colorChoice" value="custom" {{checked customSelected}}><input type="color" name="customColor" value="{{customValue}}"></label>
         </div>
     </div>
     <div class="form-group">
@@ -60,22 +63,10 @@
     {{/if}}
     <fieldset>
         <legend>{{localize "DETECTIVE_STORY.Timeline.Suspects"}}</legend>
-        <ul class="picker-list compact">
-            {{#each suspects}}
-            <li><label class="checkbox"><input type="checkbox" name="suspect" value="{{this.id}}" {{checked this.selected}}><img src="{{this.portrait}}" alt="" loading="lazy"><span>{{this.name}}</span></label></li>
-            {{else}}
-            <li class="empty-message">{{localize "DETECTIVE_STORY.Theories.NoSuspects"}}</li>
-            {{/each}}
-        </ul>
+        {{> dsr-picker items=suspects name="suspect" toggleLabel=suspectToggleLabel emptyText=(localize "DETECTIVE_STORY.Theories.NoSuspects")}}
     </fieldset>
     <fieldset>
         <legend>{{localize "DETECTIVE_STORY.Timeline.Clues"}}</legend>
-        <ul class="picker-list compact">
-            {{#each clues}}
-            <li><label class="checkbox"><input type="checkbox" name="clue" value="{{this.id}}" {{checked this.selected}}><img src="{{this.img}}" alt="" loading="lazy"><span>{{this.name}}</span></label></li>
-            {{else}}
-            <li class="empty-message">{{localize "DETECTIVE_STORY.Timeline.NoCaseClues"}}</li>
-            {{/each}}
-        </ul>
+        {{> dsr-picker items=clues name="clue" emptyText=(localize "DETECTIVE_STORY.Timeline.NoCaseClues")}}
     </fieldset>
 </div>

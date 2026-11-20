@@ -1,6 +1,7 @@
 import { MODULE_ID, FOLDER_KEYS, CLUE_KINDS, ZONE_MODES, ROLL_MODES, DEFAULT_FONT, INK_COLORS, STICKY_TINTS, BOARD_ASSET_PATH } from "../constants.js";
 import { localize } from "../i18n.js";
 import { ensureModuleFolder } from "./folders.js";
+import { normalizeLevels } from "./clue-levels.js";
 
 /**
  * Шаблон улики (то, что редактирует ГМ): один JournalEntry на шаблон в папке «Улики»,
@@ -123,6 +124,7 @@ function readTemplate(journalEntry) {
     ...summary,
     detection: normalizeDetection(stored.detection),
     visual: normalizeVisual(stored.visual),
+    levels: normalizeLevels(stored.levels),
     folderId: stored.folderId ?? null
   };
 }
@@ -157,7 +159,8 @@ function buildTemplateFlag(templateData) {
     description: summary.description,
     tags: summary.tags,
     detection: normalizeDetection(templateData.detection),
-    visual: normalizeVisual(templateData.visual)
+    visual: normalizeVisual(templateData.visual),
+    levels: normalizeLevels(templateData.levels)
   };
   // Редактор папку не передаёт: тогда поле не пишется и шаблон остаётся в своей папке. Импорт передаёт.
   if ("folderId" in templateData) flag.folderId = templateData.folderId ?? null;
@@ -218,7 +221,8 @@ export function buildPlayerContent(template) {
     typeId: template.typeId,
     description: template.description,
     tags: [...template.tags],
-    visual: { ...template.visual }
+    visual: { ...template.visual },
+    levels: foundry.utils.deepClone(template.levels)
   };
 }
 

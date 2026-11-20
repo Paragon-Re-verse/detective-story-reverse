@@ -1,13 +1,13 @@
 import { MODULE_ID, TEMPLATE_PATH } from "../constants.js";
 import { localize, format } from "../i18n.js";
-import { DetectiveApplication, openSingleton } from "./base-application.js";
-import { canManageCases } from "../permissions.js";
+import { DetectiveApplication, openSingleton, EmbeddedMixin } from "./base-application.js";
 import { getSetting, SETTING_KEYS } from "../settings.js";
-import { getCase, getCaseLabel, saveCaseClueSources, CASE_STATUS } from "../data/cases.js";
+import { getCase, getCaseLabel, saveCaseClueSources, canManageCase, CASE_STATUS } from "../data/cases.js";
 import { buildCaseProgress } from "../data/case-progress.js";
 import { listClueTemplates } from "../data/clue-templates.js";
 import { getChangedSectionKeys } from "../data/user-flags.js";
 import { buildFolderNodes, flattenFolderNodes } from "../data/folder-tree.js";
+import { attachPickers, toPickerItem } from "./view-helpers.js";
 
 const { DialogV2 } = foundry.applications.api;
 const { renderTemplate } = foundry.applications.handlebars;
@@ -19,7 +19,7 @@ const { renderTemplate } = foundry.applications.handlebars;
 export class CaseProgressApplication extends DetectiveApplication {
   /** @param {string} caseId */
   constructor(caseId, options = {}) {
-    super({ ...options, id: CaseProgressApplication.buildId(caseId) });
+    super({ id: CaseProgressApplication.buildId(caseId), ...options });
     this.caseId = caseId;
   }
 
@@ -50,7 +50,7 @@ export class CaseProgressApplication extends DetectiveApplication {
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const caseData = getCase(this.caseId);
-    if (!caseData || !canManageCases()) return Object.assign(context, { missing: true });
+    if (!caseData || !canManageCase(caseData)) return Object.assign(context, { missing: true });
     return Object.assign(context, {
       isGameMaster: game.user.isGM,
       isClosed: caseData.status === CASE_STATUS.closed,
@@ -87,12 +87,12 @@ export class CaseProgressApplication extends DetectiveApplication {
     const folderNodes = flattenFolderNodes(buildFolderNodes(getSetting(SETTING_KEYS.libraryFolders) ?? {}, {}));
     const content = await renderTemplate(`${TEMPLATE_PATH}/apps/clue-sources.hbs`, {
       folders: folderNodes.map((node) => ({ id: node.id, name: node.name, indent: (node.depth - 1) * 16, selected: selectedFolders.has(node.id) })),
-      templates: listClueTemplates().map((template) => ({
+      templates: listClueTemplates().map((template) => toPickerItem({
         id: template.id,
         name: template.name,
         img: template.img,
-        selected: selectedTemplates.has(template.id),
-        searchIndex: [template.name, ...template.tags].join(" ").toLocaleLowerCase(game.i18n.lang)
+        tags: template.tags,
+        selected: selectedTemplates.has(template.id)
       }))
     });
     const sources = await DialogV2.wait({
@@ -100,15 +100,7 @@ export class CaseProgressApplication extends DetectiveApplication {
       classes: ["detective-story", "clue-sources-dialog"],
       position: { width: 480 },
       content,
-      render: (event, dialog) => {
-        const searchInput = dialog.element.querySelector("input[name='templateSearch']");
-        searchInput?.addEventListener("input", () => {
-          const searchText = searchInput.value.trim().toLocaleLowerCase(game.i18n.lang);
-          for (const rowElement of dialog.element.querySelectorAll("[data-search]")) {
-            rowElement.hidden = Boolean(searchText) && !rowElement.dataset.search.includes(searchText);
-          }
-        });
-      },
+      render: (event, dialog) => attachPickers(dialog.element),
       buttons: [
         {
           action: "save",
@@ -130,6 +122,9 @@ export class CaseProgressApplication extends DetectiveApplication {
 
 /** @param {string} caseId */
 export function openCaseProgress(caseId) {
-  if (!canManageCases()) return null;
+  if (!canManageCase(getCase(caseId))) return null;
   return openSingleton(CaseProgressApplication.buildId(caseId), () => new CaseProgressApplication(caseId));
 }
+
+/** Тот же вид внутри вкладки журнала дела. */
+export class EmbeddedProgress extends EmbeddedMixin(CaseProgressApplication) {}

@@ -1,11 +1,11 @@
 import { MODULE_ID } from "../constants.js";
 import { localize, format } from "../i18n.js";
 import { getSetting, setSetting, SETTING_KEYS } from "../settings.js";
-import { canManageCases, canPinAnyClue } from "../permissions.js";
+import { canPinAnyClue } from "../permissions.js";
 import { readUserSection } from "./user-flags.js";
 import { getPlayerClues, buildPlayerClue, addCluesToUser, CLUE_SOURCES } from "./player-clues.js";
 import { getClueTemplate, buildPlayerContent, listClueTemplates } from "./clue-templates.js";
-import { getCase, updateOpenCaseFlag, buildPinnedClue, describeCase, isClueLockedByClosedCase, CASE_STATUS } from "./cases.js";
+import { getCase, canManageCase, updateOpenCaseFlag, buildPinnedClue, describeCase, isClueLockedByClosedCase, CASE_STATUS } from "./cases.js";
 import { listAllZones } from "./zones.js";
 import { logEvent, LOG_EVENTS } from "./event-log.js";
 import {
@@ -156,8 +156,8 @@ function createCaseScope(caseId) {
       return itemFolders;
     },
     // Закрытое дело не меняется (п. 27); править дела могут ГМ и профайлер.
-    canEdit: () => canManageCases() && getCase(caseId)?.status === CASE_STATUS.open && Boolean(game.journal.get(caseId)?.isOwner),
-    canRemoveItems: () => canManageCases(),
+    canEdit: () => canManageCase(getCase(caseId)) && getCase(caseId)?.status === CASE_STATUS.open && Boolean(game.journal.get(caseId)?.isOwner),
+    canRemoveItems: () => canManageCase(getCase(caseId)),
     isItemLocked: () => false,
     apply: async ({ folders = {}, items = {}, pins = {} }) => {
       const changes = {};
@@ -450,6 +450,18 @@ export async function pinFolderToCase(caseId, sourceUser, folderId, targetParent
   const saved = await caseScope.apply({ folders: copy.folders, items, pins });
   if (saved && pinnedNames.length) await logEvent(LOG_EVENTS.pinned, { clue: pinnedNames.join(", "), ...describeCase(getCase(caseId)) });
   return saved;
+}
+
+/** Ширина и скрытие панели дерева для вида окна (список игрока, библиотека, дело) на этом клиенте. */
+export function getTreeLayout(scopeType) {
+  return getSetting(SETTING_KEYS.folderTreeState)?.[`layout:${scopeType}`] ?? { hidden: false, width: 0 };
+}
+
+/** @param {string} scopeType @param {{hidden?: boolean, width?: number}} changes */
+export async function setTreeLayout(scopeType, changes) {
+  const treeState = foundry.utils.deepClone(getSetting(SETTING_KEYS.folderTreeState) ?? {});
+  treeState[`layout:${scopeType}`] = { ...getTreeLayout(scopeType), ...changes };
+  await setSetting(SETTING_KEYS.folderTreeState, treeState);
 }
 
 /** Свёрнутые папки дерева на этом клиенте. @param {string} scopeKey */

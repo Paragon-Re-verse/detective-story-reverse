@@ -17,10 +17,7 @@
     <div class="form-group">
         <label>{{localize "DETECTIVE_STORY.Detection.Check"}}</label>
         <div class="form-fields">
-            <input type="text" name="{{fieldPrefix}}.check" value="{{detection.check}}" list="{{datalistId}}">
-            <datalist id="{{datalistId}}">
-                {{#each checkSuggestions}}<option value="{{this.value}}">{{this.label}}</option>{{/each}}
-            </datalist>
+            {{> dsr-check-field name=(concat fieldPrefix ".check") value=detection.check checkSuggestions=checkSuggestions}}
         </div>
         <p class="hint">{{localize "DETECTIVE_STORY.Detection.CheckHint"}}</p>
     </div>

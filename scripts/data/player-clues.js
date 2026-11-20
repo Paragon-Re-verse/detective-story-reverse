@@ -3,6 +3,7 @@ import { getClueTemplate, buildPlayerContent, normalizeSummary, normalizeVisual 
 import { isClueLockedByClosedCase } from "./cases.js";
 import { localize } from "../i18n.js";
 import { logEvent, LOG_EVENTS } from "./event-log.js";
+import { normalizeLevels } from "./clue-levels.js";
 
 /**
  * Личные улики игрока: флаг clues на User, объект «originId → запись».
@@ -20,6 +21,9 @@ import { logEvent, LOG_EVENTS } from "./event-log.js";
  * @property {{source: "zone"|"gm"|"player", name: string}} receivedFrom
  * @property {string} notes
  * @property {boolean} isNew
+ * @property {Record<string, boolean>} openLevels - открытые уровни 2–6 (уровень 1, описание, открыт всегда)
+ * @property {object[]} levelsSnapshot - уровни на момент получения (если шаблон удалят)
+ * @property {boolean} customLevels - ГМ правил уровни этой копии
  */
 
 const SECTION = "clues";
@@ -74,7 +78,10 @@ export function buildPlayerClue(originId, content, receivedFrom, notes = "") {
     receivedAt: Date.now(),
     receivedFrom: { source: receivedFrom.source, name: receivedFrom.name ?? "" },
     notes: String(notes ?? ""),
-    isNew: true
+    isNew: true,
+    openLevels: {},
+    levelsSnapshot: normalizeLevels(content.levels),
+    customLevels: false
   };
 }
 
@@ -132,11 +139,13 @@ export async function updatePlayerClueContent(user, originId, content) {
   const existingClue = getPlayerClue(user, originId);
   if (!existingClue || warnIfLocked(originId)) return;
   const summary = normalizeSummary(content);
-  await writeUserEntry(user, SECTION, originId, {
-    ...existingClue,
-    ...summary,
-    visual: normalizeVisual(content.visual)
-  });
+  const updatedClue = { ...existingClue, ...summary, visual: normalizeVisual(content.visual) };
+  // Правка уровней делает копию своей: тексты шаблона на неё больше не влияют (п. 4).
+  if (content.levels !== undefined) {
+    updatedClue.levelsSnapshot = normalizeLevels(content.levels);
+    updatedClue.customLevels = true;
+  }
+  await writeUserEntry(user, SECTION, originId, updatedClue);
 }
 
 /** @param {User} user @param {string} originId */

@@ -22,7 +22,8 @@ const EVENT_ICONS = {
   [LOG_EVENTS.granted]: "fa-solid fa-gift",
   [LOG_EVENTS.pinned]: "fa-solid fa-folder-plus",
   [LOG_EVENTS.caseClosed]: "fa-solid fa-lock",
-  [LOG_EVENTS.caseReopened]: "fa-solid fa-lock-open"
+  [LOG_EVENTS.caseReopened]: "fa-solid fa-lock-open",
+  [LOG_EVENTS.levelOpened]: "fa-solid fa-layer-group"
 };
 
 /** Сколько записей показывать за раз: больше человек всё равно не прокрутит. */

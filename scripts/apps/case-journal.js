@@ -14,9 +14,18 @@ import {
   unpinClueFromCase,
   linkSuspectToCase,
   unlinkSuspectFromCase,
+  canSeeCase,
+  canManageCase,
+  setCaseMembers,
   CASE_STATUS
 } from "../data/cases.js";
 import { listSuspects, getSuspect } from "../data/suspects.js";
+import { getPlayerUsers } from "../permissions.js";
+import { pickItemsDialog } from "./view-helpers.js";
+import { offerSuspectShelving } from "./suspect-shelving.js";
+import { EmbeddedTimeline } from "./timeline.js";
+import { EmbeddedTheories } from "./case-theories.js";
+import { EmbeddedProgress } from "./case-progress.js";
 import { userHasClue } from "../data/player-clues.js";
 import { getChangedSectionKeys } from "../data/user-flags.js";
 import { enrichText, formatDateTime } from "./view-helpers.js";
@@ -54,6 +63,12 @@ export class CaseJournalApplication extends DetectiveApplication {
     this.selectedCaseId = null;
     this.editingDetails = false;
     this.selectedCaseFolderId = ALL_FOLDERS;
+    /** Вкладка внутри дела: overview, clues, timeline, theories, progress. */
+    this.caseSubtab = "overview";
+    /** Встроенное окно открытой вкладки (таймлайн, версии, прогресс). */
+    this.activePanel = null;
+    this.suspectFilter = "active";
+    this.suspectSearch = "";
   }
 
   static DEFAULT_OPTIONS = {
@@ -68,13 +83,13 @@ export class CaseJournalApplication extends DetectiveApplication {
       closeCase: CaseJournalApplication.#onCloseCase,
       reopenCase: CaseJournalApplication.#onReopenCase,
       deleteCase: CaseJournalApplication.#onDeleteCase,
-      openTimeline: CaseJournalApplication.#onOpenTimeline,
-      openTheories: CaseJournalApplication.#onOpenTheories,
-      openProgress: CaseJournalApplication.#onOpenProgress,
+      selectSubtab: CaseJournalApplication.#onSelectSubtab,
+      popoutSubtab: CaseJournalApplication.#onPopoutSubtab,
+      editMembers: CaseJournalApplication.#onEditMembers,
+      linkSuspects: CaseJournalApplication.#onLinkSuspects,
       unpinClue: CaseJournalApplication.#onUnpinClue,
       movePinnedClue: CaseJournalApplication.#onMovePinnedClue,
       openPinnedClue: CaseJournalApplication.#onOpenPinnedClue,
-      linkSuspect: CaseJournalApplication.#onLinkSuspect,
       unlinkSuspect: CaseJournalApplication.#onUnlinkSuspect,
       openSuspect: CaseJournalApplication.#onOpenSuspect,
       createSuspect: CaseJournalApplication.#onCreateSuspect
@@ -132,7 +147,9 @@ export class CaseJournalApplication extends DetectiveApplication {
       label: getCaseLabel(caseData),
       title: caseData.title,
       closed: caseData.status === CASE_STATUS.closed,
-      selected: caseData.id === this.selectedCaseId
+      selected: caseData.id === this.selectedCaseId,
+      memberCount: caseData.memberIds.length,
+      memberNames: caseData.memberIds.map((userId) => game.users.get(userId)?.name).filter(Boolean).join(", ")
     };
   }
 
@@ -153,7 +170,7 @@ export class CaseJournalApplication extends DetectiveApplication {
 
   /** Выбранное дело должно быть видно пользователю, иначе выбирается первое открытое. */
   #validateSelection(allCases) {
-    const visibleCases = allCases.filter((caseData) => caseData.status === CASE_STATUS.open || canManageCases());
+    const visibleCases = allCases.filter((caseData) => canSeeCase(caseData) && (caseData.status === CASE_STATUS.open || canManageCase(caseData)));
     if (!visibleCases.some((caseData) => caseData.id === this.selectedCaseId)) {
       this.selectedCaseId = allCases.find((caseData) => caseData.status === CASE_STATUS.open)?.id ?? null;
     }
@@ -162,7 +179,7 @@ export class CaseJournalApplication extends DetectiveApplication {
   async #prepareSelectedCase() {
     const caseData = getCase(this.selectedCaseId);
     if (!caseData) return null;
-    const managesCases = canManageCases();
+    const managesCases = canManageCase(caseData);
     this.caseFolders = caseData.folders;
     this.selectedCaseFolderId = validateSelectedFolder(caseData.folders, this.selectedCaseFolderId);
     const pinnedClues = Object.values(caseData.pinned)
@@ -189,16 +206,36 @@ export class CaseJournalApplication extends DetectiveApplication {
       if (snapshot) return { ...snapshot, archived: true };
       return null;
     }).filter(Boolean);
-    const availableSuspects = listSuspects().filter((suspect) => !caseData.suspectIds.includes(suspect.id));
     const isClosed = caseData.status === CASE_STATUS.closed;
+    const subtabs = [
+      { id: "overview", icon: "fa-solid fa-file-lines", label: localize("Case.Subtabs.overview") },
+      { id: "clues", icon: "fa-solid fa-magnifying-glass", label: localize("Case.Subtabs.clues") },
+      { id: "timeline", icon: "fa-solid fa-timeline", label: localize("Timeline.Title") }
+    ];
+    if (managesCases) {
+      subtabs.push({ id: "theories", icon: "fa-solid fa-lightbulb", label: localize("Theories.Title") });
+      subtabs.push({ id: "progress", icon: "fa-solid fa-chart-simple", label: localize("Progress.Title") });
+    }
+    if (!subtabs.some((subtab) => subtab.id === this.caseSubtab)) this.caseSubtab = "overview";
+    for (const subtab of subtabs) subtab.active = subtab.id === this.caseSubtab;
+    const embeddedSubtab = ["timeline", "theories", "progress"].includes(this.caseSubtab);
+    const members = caseData.memberIds.map((userId) => game.users.get(userId)).filter(Boolean).map((user) => ({
+      id: user.id,
+      name: user.name,
+      portrait: user.character?.img || user.avatar || CONST.DEFAULT_TOKEN
+    }));
     return {
       ...caseData,
+      subtab: this.caseSubtab,
+      subtabs,
+      embeddedSubtab,
+      popoutSubtab: embeddedSubtab,
+      members,
       label: getCaseLabel(caseData),
       enrichedDescription: await enrichText(caseData.description),
       pinnedClues,
       folderTree,
       linkedSuspects,
-      availableSuspects,
       isClosed,
       managesCases,
       canEdit: managesCases && !isClosed,
@@ -216,15 +253,15 @@ export class CaseJournalApplication extends DetectiveApplication {
     if (partId === "cases") {
       const allCases = listCases();
       this.#validateSelection(allCases);
-      partContext.openCases = allCases.filter((caseData) => caseData.status === CASE_STATUS.open).map((caseData) => this.#toListItem(caseData));
+      partContext.openCases = allCases.filter((caseData) => caseData.status === CASE_STATUS.open && canSeeCase(caseData)).map((caseData) => this.#toListItem(caseData));
       partContext.selectedCase = await this.#prepareSelectedCase();
       partContext.editingDetails = this.editingDetails;
     } else if (partId === "archive") {
       const allCases = listCases();
-      partContext.closedCases = allCases.filter((caseData) => caseData.status === CASE_STATUS.closed).map((caseData) => this.#toListItem(caseData));
+      partContext.closedCases = allCases.filter((caseData) => caseData.status === CASE_STATUS.closed && canSeeCase(caseData)).map((caseData) => this.#toListItem(caseData));
       partContext.archivedSuspectGroups = this.#groupArchivedSuspects(allCases);
     } else if (partId === "suspects") {
-      partContext.suspects = listSuspects();
+      Object.assign(partContext, this.#prepareSuspectsTab());
     }
     return partContext;
   }
@@ -283,7 +320,9 @@ export class CaseJournalApplication extends DetectiveApplication {
   /** @inheritDoc */
   async _onRender(context, options) {
     await super._onRender(context, options);
+    if (options.parts?.includes("suspects")) this.#attachSuspectFilters();
     if (!options.parts?.includes("cases")) return;
+    this.#mountPanel();
     attachFolderTree(this.element.querySelector(".case-clues"), {
       getScope: () => getFolderScope(FOLDER_SCOPES.case, this.selectedCaseId),
       onSelect: (folderId) => {
@@ -321,6 +360,76 @@ export class CaseJournalApplication extends DetectiveApplication {
       if (this.selectedCaseFolderId !== ALL_FOLDERS) folderId = toRealFolderId(this.selectedCaseFolderId);
       this.#onDropIntoCase(event, folderId);
     });
+  }
+
+  /**
+   * Вкладки «Таймлайн», «Версии» и «Прогресс» — те же окна, встроенные в журнал. Открыто только одно:
+   * при смене вкладки или дела прежнее закрывается (и снимает свои подписки на хуки).
+   */
+  #mountPanel() {
+    const hostElement = this.element.querySelector(".case-panel-host");
+    const panelKey = hostElement ? `${hostElement.dataset.subtab}-${this.selectedCaseId}` : null;
+    if (this.activePanel && this.activePanelKey !== panelKey) {
+      this.activePanel.close({ animate: false });
+      this.activePanel = null;
+    }
+    if (!hostElement) return;
+    if (!this.activePanel) {
+      const panelClasses = { timeline: EmbeddedTimeline, theories: EmbeddedTheories, progress: EmbeddedProgress };
+      const PanelClass = panelClasses[hostElement.dataset.subtab];
+      this.activePanel = new PanelClass(this.selectedCaseId, { id: `${this.id}-panel-${panelKey}` });
+      this.activePanelKey = panelKey;
+      this.activePanel.attachTo(hostElement);
+      this.activePanel.render({ force: true });
+      return;
+    }
+    this.activePanel.attachTo(hostElement);
+  }
+
+  /** @inheritDoc */
+  _onClose(options) {
+    this.activePanel?.close({ animate: false });
+    this.activePanel = null;
+    super._onClose(options);
+  }
+
+  /** Вкладка «Подозреваемые»: поиск и фильтр «Активные / в деле / в архиве / все» (п. 15). */
+  #prepareSuspectsTab() {
+    const filterChoices = { active: localize("Suspect.Filter.active"), shelved: localize("Suspect.Filter.shelved"), all: localize("Suspect.Filter.all") };
+    for (const caseData of listCases({ includeClosed: false }).filter((entry) => canSeeCase(entry))) {
+      filterChoices[`case:${caseData.id}`] = format("Suspect.Filter.inCase", { label: getCaseLabel(caseData), title: caseData.title });
+    }
+    if (!(this.suspectFilter in filterChoices)) this.suspectFilter = "active";
+    let suspects = listSuspects();
+    if (this.suspectFilter === "active") suspects = suspects.filter((suspect) => !suspect.shelved);
+    if (this.suspectFilter === "shelved") suspects = suspects.filter((suspect) => suspect.shelved);
+    if (this.suspectFilter.startsWith("case:")) {
+      const linkedIds = getCase(this.suspectFilter.slice("case:".length))?.suspectIds ?? [];
+      suspects = suspects.filter((suspect) => linkedIds.includes(suspect.id));
+    }
+    return {
+      suspects: suspects.map((suspect) => ({ ...suspect, searchIndex: [suspect.name, ...suspect.tags].join(" ").toLocaleLowerCase(game.i18n.lang) })),
+      suspectFilter: this.suspectFilter,
+      suspectFilterChoices: filterChoices,
+      suspectSearch: this.suspectSearch
+    };
+  }
+
+  #attachSuspectFilters() {
+    const filterSelect = this.element.querySelector("select[name='suspectFilter']");
+    filterSelect?.addEventListener("change", () => {
+      this.suspectFilter = filterSelect.value;
+      this.render({ parts: ["suspects"] });
+    });
+    const searchInput = this.element.querySelector("input[name='suspectSearch']");
+    const applySearch = () => {
+      this.suspectSearch = searchInput.value.trim().toLocaleLowerCase(game.i18n.lang);
+      for (const cardElement of this.element.querySelectorAll(".suspect-card[data-search]")) {
+        cardElement.hidden = Boolean(this.suspectSearch) && !cardElement.dataset.search.includes(this.suspectSearch);
+      }
+    };
+    searchInput?.addEventListener("input", applySearch);
+    if (searchInput) applySearch();
   }
 
   /** Показать улики выбранной папки дела, в «Все» — с путём папки. */
@@ -412,7 +521,9 @@ export class CaseJournalApplication extends DetectiveApplication {
       content: `<p>${localize("Case.CloseConfirm")}</p>`,
       rejectClose: false
     });
-    if (confirmed) await setCaseClosed(this.selectedCaseId, true);
+    if (!confirmed) return;
+    await setCaseClosed(this.selectedCaseId, true);
+    await offerSuspectShelving(this.selectedCaseId);
   }
 
   static async #onReopenCase() {
@@ -430,16 +541,53 @@ export class CaseJournalApplication extends DetectiveApplication {
     if (confirmed) await deleteCase(this.selectedCaseId);
   }
 
-  static #onOpenTimeline() {
-    if (this.selectedCaseId) openTimeline(this.selectedCaseId);
+  static #onSelectSubtab(event, target) {
+    this.caseSubtab = target.dataset.subtab;
+    this.render({ parts: ["cases"] });
   }
 
-  static #onOpenTheories() {
-    if (this.selectedCaseId) openCaseTheories(this.selectedCaseId);
+  /** Вынести вкладку в отдельное окно: таймлайн удобно держать открытым рядом с доской. */
+  static #onPopoutSubtab() {
+    if (!this.selectedCaseId) return;
+    if (this.caseSubtab === "timeline") openTimeline(this.selectedCaseId);
+    if (this.caseSubtab === "theories") openCaseTheories(this.selectedCaseId);
+    if (this.caseSubtab === "progress") openCaseProgress(this.selectedCaseId);
   }
 
-  static #onOpenProgress() {
-    if (this.selectedCaseId) openCaseProgress(this.selectedCaseId);
+  /** Участники дела: игроки, которые его ведут (п. 16). Задаёт ГМ. */
+  static async #onEditMembers() {
+    const caseData = getCase(this.selectedCaseId);
+    if (!caseData || !game.user.isGM) return;
+    const pickedIds = await pickItemsDialog({
+      title: localize("Case.EditMembers"),
+      icon: "fa-solid fa-users",
+      items: getPlayerUsers().map((user) => ({
+        id: user.id,
+        name: user.name,
+        img: user.character?.img || user.avatar || CONST.DEFAULT_TOKEN,
+        selected: caseData.memberIds.includes(user.id)
+      })),
+      emptyText: localize("GameMasterWindow.NoPlayers"),
+      confirmLabel: localize("Common.Save")
+    });
+    if (pickedIds) await setCaseMembers(this.selectedCaseId, pickedIds);
+  }
+
+  /** Привязать подозреваемых: сетка с поиском; архивные — по галочке «Искать в архиве». */
+  static async #onLinkSuspects() {
+    const caseData = getCase(this.selectedCaseId);
+    if (!caseData) return;
+    const pickedIds = await pickItemsDialog({
+      title: localize("Case.Link"),
+      icon: "fa-solid fa-user-plus",
+      items: listSuspects()
+        .filter((suspect) => !caseData.suspectIds.includes(suspect.id))
+        .map((suspect) => toSuspectPickerItem(suspect)),
+      toggleLabel: localize("Suspect.SearchShelved"),
+      emptyText: localize("Suspect.None"),
+      confirmLabel: localize("Case.Link")
+    });
+    for (const suspectId of pickedIds ?? []) await linkSuspectToCase(this.selectedCaseId, suspectId);
   }
 
   static async #onUnpinClue(event, target) {
@@ -460,12 +608,6 @@ export class CaseJournalApplication extends DetectiveApplication {
     if (userHasClue(game.user, originId)) openClueView(game.user, originId);
   }
 
-  static async #onLinkSuspect() {
-    const suspectSelect = this.element.querySelector("select[name='suspectToLink']");
-    if (!suspectSelect?.value) return;
-    await linkSuspectToCase(this.selectedCaseId, suspectSelect.value);
-  }
-
   static async #onUnlinkSuspect(event, target) {
     const suspectId = target.closest("[data-suspect-id]").dataset.suspectId;
     await unlinkSuspectFromCase(this.selectedCaseId, suspectId);
@@ -478,6 +620,13 @@ export class CaseJournalApplication extends DetectiveApplication {
   static #onCreateSuspect() {
     openSuspectDossier(null);
   }
+}
+
+/** Подозреваемый в сетке выбора: архивные скрыты, пока не отмечено «Искать в архиве». */
+function toSuspectPickerItem(suspect) {
+  let badge = "";
+  if (suspect.shelved) badge = localize("Suspect.ShelvedBadge");
+  return { id: suspect.id, name: suspect.name, img: suspect.portrait, tags: suspect.tags, extra: suspect.shelved, badge };
 }
 
 export function openCaseJournal() {

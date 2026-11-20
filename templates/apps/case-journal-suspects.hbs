@@ -1,14 +1,17 @@
 <section class="tab suspects-tab{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
-    {{#if canEditSuspects}}
     <header class="suspects-toolbar">
+        <input type="search" name="suspectSearch" value="{{suspectSearch}}" placeholder="{{localize 'DETECTIVE_STORY.ClueList.Search'}}">
+        <select name="suspectFilter">{{selectOptions suspectFilterChoices selected=suspectFilter}}</select>
+        {{#if canEditSuspects}}
         <button type="button" data-action="createSuspect"><i class="fa-solid fa-user-plus"></i> {{localize "DETECTIVE_STORY.Suspect.Create"}}</button>
+        {{/if}}
     </header>
-    {{/if}}
     <ul class="suspect-grid">
         {{#each suspects}}
-        <li class="suspect-card" data-suspect-id="{{this.id}}" data-action="openSuspect">
+        <li class="suspect-card{{#if this.shelved}} shelved{{/if}}" data-suspect-id="{{this.id}}" data-search="{{this.searchIndex}}" data-action="openSuspect">
             <img src="{{this.portrait}}" alt="" loading="lazy">
             <span class="suspect-name">{{this.name}}</span>
+            {{#if this.shelved}}<span class="shelved-badge"><i class="fa-solid fa-box-archive" inert></i> {{localize "DETECTIVE_STORY.Suspect.ShelvedBadge"}}</span>{{/if}}
             {{#if this.tags.length}}<span class="tags">{{#each this.tags}}<span class="tag">{{this}}</span>{{/each}}</span>{{/if}}
         </li>
         {{else}}

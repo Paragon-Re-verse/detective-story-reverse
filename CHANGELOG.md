@@ -4,7 +4,16 @@
 
 ## 1.2.1 — 2026-11-21
 
-- Screenshots in the GM Guide (pages 3, 6, 10, 11, 12), in Russian and English.
+- Clue levels: a clue can have up to 6 levels of information, each with its own text, check and difficulty; level 1 is the description and is open on receipt. A player opens the next level with “Study” (a check against its difficulty, unlimited tries; the GM gets a whisper with the result). The GM opens and closes any level per player — in the clue card, in GM window → Players (the “2/4” button) and for all holders at once from the library. Level texts come from the template unless the GM edited that player's copy. Open levels travel with a handover and merge with a duplicate; chat and board cards show all open levels; case progress and clue cards show “2/4”; a notification, a “new” badge and an event log entry when a level opens.
+- Several cases at once: a case has members (set by the GM). A player sees only cases they are a member of, a profiler runs only such cases; a case without members is visible to everyone.
+- Case journal: tabs inside a case — Overview (description, members, suspects), Clues, Timeline, Theories, Progress; the timeline, theories and progress open right inside the journal and can be popped out into a window. Header buttons became icons. Suspects and members are compact chips; suspects are linked with a searchable grid.
+- Dossier archive: “Archive / Restore from archive” instead of deleting; the Suspects tab has a search and a filter (active, in case, archived, all); archived suspects are hidden in pickers unless “Search the archive” is checked; closing a case offers to archive suspects that are in no other open case. Snapshots of deleted dossiers are now called “deleted dossiers”.
+- GM window for long campaigns: on the Players tab a case filter (the player's cases by default, a specific case or all clues), clues outside any case in a collapsed “No case” group, only zones with attempts by default, collapsible sections, a clue search and the levels button. The library filters by open cases (clues outside cases stay visible); “New clue” goes into the open folder; “Move” and “Delete” moved to the right-click menu and the “…” button.
+- Clue list: “Only current cases” toggle; on the card only “Place on the board” (and “Edit” for the GM) plus “…”, everything else in the right-click menu; a levels badge. The GM can use selection mode for any player.
+- Folder tree: folder actions in the right-click menu, the panel can be hidden and resized by dragging its edge (remembered).
+- Forms: compact searchable chip grids for suspects and clues (event, theory, solution, case clues); the “Check” field is a list of skills and abilities with “Custom formula…”; event color is a palette with “No color” and “Another color”.
+- Case progress: no striped rows, a dash instead of “no zone”, open levels next to found clues; on case cards in the journal the move and unpin buttons and the folder path appear on hover.
+- Screenshots in the GM Guide (pages 3, 6, 10, 11, 12), in Russian and English; new guide pages “Clue levels” and “A long campaign: several cases”, updated pages on clues, suspects, cases and folders. Some screenshots still show the 1.2.0 layout.
 
 ## 1.2.0 — 2026-11-20
 

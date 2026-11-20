@@ -1,19 +1,7 @@
 <div class="theory-form">
     <fieldset>
         <legend>{{localize "DETECTIVE_STORY.Theories.Suspects"}}</legend>
-        <ul class="picker-list compact">
-            {{#each suspects}}
-            <li>
-                <label class="checkbox">
-                    <input type="checkbox" name="suspect" value="{{this.id}}" {{checked this.selected}}>
-                    <img src="{{this.portrait}}" alt="" loading="lazy">
-                    <span>{{this.name}}</span>
-                </label>
-            </li>
-            {{else}}
-            <li class="empty-message">{{localize "DETECTIVE_STORY.Theories.NoSuspects"}}</li>
-            {{/each}}
-        </ul>
+        {{> dsr-picker items=suspects name="suspect" toggleLabel=suspectToggleLabel emptyText=(localize "DETECTIVE_STORY.Theories.NoSuspects")}}
     </fieldset>
     <div class="form-group stacked">
         <label>{{localize "DETECTIVE_STORY.Theories.Motive"}}</label>
@@ -32,19 +20,6 @@
     {{/if}}
     <fieldset>
         <legend>{{localize "DETECTIVE_STORY.Theories.Clues"}}</legend>
-        <input type="search" name="clueSearch" placeholder="{{localize 'DETECTIVE_STORY.Library.Search'}}">
-        <ul class="picker-list">
-            {{#each clues}}
-            <li data-search="{{this.searchIndex}}">
-                <label class="checkbox">
-                    <input type="checkbox" name="clue" value="{{this.id}}" {{checked this.selected}}>
-                    <img src="{{this.img}}" alt="" loading="lazy">
-                    <span>{{this.name}}</span>
-                </label>
-            </li>
-            {{else}}
-            <li class="empty-message">{{localize "DETECTIVE_STORY.Theories.NoClues"}}</li>
-            {{/each}}
-        </ul>
+        {{> dsr-picker items=clues name="clue" emptyText=(localize "DETECTIVE_STORY.Theories.NoClues")}}
     </fieldset>
 </div>

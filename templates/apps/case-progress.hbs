@@ -27,11 +27,11 @@
                 {{#each progress.rows}}
                 <tr class="{{#if this.foundCount}}found-by-group{{/if}}">
                     <td class="progress-clue"><img src="{{this.img}}" alt="" loading="lazy"> {{this.name}}</td>
-                    <td class="progress-places">{{#each this.places}}<span>{{this}}</span>{{else}}<span class="hint">{{localize "DETECTIVE_STORY.Progress.NoZone"}}</span>{{/each}}</td>
+                    <td class="progress-places">{{#each this.places}}<span>{{this}}</span>{{else}}<span class="hint" data-tooltip="{{localize 'DETECTIVE_STORY.Progress.NoZone'}}">—</span>{{/each}}</td>
                     <td class="progress-chain">{{#each this.requires}}<span><i class="fa-solid fa-link" inert></i> {{this}}</span>{{/each}}</td>
                     {{#each this.cells}}
                     <td class="progress-cell{{#if this.found}} found{{/if}}">
-                        {{#if this.found}}<i class="fa-solid fa-circle-check" data-tooltip="{{localize 'DETECTIVE_STORY.Progress.Found'}}"></i>
+                        {{#if this.found}}<i class="fa-solid fa-circle-check" data-tooltip="{{localize 'DETECTIVE_STORY.Progress.Found'}}"></i>{{#if this.levelLabel}} <span class="level-progress" data-tooltip="{{localize 'DETECTIVE_STORY.Levels.Progress'}}">{{this.levelLabel}}</span>{{/if}}
                         {{else if this.locked}}<i class="fa-solid fa-lock" data-tooltip="{{localize 'DETECTIVE_STORY.Progress.Locked'}}"></i>
                         {{else}}<span class="attempts" data-tooltip="{{localize 'DETECTIVE_STORY.Progress.Attempts'}}">{{this.attempts}}{{#if this.maxAttempts}}/{{this.maxAttempts}}{{/if}}</span>{{/if}}
                     </td>

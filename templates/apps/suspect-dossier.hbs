@@ -32,11 +32,13 @@
         </figure>
         <div class="dossier-title">
             <h2>{{suspect.name}}</h2>
+            {{#if suspect.shelved}}<p class="shelved-note"><i class="fa-solid fa-box-archive" inert></i> {{localize "DETECTIVE_STORY.Suspect.ShelvedNote"}}</p>{{/if}}
             {{#if suspect.archived}}<p class="archived-note"><i class="fa-solid fa-box-archive" inert></i> {{localize "DETECTIVE_STORY.Suspect.ArchivedNote"}}</p>{{/if}}
             {{#if suspect.tags.length}}<div class="tags">{{#each suspect.tags}}<span class="tag">{{this}}</span>{{/each}}</div>{{/if}}
             {{#if canEdit}}
             <div class="dossier-buttons">
                 <button type="button" data-action="toggleEdit"><i class="fa-solid fa-pen"></i> {{localize "DETECTIVE_STORY.Common.Edit"}}</button>
+                <button type="button" data-action="toggleShelved">{{#if suspect.shelved}}<i class="fa-solid fa-box-open"></i> {{localize "DETECTIVE_STORY.Suspect.Unshelve"}}{{else}}<i class="fa-solid fa-box-archive"></i> {{localize "DETECTIVE_STORY.Suspect.Shelve"}}{{/if}}</button>
                 <button type="button" data-action="deleteSuspect"><i class="fa-solid fa-trash"></i> {{localize "DETECTIVE_STORY.Common.Delete"}}</button>
             </div>
             {{/if}}

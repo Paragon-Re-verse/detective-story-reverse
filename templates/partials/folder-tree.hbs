@@ -1,7 +1,8 @@
-<aside class="dsr-folder-tree" data-scope-type="{{scopeType}}" data-scope-owner="{{scopeOwner}}">
-    {{#if canEdit}}
-    <button type="button" class="folder-create-root" data-folder-action="create"><i class="fa-solid fa-folder-plus" inert></i> {{localize "DETECTIVE_STORY.ClueFolders.New"}}</button>
-    {{/if}}
+<aside class="dsr-folder-tree{{#if layout.hidden}} collapsed{{/if}}" data-scope-type="{{scopeType}}" data-scope-owner="{{scopeOwner}}" {{#if layout.width}}style="width: {{layout.width}}px"{{/if}}>
+    <header class="folder-tree-header">
+        {{#if canEdit}}<button type="button" class="folder-create-root" data-folder-action="create" data-tooltip="{{localize 'DETECTIVE_STORY.ClueFolders.New'}}"><i class="fa-solid fa-folder-plus" inert></i> <span class="label">{{localize "DETECTIVE_STORY.ClueFolders.New"}}</span></button>{{/if}}
+        <button type="button" class="icon folder-tree-toggle" data-folder-action="collapseTree" data-tooltip="{{#if layout.hidden}}{{localize 'DETECTIVE_STORY.ClueFolders.ShowTree'}}{{else}}{{localize 'DETECTIVE_STORY.ClueFolders.HideTree'}}{{/if}}"><i class="fa-solid {{#if layout.hidden}}fa-angles-right{{else}}fa-angles-left{{/if}}" inert></i></button>
+    </header>
     <ul class="folder-branches">
         <li class="folder-branch">
             <div class="folder-node virtual{{#if selectedAll}} selected{{/if}}" data-folder-id="__all" data-folder-action="select">
@@ -21,4 +22,5 @@
         </li>
         {{#each nodes}}{{> dsr-folder-node}}{{/each}}
     </ul>
+    {{#if canEdit}}<p class="folder-tree-hint hint">{{localize "DETECTIVE_STORY.ClueFolders.RightClickHint"}}</p>{{/if}}
 </aside>

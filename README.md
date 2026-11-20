@@ -25,6 +25,8 @@ The module is a deep rework of the Investigation Re:Verse prototype. The board e
 - **Suspect dossiers** with personal notes for each player. A deleted dossier stays in its cases as an archived suspect.
 - **Clue chains**: a zone can require clues; until a player has them, the zone does not exist for them. A one-click “Zone labels” toggle for the GM.
 - **Theories and solution**: profilers put forward theories (suspects, motive, method, clues); the GM compares them with the case solution, marks them correct or wrong and decides whether to reveal the solution when closing the case.
+- **Clue levels**: up to 6 levels of information per clue, opened by the GM or by the player with “Study”.
+- **Several cases at once**: case members, case tabs, a dossier archive and case filters in the GM window for long campaigns.
 - **Case progress** for the GM and profilers: a “clue × players” table with places, chains and attempts.
 - **Cases, timeline, archive.** Numbered cases, pinning clues by drag and drop, case tags on players' clues, closing and reopening (a closed case does not change), a timeline by real time or with even spacing (intervals, places, colors, linked clues and suspects, hidden events and events shown by clue), an archive of closed cases and archived suspects by case.
 - **Clue board.** Clue cards of six kinds (including a VHS video cassette with an .mp4/.webm file that plays in a player with a tape effect, and the GM can show it to everyone), sticky notes, suspect photo cards, threads in a chosen color, “Details”, ready-made scenes in a compendium. While drawing a thread, right-click an empty spot to create any kind of card there (or place a clue or a suspect) already connected.

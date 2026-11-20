@@ -10,6 +10,10 @@ import { isBoardScene } from "../board/board-scenes.js";
 import { placeClueOnBoard } from "../board/clue-cards.js";
 import { enrichText, formatDateTime } from "./view-helpers.js";
 import { startTransfer } from "./transfer-dialogs.js";
+import { getClueLevels, getNextClosedLevel, setClueLevelOpen, describeCheck, getLevelLabel } from "../data/clue-levels.js";
+import { getClueTemplate } from "../data/clue-templates.js";
+import { rollDetectionCheck } from "../canvas/zone-search.js";
+import { whisperGameMasters, escapeText, GM_NOTE_TONES } from "../chat.js";
 
 /**
  * Карточка улики (просмотр): изображение, название, тип, описание, теги, «получено от»,
@@ -37,7 +41,9 @@ export class ClueViewApplication extends DetectiveApplication {
     actions: {
       showInChat: ClueViewApplication.#onShowInChat,
       placeOnBoard: ClueViewApplication.#onPlaceOnBoard,
-      transferClue: ClueViewApplication.#onTransferClue
+      transferClue: ClueViewApplication.#onTransferClue,
+      studyLevel: ClueViewApplication.#onStudyLevel,
+      toggleLevel: ClueViewApplication.#onToggleLevel
     }
   };
 
@@ -64,7 +70,28 @@ export class ClueViewApplication extends DetectiveApplication {
       receivedFromLabel = format("ClueView.ReceivedFrom", { name: playerClue.receivedFrom.name });
     }
     const isOwner = this.ownerUser.id === game.user.id;
+    const isGameMaster = game.user.isGM;
+    // Уровни: открытые — с текстом; закрытые игрок видит замком без текста (п. 6), ГМ — с текстом и проверкой.
+    const levels = [];
+    for (const level of getClueLevels(playerClue)) {
+      let html = "";
+      if (level.open || isGameMaster) html = await enrichText(level.text);
+      levels.push({
+        ...level,
+        label: getLevelLabel(level.number),
+        html,
+        checkLabel: describeCheck(level.check),
+        showLockedDetails: isGameMaster && level.number > 1,
+        canToggle: isGameMaster && level.number > 1
+      });
+    }
+    let nextLevel = null;
+    const nextClosedLevel = getNextClosedLevel(playerClue);
+    if (isOwner && nextClosedLevel) nextLevel = { number: nextClosedLevel.number, checkLabel: describeCheck(nextClosedLevel.check) };
     return Object.assign(context, {
+      levels,
+      hasLevels: levels.length > 1,
+      nextLevel,
       clue: playerClue,
       clueType,
       enrichedDescription: await enrichText(playerClue.description),
@@ -90,6 +117,10 @@ export class ClueViewApplication extends DetectiveApplication {
       if (onlyPersonalFields) return;
       this.render();
     });
+    // Тексты уровней берутся из шаблона: ГМ дописал уровень — окно обновляется.
+    this.subscribe("updateJournalEntry", (journalEntry) => {
+      if (journalEntry.id === this.originId) this.render();
+    });
     if (this.ownerUser.id === game.user.id) await markPlayerClueSeen(game.user, this.originId);
   }
 
@@ -111,6 +142,48 @@ export class ClueViewApplication extends DetectiveApplication {
       return;
     }
     await placeClueOnBoard(this.playerClue);
+  }
+
+  /**
+   * «Изучить»: проверка навыка следующего закрытого уровня против его сложности. Попыток не считаем (п. 2):
+   * провал — «Не получилось», и ГМ узнаёт об этом скрытым сообщением.
+   */
+  static async #onStudyLevel() {
+    const playerClue = this.playerClue;
+    const nextLevel = playerClue && getNextClosedLevel(playerClue);
+    if (!nextLevel || this.ownerUser.id !== game.user.id) return;
+    let actor = game.user.character ?? null;
+    if (!actor) actor = canvas?.tokens?.controlled.find((tokenObject) => tokenObject.isOwner && tokenObject.actor)?.actor ?? null;
+    const rollMode = getClueTemplate(this.originId)?.detection.rollMode ?? "publicroll";
+    const rollResult = await rollDetectionCheck({ check: nextLevel.check, dc: nextLevel.dc, rollMode }, actor);
+    if (!rollResult) return;
+    const succeeded = rollResult.total >= rollResult.difficulty;
+    if (succeeded) {
+      await setClueLevelOpen(game.user, this.originId, nextLevel.number, true);
+    } else {
+      ui.notifications.info(localize("Levels.StudyFailed"));
+    }
+    let messageKey = "Chat.LevelStudyFailed";
+    let tone = GM_NOTE_TONES.declined;
+    if (succeeded) {
+      messageKey = "Chat.LevelStudied";
+      tone = GM_NOTE_TONES.found;
+    }
+    await whisperGameMasters(format(messageKey, {
+      player: escapeText(game.user.name),
+      clue: escapeText(playerClue.name),
+      level: nextLevel.number,
+      total: rollResult.total,
+      dc: rollResult.difficulty
+    }), tone);
+  }
+
+  /** ГМ открывает или закрывает уровень у этого игрока (п. 7а). */
+  static async #onToggleLevel(event, target) {
+    if (!game.user.isGM) return;
+    const levelNumber = Number(target.dataset.level);
+    const isOpen = Boolean(this.playerClue?.openLevels?.[levelNumber]);
+    await setClueLevelOpen(this.ownerUser, this.originId, levelNumber, !isOpen);
   }
 
   static async #onTransferClue() {

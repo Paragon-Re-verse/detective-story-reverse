@@ -1,13 +1,14 @@
 <section class="tab gm-library{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
     <header class="library-toolbar">
         <input type="search" name="librarySearch" value="{{librarySearch}}" placeholder="{{localize 'DETECTIVE_STORY.Library.Search'}}">
+        <select name="libraryCaseFilter" data-tooltip="{{localize 'DETECTIVE_STORY.GameMasterWindow.CaseFilter'}}">{{selectOptions libraryCaseFilterChoices selected=libraryCaseFilter}}</select>
         <button type="button" data-action="newTemplate"><i class="fa-solid fa-plus"></i> {{localize "DETECTIVE_STORY.Library.New"}}</button>
     </header>
     <div class="folder-layout">
     {{> dsr-folder-tree folderTree}}
     <ul class="template-list folder-content">
         {{#each templates}}
-        <li class="template-row" data-template-id="{{this.id}}" data-folder-id="{{this.folderId}}" data-search="{{this.searchIndex}}" draggable="true" data-tooltip="{{localize 'DETECTIVE_STORY.Grant.DragHint'}}" data-tooltip-direction="LEFT">
+        <li class="template-row" data-template-id="{{this.id}}" data-folder-id="{{this.folderId}}" data-case-visible="{{#if this.caseVisible}}1{{else}}0{{/if}}" data-level-count="{{this.levelCount}}" data-search="{{this.searchIndex}}" draggable="true" data-tooltip="{{localize 'DETECTIVE_STORY.Grant.DragHint'}}" data-tooltip-direction="LEFT">
             <img class="template-image" src="{{this.img}}" alt="" loading="lazy" draggable="false">
             <div class="template-info">
                 <a class="template-name" data-action="editTemplate">{{this.name}}</a>
@@ -21,9 +22,8 @@
             </div>
             <div class="template-buttons">
                 <button type="button" class="icon" data-action="grantTemplate" data-tooltip="{{localize 'DETECTIVE_STORY.Grant.Button'}}"><i class="fa-solid fa-gift"></i></button>
-                <button type="button" class="icon" data-action="moveTemplate" data-tooltip="{{localize 'DETECTIVE_STORY.ClueFolders.MoveTo'}}"><i class="fa-solid fa-folder-tree"></i></button>
                 <button type="button" class="icon" data-action="editTemplate" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen"></i></button>
-                <button type="button" class="icon" data-action="deleteTemplate" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash"></i></button>
+                <button type="button" class="icon" data-action="openTemplateMenu" data-tooltip="{{localize 'DETECTIVE_STORY.ClueList.More'}}"><i class="fa-solid fa-ellipsis"></i></button>
             </div>
         </li>
         {{else}}

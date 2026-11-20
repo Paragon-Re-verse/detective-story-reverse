@@ -5,4 +5,5 @@
     </figure>
     <div class="clue-chat-type"><img src="{{clueType.icon}}" alt=""> {{clueType.name}}</div>
     {{#if enrichedDescription}}<div class="clue-chat-description">{{{enrichedDescription}}}</div>{{/if}}
+    {{#each levels}}<div class="clue-chat-level"><strong>{{this.label}}</strong>{{{this.html}}}</div>{{/each}}
 </div>
