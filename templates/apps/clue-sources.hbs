@@ -1,0 +1,22 @@
+<p class="hint">{{localize "DETECTIVE_STORY.Progress.SourcesHint"}}</p>
+<fieldset>
+    <legend>{{localize "DETECTIVE_STORY.Progress.Folders"}}</legend>
+    <ul class="picker-list compact">
+        {{#each folders}}
+        <li><label class="checkbox" style="padding-left: {{this.indent}}px"><input type="checkbox" name="folder" value="{{this.id}}" {{checked this.selected}}><i class="fa-solid fa-folder" inert></i> <span>{{this.name}}</span></label></li>
+        {{else}}
+        <li class="empty-message">{{localize "DETECTIVE_STORY.Progress.NoFolders"}}</li>
+        {{/each}}
+    </ul>
+</fieldset>
+<fieldset>
+    <legend>{{localize "DETECTIVE_STORY.Progress.Templates"}}</legend>
+    <input type="search" name="templateSearch" placeholder="{{localize 'DETECTIVE_STORY.Library.Search'}}">
+    <ul class="picker-list">
+        {{#each templates}}
+        <li data-search="{{this.searchIndex}}">
+            <label class="checkbox"><input type="checkbox" name="template" value="{{this.id}}" {{checked this.selected}}><img src="{{this.img}}" alt="" loading="lazy"><span>{{this.name}}</span></label>
+        </li>
+        {{/each}}
+    </ul>
+</fieldset>

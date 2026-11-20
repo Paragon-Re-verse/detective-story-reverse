@@ -1,0 +1,50 @@
+<div class="theory-form">
+    <fieldset>
+        <legend>{{localize "DETECTIVE_STORY.Theories.Suspects"}}</legend>
+        <ul class="picker-list compact">
+            {{#each suspects}}
+            <li>
+                <label class="checkbox">
+                    <input type="checkbox" name="suspect" value="{{this.id}}" {{checked this.selected}}>
+                    <img src="{{this.portrait}}" alt="" loading="lazy">
+                    <span>{{this.name}}</span>
+                </label>
+            </li>
+            {{else}}
+            <li class="empty-message">{{localize "DETECTIVE_STORY.Theories.NoSuspects"}}</li>
+            {{/each}}
+        </ul>
+    </fieldset>
+    <div class="form-group stacked">
+        <label>{{localize "DETECTIVE_STORY.Theories.Motive"}}</label>
+        <textarea name="motive" rows="3">{{motive}}</textarea>
+    </div>
+    <div class="form-group stacked">
+        <label>{{localize "DETECTIVE_STORY.Theories.Method"}}</label>
+        <textarea name="method" rows="3">{{method}}</textarea>
+    </div>
+    {{#if showText}}
+    <div class="form-group stacked">
+        <label>{{localize "DETECTIVE_STORY.Theories.RevealText"}}</label>
+        <textarea name="text" rows="4">{{text}}</textarea>
+        <p class="hint">{{localize "DETECTIVE_STORY.Theories.RevealTextHint"}}</p>
+    </div>
+    {{/if}}
+    <fieldset>
+        <legend>{{localize "DETECTIVE_STORY.Theories.Clues"}}</legend>
+        <input type="search" name="clueSearch" placeholder="{{localize 'DETECTIVE_STORY.Library.Search'}}">
+        <ul class="picker-list">
+            {{#each clues}}
+            <li data-search="{{this.searchIndex}}">
+                <label class="checkbox">
+                    <input type="checkbox" name="clue" value="{{this.id}}" {{checked this.selected}}>
+                    <img src="{{this.img}}" alt="" loading="lazy">
+                    <span>{{this.name}}</span>
+                </label>
+            </li>
+            {{else}}
+            <li class="empty-message">{{localize "DETECTIVE_STORY.Theories.NoClues"}}</li>
+            {{/each}}
+        </ul>
+    </fieldset>
+</div>

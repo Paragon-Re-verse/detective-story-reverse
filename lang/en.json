@@ -33,7 +33,8 @@
             "GameMasterWindow": "GM window",
             "Sticky": "Sticky note",
             "SuspectCard": "Suspect card",
-            "ThreadColor": "Thread color"
+            "ThreadColor": "Thread color",
+            "ZoneLabels": "Zone labels"
         },
         "Keybindings": {
             "ClueList": "Open clue list",
@@ -205,7 +206,10 @@
             "TemplateDeleted": "(template deleted)",
             "LabelDifficulty": "DC {dc}",
             "LabelRadius": "radius {radius} {units}",
-            "LabelAttempts": "attempts: {count}"
+            "LabelAttempts": "attempts: {count}",
+            "Requires": "Requires clues",
+            "RequiresHint": "The zone exists for a player only once they have all of these clues (a chain). Until then it isn't highlighted and clicking it does nothing.",
+            "LabelRequires": "Requires: {clues}"
         },
         "Detection": {
             "Legend": "Detection",
@@ -470,14 +474,43 @@
             "NewEvent": "New event",
             "EditEvent": "Event",
             "EventTitle": "Title",
-            "DateTime": "Date and time",
             "Photo": "Photo",
-            "Side": "Side of the line",
-            "Above": "Above the line",
-            "Below": "Below the line",
             "TitleRequired": "Enter an event title.",
             "DeleteTitle": "Delete event",
-            "DeleteConfirm": "Delete the timeline event?"
+            "DeleteConfirm": "Delete the timeline event?",
+            "ModeHint": "How event times are set",
+            "Modes": {
+                "date": "Dates",
+                "day": "Day N and time"
+            },
+            "ScaleTime": "By real time",
+            "ScaleEven": "Even spacing",
+            "ZoomOut": "Zoom out",
+            "ZoomFit": "Fit to window",
+            "ZoomIn": "Zoom in",
+            "DragHint": "Drag an event along the scale to change its time. Drop a clue from the clue list on the scale to create a new event.",
+            "Description": "Description",
+            "Start": "Start",
+            "End": "End",
+            "Day": "Day",
+            "EndHint": "The end is optional: with it the event is shown as an interval.",
+            "Approximate": "Approximate time",
+            "Location": "Place",
+            "Color": "Color",
+            "UseColor": "Custom color",
+            "Visibility": "Visibility",
+            "VisibilityHint": "“By clue”: players who have at least one of the checked clues see the event.",
+            "VisibilityChoices": {
+                "visible": "Visible to everyone",
+                "hidden": "Hidden (GM only)",
+                "onClue": "By clue"
+            },
+            "Suspects": "Suspects",
+            "Clues": "Clues",
+            "NoCaseClues": "No clues are pinned to the case.",
+            "DayLabel": "Day {day}, {time}",
+            "DayShort": "Day {day}",
+            "NoTime": "No time set"
         },
         "Permissions": {
             "Title": "Player permissions on the board",
@@ -626,6 +659,66 @@
             "LockedKept": "Clues of a closed case were not deleted and moved one level up: {count}.",
             "CopiedTo": "Folder “{folder}” given to {name}. New clues: {count}.",
             "CaseOnlyFromList": "Only folders from the clue list can be moved into a case."
+        },
+        "Theories": {
+            "Title": "Theories",
+            "TitleFor": "Theories: {label}",
+            "Submit": "Put forward a theory",
+            "EditSolution": "Case solution",
+            "CloseCase": "Close the case",
+            "Reveal": "Reveal the solution",
+            "Solution": "Solution",
+            "Revealed": "shown to players",
+            "NoSolution": "No solution set. Set one to see how theories match it.",
+            "All": "All theories",
+            "Mine": "My theories",
+            "Empty": "No theories yet.",
+            "Pending": "awaiting decision",
+            "Verdict": {
+                "correct": "correct",
+                "wrong": "wrong"
+            },
+            "MarkCorrect": "Correct",
+            "MarkWrong": "Wrong",
+            "ClearVerdict": "Clear decision",
+            "Suspects": "Suspects",
+            "NoSuspects": "No suspects.",
+            "Motive": "Motive",
+            "Method": "Method",
+            "RevealText": "Resolution",
+            "RevealTextHint": "Text players will see when you reveal the solution.",
+            "Clues": "Clues",
+            "NoClues": "No clues.",
+            "Matches": "Matches the solution",
+            "NoMatch": "Does not match the solution",
+            "SuspectRequired": "Choose at least one suspect.",
+            "Submitted": "The theory was sent to the GM.",
+            "CloseConfirm": "Close the case? Reveal the solution to players now? It can also be revealed later from the theories window of the closed case.",
+            "CloseAndReveal": "Close and reveal the solution",
+            "CloseSilently": "Close without the solution",
+            "RevealConfirm": "Reveal the solution to all players? A window opens for everyone online, and a chat message stays for the rest.",
+            "RevealHeading": "Solution: {label} “{title}”",
+            "RevealTitle": "Case solved"
+        },
+        "Progress": {
+            "Title": "Progress",
+            "TitleFor": "Progress: {label}",
+            "Total": "Found by the group: {found} of {total}",
+            "Sources": "Case clues",
+            "ProfilerHint": "Only clues already found by some player are shown.",
+            "Clue": "Clue",
+            "Where": "Where to search",
+            "Chain": "Chain",
+            "NoZone": "no zone",
+            "Found": "Found",
+            "Locked": "Locked by a chain",
+            "Attempts": "Attempts used",
+            "Empty": "The case has no clues yet. Press “Case clues” to link library folders or templates.",
+            "NothingFound": "Players haven't found anything for this case yet.",
+            "SourcesHint": "The case includes templates from the checked folders (with subfolders), the checked templates and clues already pinned to the case.",
+            "Folders": "Library folders",
+            "NoFolders": "The library has no folders.",
+            "Templates": "Individual templates"
         }
     }
 }

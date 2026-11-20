@@ -16,6 +16,7 @@ import { ProfilersConfig, PermissionsWarning } from "./apps/settings-apps.js";
 import { synchronizeTransfers } from "./apps/transfer-dialogs.js";
 import { openClueList } from "./apps/clue-list.js";
 import { openCaseJournal } from "./apps/case-journal.js";
+import { onCaseSolutionRevealed } from "./apps/case-theories.js";
 import { openGameMasterWindow, registerTemplateDropOnPlayersList } from "./apps/gm-window.js";
 import { registerBoardInit, registerBoardHooks, preloadBoardFonts } from "./board/board-main.js";
 import { syncStampFiles } from "./board/stamps.js";
@@ -30,7 +31,8 @@ const PARTIAL_TEMPLATES = {
   "dsr-swatches": `${TEMPLATE_PATH}/partials/swatches.hbs`,
   "dsr-vhs-screen": `${TEMPLATE_PATH}/partials/vhs-screen.hbs`,
   "dsr-folder-tree": `${TEMPLATE_PATH}/partials/folder-tree.hbs`,
-  "dsr-folder-node": `${TEMPLATE_PATH}/partials/folder-node.hbs`
+  "dsr-folder-node": `${TEMPLATE_PATH}/partials/folder-node.hbs`,
+  "dsr-theory-summary": `${TEMPLATE_PATH}/partials/theory-summary.hbs`
 };
 
 /** Изменился список профайлеров: ГМ переписывает права общих журналов. */
@@ -113,6 +115,8 @@ function onTemplateJournalChanged(journalEntry) {
   if (game.user.isGM && journalEntry.flags?.[MODULE_ID]?.template) refreshAllZones();
 }
 Hooks.on("createJournalEntry", onTemplateJournalChanged);
+// ГМ открыл развязку дела — окно у каждого, кто в сети (в чате она остаётся для остальных).
+Hooks.on("updateJournalEntry", (journalEntry, changes) => onCaseSolutionRevealed(journalEntry, changes));
 Hooks.on("updateJournalEntry", onTemplateJournalChanged);
 Hooks.on("deleteJournalEntry", onTemplateJournalChanged);
 

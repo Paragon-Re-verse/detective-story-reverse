@@ -36,12 +36,18 @@ function buildZoneTabContext(tileDocument) {
   const zone = getZone(tileDocument);
   let selectedTemplateId = "";
   let detection = defaultDetection();
+  let requiredIds = [];
   if (zone) {
     selectedTemplateId = zone.templateId;
     detection = zone.detection;
+    requiredIds = zone.requires;
   }
   const templateChoices = { "": localize("Zone.NoTemplate") };
-  for (const template of listClueTemplates()) templateChoices[template.id] = template.name;
+  const requireChoices = {};
+  for (const template of listClueTemplates()) {
+    templateChoices[template.id] = template.name;
+    requireChoices[template.id] = template.name;
+  }
 
   return {
     zone: {
@@ -50,6 +56,9 @@ function buildZoneTabContext(tileDocument) {
       templateId: selectedTemplateId,
       detection,
       templateFieldName: zoneFieldName("templateId"),
+      requiresFieldName: zoneFieldName("requires"),
+      requireChoices,
+      requiredIds,
       detectionPrefix: zoneFieldName("detection"),
       datalistId: `detective-zone-checks-${tileDocument.id ?? "new"}`,
       templateChoices,

@@ -7,6 +7,13 @@
         </div>
         <p class="hint">{{localize "DETECTIVE_STORY.Zone.TemplateHint"}}</p>
     </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Zone.Requires"}}</label>
+        <div class="form-fields">
+            <multi-select name="{{zone.requiresFieldName}}">{{selectOptions zone.requireChoices selected=zone.requiredIds}}</multi-select>
+        </div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Zone.RequiresHint"}}</p>
+    </div>
     {{> dsr-detection-fields fieldPrefix=zone.detectionPrefix detection=zone.detection zoneModeChoices=zone.zoneModeChoices rollModeChoices=zone.rollModeChoices checkSuggestions=zone.checkSuggestions units=zone.gridUnits datalistId=zone.datalistId}}
     <p class="hint warning-hint"><i class="fa-solid fa-circle-info"></i> {{localize "DETECTIVE_STORY.Zone.HiddenWarning"}}</p>
     {{#if zone.isZone}}
