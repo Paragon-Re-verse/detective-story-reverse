@@ -23,7 +23,10 @@ The module is a deep rework of the Investigation Re:Verse prototype. The board e
 - **Giving and handing over.** The GM gives clues instantly (including to offline players), also by dragging a template from the library onto a player. Players hand clues to each other without a GM: “Yes / No” windows one at a time, a duplicate warning, and a whisper to the GM.
 - **Discovery animation** in the middle of the screen (can be turned off in the module settings).
 - **Suspect dossiers** with personal notes for each player. A deleted dossier stays in its cases as an archived suspect.
-- **Cases, timeline, archive.** Numbered cases, pinning clues by drag and drop, case tags on players' clues, closing and reopening (a closed case does not change), a timeline with events above and below the line, an archive of closed cases and archived suspects by case.
+- **Clue chains**: a zone can require clues; until a player has them, the zone does not exist for them. A one-click “Zone labels” toggle for the GM.
+- **Theories and solution**: profilers put forward theories (suspects, motive, method, clues); the GM compares them with the case solution, marks them correct or wrong and decides whether to reveal the solution when closing the case.
+- **Case progress** for the GM and profilers: a “clue × players” table with places, chains and attempts.
+- **Cases, timeline, archive.** Numbered cases, pinning clues by drag and drop, case tags on players' clues, closing and reopening (a closed case does not change), a timeline by real time or with even spacing (intervals, places, colors, linked clues and suspects, hidden events and events shown by clue), an archive of closed cases and archived suspects by case.
 - **Clue board.** Clue cards of six kinds (including a VHS video cassette with an .mp4/.webm file that plays in a player with a tape effect, and the GM can show it to everyone), sticky notes, suspect photo cards, threads in a chosen color, “Details”, ready-made scenes in a compendium. While drawing a thread, right-click an empty spot to create any kind of card there (or place a clue or a suspect) already connected.
 - **Stamps.** Right-click a photo card, index card, sticky note or handout → “Stamp”: Classified, Missing, a hand-drawn X, Evidence, Deceased, Redacted, or Remove stamp. The stamp lands under the cursor. The stamp folder and color are module settings, so you can add your own stamps (white .webp with transparency).
 - **Event log** for the GM: discoveries, failed searches, handovers, board placements, clues given, cases — one filterable feed.
@@ -44,6 +47,8 @@ The module is a deep rework of the Investigation Re:Verse prototype. The board e
 | Deleting board cards | yes | no | no |
 | Folders in a clue list | any player's | own | own |
 | Case folders | yes | yes | read |
+| Theories | decides | puts forward, sees own | no |
+| Case progress | everything | only found clues | no |
 
 Profilers are chosen in the module settings. The restrictions rely on Foundry permissions: a player writes only to their own flags, shared journals belong to the GM and profilers, and actions relayed through the GM (socketlib) are checked on the GM's side.
 

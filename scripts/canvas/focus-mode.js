@@ -1,6 +1,6 @@
 import { localize, format } from "../i18n.js";
 import { getSetting, SETTING_KEYS } from "../settings.js";
-import { getZone, isZone, listCanvasZones, getZoneState } from "../data/zones.js";
+import { getZone, isZone, listCanvasZones, getZoneState, isZoneLockedFor } from "../data/zones.js";
 import { userHasClue } from "../data/player-clues.js";
 import { getClueTemplate } from "../data/clue-templates.js";
 
@@ -62,6 +62,8 @@ export function isZoneHighlighted(tileDocument) {
   if (!getClueTemplate(zone.templateId)) return false;
   if (getZoneState(game.user, tileDocument.id).found) return false;
   if (userHasClue(game.user, zone.templateId)) return false;
+  // Цепочка не пройдена: для игрока зоны как будто нет.
+  if (isZoneLockedFor(zone)) return false;
   return true;
 }
 
@@ -151,7 +153,12 @@ function describeZoneForGameMaster(tileDocument) {
     details.push(format("Zone.LabelRadius", { radius: detection.radius, units: canvas.scene?.grid?.units || game.i18n.localize("GridUnits") }));
   }
   if (detection.maxAttempts) details.push(format("Zone.LabelAttempts", { count: detection.maxAttempts }));
-  return `${title}\n${details.join(" · ")}`;
+  const lines = [title, details.join(" · ")];
+  if (zone.requires.length) {
+    const requiredNames = zone.requires.map((requiredId) => getClueTemplate(requiredId)?.name ?? localize("Zone.TemplateDeleted"));
+    lines.push(format("Zone.LabelRequires", { clues: requiredNames.join(", ") }));
+  }
+  return lines.join("\n");
 }
 
 /** Табличка: тёмная подложка и текст, якорь — середина нижнего края (над зоной). */

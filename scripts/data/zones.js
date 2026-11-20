@@ -2,9 +2,11 @@ import { MODULE_ID } from "../constants.js";
 import { localize } from "../i18n.js";
 import { readUserSection, writeUserEntry, deleteUserEntries } from "./user-flags.js";
 import { normalizeDetection, getClueTemplate } from "./clue-templates.js";
+import { userHasClue } from "./player-clues.js";
 
 /**
- * Зона поиска — Tile на сцене с флагом zone: { templateId, detection }.
+ * Зона поиска — Tile на сцене с флагом zone: { templateId, detection, requires }.
+ * requires — id шаблонов-улик, которые игрок должен уже иметь, чтобы зона для него существовала (цепочка улик).
  * Настройки обнаружения копируются из шаблона при выборе и могут быть переопределены (A3).
  *
  * Состояние игрока по зонам — флаг zoneState.<tileId> на User: { attempts, found }.
@@ -16,15 +18,34 @@ const STATE_SECTION = "zoneState";
 
 /**
  * @param {TileDocument} tileDocument
- * @returns {{templateId: string, detection: object}|null}
+ * @returns {{templateId: string, detection: object, requires: string[]}|null}
  */
 export function getZone(tileDocument) {
   const storedZone = tileDocument?.flags?.[MODULE_ID]?.[ZONE_FLAG];
   if (!storedZone?.templateId) return null;
   return {
     templateId: storedZone.templateId,
-    detection: normalizeDetection(storedZone.detection)
+    detection: normalizeDetection(storedZone.detection),
+    requires: normalizeRequires(storedZone.requires, storedZone.templateId)
   };
+}
+
+/** Список требуемых улик: строки id без повторов и без самой улики зоны. */
+export function normalizeRequires(requires, ownTemplateId) {
+  let requiredIds = requires;
+  if (typeof requiredIds === "string") requiredIds = requiredIds.split(",");
+  if (!Array.isArray(requiredIds)) return [];
+  const cleanIds = requiredIds.map((requiredId) => String(requiredId).trim()).filter((requiredId) => requiredId && requiredId !== ownTemplateId);
+  return [...new Set(cleanIds)];
+}
+
+/**
+ * Закрыта ли зона для игрока цепочкой: нужны все требуемые улики (п. 1). Проверяются улики самого игрока.
+ * @param {{requires: string[]}} zone
+ * @param {User} [user]
+ */
+export function isZoneLockedFor(zone, user = game.user) {
+  return zone.requires.some((requiredId) => !userHasClue(user, requiredId));
 }
 
 /** @param {TileDocument} tileDocument */

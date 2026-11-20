@@ -1,0 +1,14 @@
+<dl class="theory-summary">
+    <dt>{{localize "DETECTIVE_STORY.Theories.Suspects"}}</dt>
+    <dd>{{#each suspects}}<span class="theory-chip"><img src="{{this.portrait}}" alt="">{{this.name}}</span>{{else}}—{{/each}}{{#if (eq match.suspectsMatch true)}} <i class="fa-solid fa-circle-check match-yes" data-tooltip="{{localize 'DETECTIVE_STORY.Theories.Matches'}}"></i>{{/if}}{{#if (eq match.suspectsMatch false)}} <i class="fa-solid fa-circle-xmark match-no" data-tooltip="{{localize 'DETECTIVE_STORY.Theories.NoMatch'}}"></i>{{/if}}</dd>
+    <dt>{{localize "DETECTIVE_STORY.Theories.Motive"}}</dt>
+    <dd class="theory-text">{{#if motive}}{{motive}}{{else}}—{{/if}}</dd>
+    <dt>{{localize "DETECTIVE_STORY.Theories.Method"}}</dt>
+    <dd class="theory-text">{{#if method}}{{method}}{{else}}—{{/if}}</dd>
+    <dt>{{localize "DETECTIVE_STORY.Theories.Clues"}}</dt>
+    <dd>{{#each clues}}<span class="theory-chip"><img src="{{this.img}}" alt="">{{this.name}}</span>{{else}}—{{/each}}{{#if (eq match.cluesMatch true)}} <i class="fa-solid fa-circle-check match-yes" data-tooltip="{{localize 'DETECTIVE_STORY.Theories.Matches'}}"></i>{{/if}}{{#if (eq match.cluesMatch false)}} <i class="fa-solid fa-circle-xmark match-no" data-tooltip="{{localize 'DETECTIVE_STORY.Theories.NoMatch'}}"></i>{{/if}}</dd>
+    {{#if text}}
+    <dt>{{localize "DETECTIVE_STORY.Theories.RevealText"}}</dt>
+    <dd class="theory-text">{{text}}</dd>
+    {{/if}}
+</dl>

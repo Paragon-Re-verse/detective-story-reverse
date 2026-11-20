@@ -1,0 +1,47 @@
+<div class="theories-body">
+    {{#if missing}}
+    <p class="empty-message">{{localize "DETECTIVE_STORY.Timeline.Missing"}}</p>
+    {{else}}
+    <header class="theories-toolbar">
+        {{#if canSubmit}}<button type="button" data-action="submitTheory"><i class="fa-solid fa-lightbulb"></i> {{localize "DETECTIVE_STORY.Theories.Submit"}}</button>{{/if}}
+        {{#if isGameMaster}}
+        {{#unless isClosed}}
+        <button type="button" data-action="editSolution"><i class="fa-solid fa-key"></i> {{localize "DETECTIVE_STORY.Theories.EditSolution"}}</button>
+        <button type="button" data-action="closeWithSolution"><i class="fa-solid fa-lock"></i> {{localize "DETECTIVE_STORY.Theories.CloseCase"}}</button>
+        {{else}}
+        {{#unless solution.revealed}}<button type="button" data-action="revealSolution"><i class="fa-solid fa-bullhorn"></i> {{localize "DETECTIVE_STORY.Theories.Reveal"}}</button>{{/unless}}
+        {{/unless}}
+        {{/if}}
+    </header>
+    {{#if showSolution}}
+    <section class="theory-card solution-card">
+        <h3><i class="fa-solid fa-key"></i> {{localize "DETECTIVE_STORY.Theories.Solution"}}
+            {{#if solution.revealed}}<span class="verdict-badge correct">{{localize "DETECTIVE_STORY.Theories.Revealed"}}</span>{{/if}}
+        </h3>
+        {{#if solution.isEmpty}}<p class="empty-message">{{localize "DETECTIVE_STORY.Theories.NoSolution"}}</p>{{else}}{{> dsr-theory-summary solution}}{{/if}}
+    </section>
+    {{/if}}
+    <h3 class="theories-heading">{{#if isGameMaster}}{{localize "DETECTIVE_STORY.Theories.All"}}{{else}}{{localize "DETECTIVE_STORY.Theories.Mine"}}{{/if}}</h3>
+    <ul class="theory-list">
+        {{#each theories}}
+        <li class="theory-card verdict-{{#if this.verdict}}{{this.verdict}}{{else}}pending{{/if}}" data-theory-id="{{this.id}}">
+            <header class="theory-header">
+                <span class="theory-author"><i class="fa-solid fa-user-secret"></i> {{this.authorName}}</span>
+                <span class="theory-date">{{this.dateLabel}}</span>
+                <span class="verdict-badge {{#if this.verdict}}{{this.verdict}}{{else}}pending{{/if}}">{{this.verdictLabel}}</span>
+                {{#if ../isGameMaster}}{{#unless ../isClosed}}
+                <span class="theory-buttons">
+                    <button type="button" class="icon" data-action="markCorrect" data-tooltip="{{localize 'DETECTIVE_STORY.Theories.MarkCorrect'}}"><i class="fa-solid fa-check"></i></button>
+                    <button type="button" class="icon" data-action="markWrong" data-tooltip="{{localize 'DETECTIVE_STORY.Theories.MarkWrong'}}"><i class="fa-solid fa-xmark"></i></button>
+                    {{#if this.verdict}}<button type="button" class="icon" data-action="clearVerdict" data-tooltip="{{localize 'DETECTIVE_STORY.Theories.ClearVerdict'}}"><i class="fa-solid fa-rotate-left"></i></button>{{/if}}
+                </span>
+                {{/unless}}{{/if}}
+            </header>
+            {{> dsr-theory-summary this}}
+        </li>
+        {{else}}
+        <li class="empty-message">{{localize "DETECTIVE_STORY.Theories.Empty"}}</li>
+        {{/each}}
+    </ul>
+    {{/if}}
+</div>

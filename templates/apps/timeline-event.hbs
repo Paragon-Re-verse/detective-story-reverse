@@ -1,21 +1,81 @@
-<div class="form-group">
-    <label>{{localize "DETECTIVE_STORY.Timeline.EventTitle"}}</label>
-    <div class="form-fields"><input type="text" name="title" value="{{event.title}}" required autofocus></div>
-</div>
-<div class="form-group">
-    <label>{{localize "DETECTIVE_STORY.Timeline.DateTime"}}</label>
-    <div class="form-fields"><input type="datetime-local" name="dateTime" value="{{event.dateTime}}"></div>
-</div>
-<div class="form-group">
-    <label>{{localize "DETECTIVE_STORY.Timeline.Photo"}}</label>
-    <div class="form-fields"><file-picker name="image" type="image" value="{{event.image}}"></file-picker></div>
-</div>
-<div class="form-group">
-    <label>{{localize "DETECTIVE_STORY.Timeline.Side"}}</label>
-    <div class="form-fields">
-        <select name="side">
-            <option value="above" {{#if isAbove}}selected{{/if}}>{{localize "DETECTIVE_STORY.Timeline.Above"}}</option>
-            <option value="below" {{#unless isAbove}}selected{{/unless}}>{{localize "DETECTIVE_STORY.Timeline.Below"}}</option>
-        </select>
+<div class="timeline-event-form">
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.EventTitle"}}</label>
+        <div class="form-fields"><input type="text" name="title" value="{{event.title}}" required autofocus></div>
     </div>
+    <div class="form-group stacked">
+        <label>{{localize "DETECTIVE_STORY.Timeline.Description"}}</label>
+        <textarea name="description" rows="3">{{event.description}}</textarea>
+    </div>
+    {{#if isDayMode}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.Start"}}</label>
+        <div class="form-fields">
+            <span class="day-label">{{localize "DETECTIVE_STORY.Timeline.Day"}}</span><input type="number" name="startDay" min="1" step="1" value="{{start.day}}">
+            <input type="time" name="startTime" value="{{start.time}}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.End"}}</label>
+        <div class="form-fields">
+            <span class="day-label">{{localize "DETECTIVE_STORY.Timeline.Day"}}</span><input type="number" name="endDay" min="1" step="1" value="{{end.day}}">
+            <input type="time" name="endTime" value="{{end.time}}">
+        </div>
+    </div>
+    {{else}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.Start"}}</label>
+        <div class="form-fields"><input type="datetime-local" name="start" value="{{event.start}}"></div>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.End"}}</label>
+        <div class="form-fields"><input type="datetime-local" name="end" value="{{event.end}}"></div>
+    </div>
+    {{/if}}
+    <p class="hint">{{localize "DETECTIVE_STORY.Timeline.EndHint"}}</p>
+    <div class="form-group">
+        <label class="checkbox"><input type="checkbox" name="approximate" {{checked event.approximate}}> {{localize "DETECTIVE_STORY.Timeline.Approximate"}}</label>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.Location"}}</label>
+        <div class="form-fields"><input type="text" name="location" value="{{event.location}}"></div>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.Color"}}</label>
+        <div class="form-fields">
+            <input type="color" name="color" value="{{colorValue}}">
+            <label class="checkbox"><input type="checkbox" name="useColor" {{checked hasColor}}> {{localize "DETECTIVE_STORY.Timeline.UseColor"}}</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.Photo"}}</label>
+        <div class="form-fields"><file-picker name="image" type="image" value="{{event.image}}"></file-picker></div>
+    </div>
+    {{#if isGameMaster}}
+    <div class="form-group">
+        <label>{{localize "DETECTIVE_STORY.Timeline.Visibility"}}</label>
+        <div class="form-fields"><select name="visibility">{{selectOptions visibilityChoices selected=event.visibility localize=true}}</select></div>
+        <p class="hint">{{localize "DETECTIVE_STORY.Timeline.VisibilityHint"}}</p>
+    </div>
+    {{/if}}
+    <fieldset>
+        <legend>{{localize "DETECTIVE_STORY.Timeline.Suspects"}}</legend>
+        <ul class="picker-list compact">
+            {{#each suspects}}
+            <li><label class="checkbox"><input type="checkbox" name="suspect" value="{{this.id}}" {{checked this.selected}}><img src="{{this.portrait}}" alt="" loading="lazy"><span>{{this.name}}</span></label></li>
+            {{else}}
+            <li class="empty-message">{{localize "DETECTIVE_STORY.Theories.NoSuspects"}}</li>
+            {{/each}}
+        </ul>
+    </fieldset>
+    <fieldset>
+        <legend>{{localize "DETECTIVE_STORY.Timeline.Clues"}}</legend>
+        <ul class="picker-list compact">
+            {{#each clues}}
+            <li><label class="checkbox"><input type="checkbox" name="clue" value="{{this.id}}" {{checked this.selected}}><img src="{{this.img}}" alt="" loading="lazy"><span>{{this.name}}</span></label></li>
+            {{else}}
+            <li class="empty-message">{{localize "DETECTIVE_STORY.Timeline.NoCaseClues"}}</li>
+            {{/each}}
+        </ul>
+    </fieldset>
 </div>

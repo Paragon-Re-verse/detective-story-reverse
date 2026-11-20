@@ -26,6 +26,8 @@
             <div class="case-buttons">
                 <button type="button" data-action="openTimeline"><i class="fa-solid fa-timeline"></i> {{localize "DETECTIVE_STORY.Timeline.Title"}}</button>
                 {{#if ../canManageCases}}
+                <button type="button" data-action="openTheories"><i class="fa-solid fa-lightbulb"></i> {{localize "DETECTIVE_STORY.Theories.Title"}}</button>
+                <button type="button" data-action="openProgress"><i class="fa-solid fa-chart-simple"></i> {{localize "DETECTIVE_STORY.Progress.Title"}}</button>
                 {{#if isClosed}}
                 <button type="button" data-action="reopenCase"><i class="fa-solid fa-lock-open"></i> {{localize "DETECTIVE_STORY.Case.Reopen"}}</button>
                 {{else}}

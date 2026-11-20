@@ -1,6 +1,7 @@
 import { MODULE_ID, TEMPLATE_PATH, THREAD_COLORS } from "./constants.js";
 import { localize, fullKey } from "./i18n.js";
 import { toggleFocusMode, isFocusModeActive } from "./canvas/focus-mode.js";
+import { getSetting, setSetting, SETTING_KEYS } from "./settings.js";
 import { openClueList } from "./apps/clue-list.js";
 import { openCaseJournal } from "./apps/case-journal.js";
 import { openGameMasterWindow } from "./apps/gm-window.js";
@@ -39,6 +40,17 @@ export function registerSceneControls() {
           toggle: true,
           active: isFocusModeActive(),
           onChange: (event, active) => toggleFocusMode(active)
+        },
+        // Подписи над зонами (улика, проверка, СЛ, цепочка) — одним нажатием у ГМ (п. 5).
+        zoneLabels: {
+          name: "zoneLabels",
+          order: 5,
+          title: fullKey("Controls.ZoneLabels"),
+          icon: "fa-solid fa-tags",
+          toggle: true,
+          active: Boolean(getSetting(SETTING_KEYS.zoneLabels)),
+          visible: game.user.isGM,
+          onChange: (event, active) => setSetting(SETTING_KEYS.zoneLabels, active)
         },
         gmWindow: {
           name: "gmWindow",

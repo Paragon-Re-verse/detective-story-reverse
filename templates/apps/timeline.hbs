@@ -2,30 +2,55 @@
     {{#if missing}}
     <p class="empty-message">{{localize "DETECTIVE_STORY.Timeline.Missing"}}</p>
     {{else}}
-    {{#if canEdit}}
     <header class="timeline-toolbar">
+        {{#if canEdit}}
         <button type="button" data-action="addEvent"><i class="fa-solid fa-calendar-plus"></i> {{localize "DETECTIVE_STORY.Timeline.NewEvent"}}</button>
+        <select name="timelineMode" data-tooltip="{{localize 'DETECTIVE_STORY.Timeline.ModeHint'}}">{{selectOptions modeChoices selected=mode localize=true}}</select>
+        {{/if}}
+        <span class="toolbar-spacer"></span>
+        <div class="timeline-scale">
+            <button type="button" data-action="setScale" data-scale="time" class="{{#if isTimeScale}}active{{/if}}" data-tooltip="{{localize 'DETECTIVE_STORY.Timeline.ScaleTime'}}"><i class="fa-solid fa-ruler-horizontal"></i></button>
+            <button type="button" data-action="setScale" data-scale="even" class="{{#unless isTimeScale}}active{{/unless}}" data-tooltip="{{localize 'DETECTIVE_STORY.Timeline.ScaleEven'}}"><i class="fa-solid fa-grip"></i></button>
+            {{#if isTimeScale}}
+            <button type="button" class="icon" data-action="zoomOut" data-tooltip="{{localize 'DETECTIVE_STORY.Timeline.ZoomOut'}}"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+            <button type="button" class="icon" data-action="zoomFit" data-tooltip="{{localize 'DETECTIVE_STORY.Timeline.ZoomFit'}}"><i class="fa-solid fa-arrows-left-right-to-line"></i></button>
+            <button type="button" class="icon" data-action="zoomIn" data-tooltip="{{localize 'DETECTIVE_STORY.Timeline.ZoomIn'}}"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+            {{/if}}
+        </div>
     </header>
-    {{/if}}
-    <div class="timeline-track">
-        <div class="timeline-grid" style="grid-template-columns: repeat({{columnCount}}, minmax(180px, 1fr));">
-            <div class="timeline-line"></div>
-            {{#each events}}
-            <article class="timeline-event {{#if this.isAbove}}above{{else}}below{{/if}}" style="grid-column: {{this.column}};" data-event-id="{{this.id}}">
-                {{#if this.image}}<img class="event-image" src="{{this.image}}" alt="" loading="lazy">{{/if}}
-                <div class="event-date"><i class="fa-regular fa-clock" inert></i> {{this.dateLabel}}</div>
-                <div class="event-title">{{this.title}}</div>
+    <div class="timeline-track{{#if canEdit}} droppable{{/if}}">
+        <div class="timeline-canvas" style="width: {{layout.width}}px; height: {{layout.height}}px;">
+            <div class="timeline-axis" style="top: {{layout.lineY}}px;"></div>
+            {{#each ticks}}
+            <div class="timeline-tick" style="left: {{this.x}}px; top: {{../layout.lineY}}px;"><span>{{this.label}}</span></div>
+            {{/each}}
+            {{#each items}}
+            {{#if this.barWidth}}<div class="timeline-interval" style="left: {{this.x}}px; width: {{this.barWidth}}px; top: {{../layout.lineY}}px; --event-color: {{this.color}};" data-tooltip="{{this.dateLabel}}"></div>{{/if}}
+            <div class="timeline-stem" style="left: {{this.x}}px; top: {{this.stemTop}}px; height: {{this.stemHeight}}px; --event-color: {{this.color}};"></div>
+            <div class="timeline-dot{{#if this.approximate}} approximate{{/if}}" style="left: {{this.x}}px; top: {{../layout.lineY}}px; --event-color: {{this.color}};"></div>
+            <article class="timeline-card {{this.side}}{{#if this.untimed}} untimed{{/if}}{{#if this.isHiddenForPlayers}} gm-only{{/if}}" style="left: {{this.left}}px; top: {{this.top}}px; width: {{../cardWidth}}px; height: {{../cardHeight}}px; --event-color: {{this.color}};" data-event-id="{{this.id}}">
+                {{#if this.image}}<img class="card-image" src="{{this.image}}" alt="" loading="lazy" draggable="false">{{/if}}
+                <div class="card-text">
+                    <div class="card-date">{{#if this.approximate}}≈ {{/if}}{{this.dateLabel}}</div>
+                    <div class="card-title" data-tooltip="{{this.title}}">{{this.title}}</div>
+                    <div class="card-meta">
+                        {{#if this.location}}<span data-tooltip="{{this.location}}"><i class="fa-solid fa-location-dot" inert></i> {{this.location}}</span>{{/if}}
+                        {{#if this.clueCount}}<span><i class="fa-solid fa-magnifying-glass" inert></i> {{this.clueCount}}</span>{{/if}}
+                        {{#if this.suspectCount}}<span><i class="fa-solid fa-user-secret" inert></i> {{this.suspectCount}}</span>{{/if}}
+                        {{#if this.visibilityIcon}}<i class="{{this.visibilityIcon}} visibility-icon" data-tooltip="{{this.visibilityLabel}}"></i>{{/if}}
+                    </div>
+                </div>
                 {{#if ../canEdit}}
-                <div class="event-actions">
-                    <button type="button" class="icon" data-action="editEvent" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen"></i></button>
-                    <button type="button" class="icon" data-action="deleteEvent" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash"></i></button>
+                <div class="card-actions">
+                    <button type="button" class="icon" data-action="editEvent" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Edit'}}"><i class="fa-solid fa-pen" inert></i></button>
+                    <button type="button" class="icon" data-action="deleteEvent" data-tooltip="{{localize 'DETECTIVE_STORY.Common.Delete'}}"><i class="fa-solid fa-trash" inert></i></button>
                 </div>
                 {{/if}}
             </article>
-            <div class="timeline-marker" style="grid-column: {{this.column}};" data-tooltip="{{this.dateLabel}}"></div>
             {{/each}}
         </div>
     </div>
     {{#unless hasEvents}}<p class="empty-message">{{localize "DETECTIVE_STORY.Timeline.Empty"}}</p>{{/unless}}
+    {{#if canEdit}}<p class="hint timeline-hint">{{localize "DETECTIVE_STORY.Timeline.DragHint"}}</p>{{/if}}
     {{/if}}
 </div>

@@ -1,0 +1,14 @@
+<div class="timeline-details">
+    {{#if event.image}}<img class="details-image" src="{{event.image}}" alt="">{{/if}}
+    <p class="details-date" style="--event-color: {{color}}"><i class="fa-regular fa-clock" inert></i> {{#if event.approximate}}≈ {{/if}}{{dateLabel}}</p>
+    {{#if event.location}}<p class="details-location"><i class="fa-solid fa-location-dot" inert></i> {{event.location}}</p>{{/if}}
+    {{#if description}}<div class="details-description">{{{description}}}</div>{{/if}}
+    {{#if suspects.length}}
+    <h4>{{localize "DETECTIVE_STORY.Timeline.Suspects"}}</h4>
+    <ul class="details-links">{{#each suspects}}<li><a data-suspect-id="{{this.id}}"><img src="{{this.portrait}}" alt=""> {{this.name}}</a></li>{{/each}}</ul>
+    {{/if}}
+    {{#if clues.length}}
+    <h4>{{localize "DETECTIVE_STORY.Timeline.Clues"}}</h4>
+    <ul class="details-links">{{#each clues}}<li>{{#if this.canOpen}}<a data-origin-id="{{this.id}}"><img src="{{this.img}}" alt=""> {{this.name}}</a>{{else}}<span class="not-owned"><img src="{{this.img}}" alt=""> {{this.name}}</span>{{/if}}</li>{{/each}}</ul>
+    {{/if}}
+</div>

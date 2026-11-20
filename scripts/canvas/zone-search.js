@@ -1,6 +1,6 @@
 import { MODULE_ID } from "../constants.js";
 import { localize, format } from "../i18n.js";
-import { getZone, listCanvasZones, getZoneState, areAttemptsExhausted, recordFailedAttempt, recordFoundZone } from "../data/zones.js";
+import { getZone, listCanvasZones, getZoneState, areAttemptsExhausted, recordFailedAttempt, recordFoundZone, isZoneLockedFor } from "../data/zones.js";
 import { getClueTemplate, buildPlayerContent } from "../data/clue-templates.js";
 import { buildPlayerClue, addCluesToUser, userHasClue, CLUE_SOURCES } from "../data/player-clues.js";
 import { whisperGameMasters, escapeText, GM_NOTE_TONES } from "../chat.js";
@@ -49,12 +49,14 @@ function handleCanvasClick(event) {
 }
 
 /**
- * Верхняя зона под точкой (по порядку отрисовки).
+ * Верхняя зона под точкой (по порядку отрисовки). Зоны, закрытые для игрока цепочкой, не учитываются:
+ * клик проходит сквозь них, как будто зоны нет.
  * @param {{x: number, y: number}} point
  */
 function findZoneAtPoint(point) {
   const zonesUnderPoint = listCanvasZones().filter((tileObject) => {
     const tileDocument = tileObject.document;
+    if (isZoneLockedFor(getZone(tileDocument))) return false;
     return point.x >= tileDocument.x && point.x <= tileDocument.x + tileDocument.width
       && point.y >= tileDocument.y && point.y <= tileDocument.y + tileDocument.height;
   });
@@ -197,7 +199,7 @@ export async function searchZone(tileDocument) {
 /** @param {TileDocument} tileDocument */
 async function runZoneSearch(tileDocument) {
   const zone = getZone(tileDocument);
-  if (!zone) return;
+  if (!zone || isZoneLockedFor(zone)) return;
   const template = getClueTemplate(zone.templateId);
   if (!template) {
     ui.notifications.warn(localize("Search.NoTemplate"));

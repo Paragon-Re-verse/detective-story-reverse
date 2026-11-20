@@ -22,6 +22,8 @@ import { getChangedSectionKeys } from "../data/user-flags.js";
 import { enrichText, formatDateTime } from "./view-helpers.js";
 import { openSuspectDossier } from "./suspect-dossier.js";
 import { openTimeline } from "./timeline.js";
+import { openCaseTheories } from "./case-theories.js";
+import { openCaseProgress } from "./case-progress.js";
 import { openClueView } from "./clue-view.js";
 import { getFolderScope, moveItemsToFolder, pinFolderToCase, FOLDER_SCOPES } from "../data/clue-folders.js";
 import { resolveFolderId, getFolderPath } from "../data/folder-tree.js";
@@ -67,6 +69,8 @@ export class CaseJournalApplication extends DetectiveApplication {
       reopenCase: CaseJournalApplication.#onReopenCase,
       deleteCase: CaseJournalApplication.#onDeleteCase,
       openTimeline: CaseJournalApplication.#onOpenTimeline,
+      openTheories: CaseJournalApplication.#onOpenTheories,
+      openProgress: CaseJournalApplication.#onOpenProgress,
       unpinClue: CaseJournalApplication.#onUnpinClue,
       movePinnedClue: CaseJournalApplication.#onMovePinnedClue,
       openPinnedClue: CaseJournalApplication.#onOpenPinnedClue,
@@ -428,6 +432,14 @@ export class CaseJournalApplication extends DetectiveApplication {
 
   static #onOpenTimeline() {
     if (this.selectedCaseId) openTimeline(this.selectedCaseId);
+  }
+
+  static #onOpenTheories() {
+    if (this.selectedCaseId) openCaseTheories(this.selectedCaseId);
+  }
+
+  static #onOpenProgress() {
+    if (this.selectedCaseId) openCaseProgress(this.selectedCaseId);
   }
 
   static async #onUnpinClue(event, target) {

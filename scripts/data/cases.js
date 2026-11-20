@@ -1,6 +1,6 @@
 import { MODULE_ID, FOLDER_KEYS } from "../constants.js";
 import { localize, format } from "../i18n.js";
-import { canCreateCases, canManageCases, canPinAnyClue } from "../permissions.js";
+import { canCreateCases, canManageCases, canPinAnyClue, isProfiler } from "../permissions.js";
 import { registerGameMasterHandler, requestAsGameMaster, assertPermission } from "../socket.js";
 import { getSetting, setSetting, SETTING_KEYS } from "../settings.js";
 import { ensureModuleFolder } from "./folders.js";
@@ -8,6 +8,7 @@ import { getPlayerClue } from "./player-clues.js";
 import { getClueTemplate } from "./clue-templates.js";
 import { buildCollaboratorOwnership, listFlaggedJournals } from "./shared-journals.js";
 import { logEvent, LOG_EVENTS } from "./event-log.js";
+import { TIMELINE_MODES, parseTimelineTime } from "./timeline-layout.js";
 
 /**
  * Дело — JournalEntry в папке «Дела», данные во флаге case.
@@ -17,7 +18,73 @@ import { logEvent, LOG_EVENTS } from "./event-log.js";
 
 const CASE_FLAG = "case";
 export const CASE_STATUS = { open: "open", closed: "closed" };
-export const TIMELINE_SIDES = { above: "above", below: "below" };
+/** Видимость события таймлайна: всем, только ГМ, или игроку, у которого есть связанная улика (п. 23). */
+export const TIMELINE_VISIBILITY = { visible: "visible", hidden: "hidden", onClue: "onClue" };
+/** Решение ГМ по версии профайлера. */
+export const THEORY_VERDICTS = { correct: "correct", wrong: "wrong" };
+
+/** Список строк-id без пустых и повторов. */
+function readIdList(value) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map((entry) => String(entry)).filter((entry) => entry.length > 0))];
+}
+
+/**
+ * Событие таймлайна в нормальном виде. Старые события (1.0–1.1) хранили dateTime и side: dateTime читается как начало,
+ * side больше не нужен — сторона выбирается раскладкой.
+ * @param {object} stored
+ */
+export function normalizeTimelineEvent(stored = {}) {
+  let visibility = TIMELINE_VISIBILITY.visible;
+  if (Object.values(TIMELINE_VISIBILITY).includes(stored.visibility)) visibility = stored.visibility;
+  let color = "";
+  if (/^#[0-9a-f]{6}$/i.test(String(stored.color ?? ""))) color = stored.color;
+  return {
+    id: String(stored.id ?? ""),
+    title: String(stored.title ?? "").trim(),
+    description: String(stored.description ?? ""),
+    start: String(stored.start ?? stored.dateTime ?? ""),
+    end: String(stored.end ?? ""),
+    approximate: Boolean(stored.approximate),
+    location: String(stored.location ?? "").trim(),
+    color,
+    image: String(stored.image ?? ""),
+    clueIds: readIdList(stored.clueIds),
+    suspectIds: readIdList(stored.suspectIds),
+    visibility
+  };
+}
+
+/** @param {object} stored */
+function readSolution(stored = {}) {
+  return {
+    suspectIds: readIdList(stored.suspectIds),
+    clueIds: readIdList(stored.clueIds),
+    motive: String(stored.motive ?? ""),
+    method: String(stored.method ?? ""),
+    text: String(stored.text ?? ""),
+    revealed: Boolean(stored.revealed),
+    revealedAt: stored.revealedAt ?? null
+  };
+}
+
+/** @param {object} stored */
+function readTheory(stored = {}) {
+  let verdict = null;
+  if (Object.values(THEORY_VERDICTS).includes(stored.verdict)) verdict = stored.verdict;
+  return {
+    id: String(stored.id ?? ""),
+    authorId: String(stored.authorId ?? ""),
+    authorName: String(stored.authorName ?? ""),
+    suspectIds: readIdList(stored.suspectIds),
+    clueIds: readIdList(stored.clueIds),
+    motive: String(stored.motive ?? ""),
+    method: String(stored.method ?? ""),
+    createdAt: Number(stored.createdAt) || 0,
+    verdict,
+    decidedAt: stored.decidedAt ?? null
+  };
+}
 
 /** @param {JournalEntry} journalEntry */
 function readCase(journalEntry) {
@@ -34,10 +101,24 @@ function readCase(journalEntry) {
     folders: stored.folders ?? {},
     suspectIds: Array.isArray(stored.suspectIds) ? stored.suspectIds : [],
     archivedSuspects: stored.archivedSuspects ?? {},
-    timeline: { events: stored.timeline?.events ?? {} },
+    timeline: readTimeline(stored.timeline),
+    theories: Object.fromEntries(Object.entries(stored.theories ?? {}).map(([theoryId, theory]) => [theoryId, readTheory(theory)])),
+    solution: readSolution(stored.solution),
+    clueSources: { folderIds: readIdList(stored.clueSources?.folderIds), templateIds: readIdList(stored.clueSources?.templateIds) },
     createdAt: stored.createdAt ?? 0,
     closedAt: stored.closedAt ?? null
   };
+}
+
+/** @param {object} storedTimeline */
+function readTimeline(storedTimeline = {}) {
+  let mode = TIMELINE_MODES.date;
+  if (storedTimeline.mode === TIMELINE_MODES.day) mode = TIMELINE_MODES.day;
+  const events = {};
+  for (const [eventId, storedEvent] of Object.entries(storedTimeline.events ?? {})) {
+    events[eventId] = normalizeTimelineEvent({ ...storedEvent, id: storedEvent?.id || eventId });
+  }
+  return { mode, events };
 }
 
 /** Подпись дела: «Дело №1». */
@@ -268,24 +349,44 @@ export function getArchivedSuspect(suspectId) {
 }
 
 /**
- * Создать или изменить событие таймлайна.
+ * Создать или изменить событие таймлайна. Конец раньше начала не сохраняется: событие становится точкой.
  * @param {string} caseId
- * @param {{id?: string, title: string, dateTime: string, image: string, side: string}} eventInput
+ * @param {object} eventInput - поля normalizeTimelineEvent
  */
 export function saveTimelineEvent(caseId, eventInput) {
   let eventId = eventInput.id;
   if (!eventId) eventId = foundry.utils.randomID();
-  let side = TIMELINE_SIDES.above;
-  if (eventInput.side === TIMELINE_SIDES.below) side = TIMELINE_SIDES.below;
-  return updateOpenCaseFlag(caseId, {
-    [`timeline.events.${eventId}`]: {
-      id: eventId,
-      title: String(eventInput.title ?? "").trim(),
-      dateTime: String(eventInput.dateTime ?? ""),
-      image: String(eventInput.image ?? ""),
-      side
-    }
-  });
+  const timelineEvent = normalizeTimelineEvent({ ...eventInput, id: eventId });
+  const mode = getCase(caseId)?.timeline.mode ?? TIMELINE_MODES.date;
+  const startMinutes = parseTimelineTime(timelineEvent.start, mode);
+  const endMinutes = parseTimelineTime(timelineEvent.end, mode);
+  if (endMinutes === null || startMinutes === null || endMinutes <= startMinutes) timelineEvent.end = "";
+  return updateOpenCaseFlag(caseId, { [`timeline.events.${eventId}`]: timelineEvent });
+}
+
+/** Сдвинуть событие по шкале (перетаскивание): меняются только начало и конец. */
+export function moveTimelineEvent(caseId, eventId, start, end) {
+  return updateOpenCaseFlag(caseId, { [`timeline.events.${eventId}.start`]: start, [`timeline.events.${eventId}.end`]: end });
+}
+
+/** Обычные даты или «день N, время». Уже введённые значения другого режима остаются, но не разбираются. */
+export function setTimelineMode(caseId, mode) {
+  let timelineMode = TIMELINE_MODES.date;
+  if (mode === TIMELINE_MODES.day) timelineMode = TIMELINE_MODES.day;
+  return updateOpenCaseFlag(caseId, { "timeline.mode": timelineMode });
+}
+
+/**
+ * Видно ли событие пользователю. ГМ видит всё; скрытое — только ГМ; «по улике» — тем, у кого есть
+ * хотя бы одна из связанных улик.
+ * @param {object} timelineEvent
+ * @param {(originId: string) => boolean} hasClue
+ */
+export function isTimelineEventVisible(timelineEvent, hasClue, isGameMaster = game.user.isGM) {
+  if (isGameMaster) return true;
+  if (timelineEvent.visibility === TIMELINE_VISIBILITY.hidden) return false;
+  if (timelineEvent.visibility === TIMELINE_VISIBILITY.onClue) return timelineEvent.clueIds.some((originId) => hasClue(originId));
+  return true;
 }
 
 /** @param {string} caseId @param {string} eventId */
@@ -293,9 +394,76 @@ export function deleteTimelineEvent(caseId, eventId) {
   return updateOpenCaseFlag(caseId, { [`timeline.events.-=${eventId}`]: null });
 }
 
-/** События, отсортированные по дате. @param {object} caseData */
-export function getSortedTimelineEvents(caseData) {
-  return Object.values(caseData.timeline.events).sort((first, second) => String(first.dateTime).localeCompare(String(second.dateTime)));
+/* -------------------------------------------- */
+/*  Версии профайлеров и разгадка               */
+/* -------------------------------------------- */
+
+/**
+ * Профайлер выдвигает версию (п. 7). Каждая отправка — новая запись: ГМ видит всю историю (п. 12).
+ * @param {string} caseId
+ * @param {{suspectIds: string[], clueIds: string[], motive: string, method: string}} theoryInput
+ */
+export async function submitTheory(caseId, theoryInput) {
+  if (!isProfiler()) return false;
+  const theoryId = foundry.utils.randomID();
+  const theory = readTheory({
+    ...theoryInput,
+    id: theoryId,
+    authorId: game.user.id,
+    authorName: game.user.name,
+    createdAt: Date.now()
+  });
+  return updateOpenCaseFlag(caseId, { [`theories.${theoryId}`]: theory });
+}
+
+/** Решение ГМ по версии: верно, неверно или снять решение (null). */
+export function decideTheory(caseId, theoryId, verdict) {
+  if (!game.user.isGM) return false;
+  let storedVerdict = null;
+  if (Object.values(THEORY_VERDICTS).includes(verdict)) storedVerdict = verdict;
+  let decidedAt = null;
+  if (storedVerdict) decidedAt = Date.now();
+  return updateOpenCaseFlag(caseId, { [`theories.${theoryId}.verdict`]: storedVerdict, [`theories.${theoryId}.decidedAt`]: decidedAt });
+}
+
+/** Разгадка дела, которую ГМ задаёт заранее (подсказка «совпало / не совпало», п. 9). */
+export function saveSolution(caseId, solutionInput) {
+  if (!game.user.isGM) return false;
+  // Отметку «показана» меняет только закрытие с показом: здесь её не пишем, чтобы не открыть развязку заново.
+  const { revealed, revealedAt, ...solution } = readSolution(solutionInput);
+  return updateOpenCaseFlag(caseId, { solution });
+}
+
+/**
+ * Закрыть дело после решения; показывать ли развязку игрокам, ГМ выбирает сам (п. 11).
+ * Развязку можно показать и позже, у уже закрытого дела.
+ */
+export async function closeCaseWithSolution(caseId, reveal) {
+  if (!game.user.isGM || !getCase(caseId)) return;
+  if (getCase(caseId).status !== CASE_STATUS.closed) await setCaseClosed(caseId, true);
+  if (reveal) await updateCaseFlag(caseId, { "solution.revealed": true, "solution.revealedAt": Date.now() });
+}
+
+/**
+ * Совпадение версии с разгадкой: подозреваемые — тот же набор, улики — все улики разгадки есть в версии.
+ * null — разгадка в этой части не задана.
+ * @param {object} theory
+ * @param {object} solution
+ */
+export function compareTheory(theory, solution) {
+  let suspectsMatch = null;
+  if (solution.suspectIds.length) {
+    suspectsMatch = theory.suspectIds.length === solution.suspectIds.length && solution.suspectIds.every((suspectId) => theory.suspectIds.includes(suspectId));
+  }
+  let cluesMatch = null;
+  if (solution.clueIds.length) cluesMatch = solution.clueIds.every((originId) => theory.clueIds.includes(originId));
+  return { suspectsMatch, cluesMatch };
+}
+
+/** Источники «всех улик дела» для прогресса: папки библиотеки и отдельные шаблоны (п. 14). */
+export function saveCaseClueSources(caseId, { folderIds, templateIds }) {
+  if (!game.user.isGM) return false;
+  return updateOpenCaseFlag(caseId, { clueSources: { folderIds: readIdList(folderIds), templateIds: readIdList(templateIds) } });
 }
 
 /**

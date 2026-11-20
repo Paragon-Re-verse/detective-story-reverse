@@ -1,0 +1,48 @@
+<div class="progress-body">
+    {{#if missing}}
+    <p class="empty-message">{{localize "DETECTIVE_STORY.Timeline.Missing"}}</p>
+    {{else}}
+    <header class="progress-toolbar">
+        {{#if isGameMaster}}
+        <span class="progress-total">{{localize "DETECTIVE_STORY.Progress.Total" found=progress.foundByGroup total=progress.total}}</span>
+        <button type="button" data-action="editSources" {{disabled isClosed}}><i class="fa-solid fa-list-check"></i> {{localize "DETECTIVE_STORY.Progress.Sources"}}</button>
+        {{else}}
+        <p class="hint">{{localize "DETECTIVE_STORY.Progress.ProfilerHint"}}</p>
+        {{/if}}
+    </header>
+    {{#if progress.rows.length}}
+    <div class="progress-scroll">
+        <table class="progress-table">
+            <thead>
+                <tr>
+                    <th>{{localize "DETECTIVE_STORY.Progress.Clue"}}</th>
+                    <th>{{localize "DETECTIVE_STORY.Progress.Where"}}</th>
+                    <th>{{localize "DETECTIVE_STORY.Progress.Chain"}}</th>
+                    {{#each progress.players}}
+                    <th class="player-column">{{this.name}}{{#if ../isGameMaster}}<small>{{this.foundCount}}/{{../progress.total}}</small>{{/if}}</th>
+                    {{/each}}
+                </tr>
+            </thead>
+            <tbody>
+                {{#each progress.rows}}
+                <tr class="{{#if this.foundCount}}found-by-group{{/if}}">
+                    <td class="progress-clue"><img src="{{this.img}}" alt="" loading="lazy"> {{this.name}}</td>
+                    <td class="progress-places">{{#each this.places}}<span>{{this}}</span>{{else}}<span class="hint">{{localize "DETECTIVE_STORY.Progress.NoZone"}}</span>{{/each}}</td>
+                    <td class="progress-chain">{{#each this.requires}}<span><i class="fa-solid fa-link" inert></i> {{this}}</span>{{/each}}</td>
+                    {{#each this.cells}}
+                    <td class="progress-cell{{#if this.found}} found{{/if}}">
+                        {{#if this.found}}<i class="fa-solid fa-circle-check" data-tooltip="{{localize 'DETECTIVE_STORY.Progress.Found'}}"></i>
+                        {{else if this.locked}}<i class="fa-solid fa-lock" data-tooltip="{{localize 'DETECTIVE_STORY.Progress.Locked'}}"></i>
+                        {{else}}<span class="attempts" data-tooltip="{{localize 'DETECTIVE_STORY.Progress.Attempts'}}">{{this.attempts}}{{#if this.maxAttempts}}/{{this.maxAttempts}}{{/if}}</span>{{/if}}
+                    </td>
+                    {{/each}}
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    {{else}}
+    <p class="empty-message">{{#if isGameMaster}}{{localize "DETECTIVE_STORY.Progress.Empty"}}{{else}}{{localize "DETECTIVE_STORY.Progress.NothingFound"}}{{/if}}</p>
+    {{/if}}
+    {{/if}}
+</div>
