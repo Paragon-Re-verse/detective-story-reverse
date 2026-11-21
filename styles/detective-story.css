@@ -2969,3 +2969,25 @@
   padding: 0 8px;
   font-size: var(--font-size-12, 12px);
 }
+
+/* ---------- 1.2.5: прокрутка длинных вкладок и форм ---------- */
+
+/* .window-content у окон Foundry обрезает содержимое, поэтому прокручивается сама вкладка редактора
+   (на «Уровнях» с 3–6 редакторами нижние уровни иначе были недоступны). Вкладки и кнопка сохранения не сжимаются. */
+.detective-story.clue-editor .window-content > section.tab {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.detective-story.clue-editor .window-content > nav.tabs,
+.detective-story.clue-editor .window-content > footer {
+  flex-shrink: 0;
+}
+
+/* Длинные диалоги (событие таймлайна, версия, разгадка, сетки выбора) не уходят за край экрана:
+   прокручивается содержимое, кнопки внизу остаются видны. */
+.detective-story.dialog .dialog-content {
+  max-height: calc(85vh - 120px);
+  overflow-y: auto;
+}

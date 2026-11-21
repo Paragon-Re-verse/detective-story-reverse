@@ -2,6 +2,11 @@
 
 Русская версия: `CHANGELOG.ru.md`.
 
+## 1.2.5 — 2026-11-21
+
+- Fixed: the “Levels” tab of the clue editor could not be scrolled, so levels below the window edge (usually level 2 and further) could not be edited. All editor tabs now scroll while the tab bar and the save button stay in place.
+- Long dialogs (timeline event, theory, solution, pickers) scroll inside instead of running off the screen; their buttons stay visible.
+
 ## 1.2.4 — 2026-11-21
 
 - Updated and new GM Guide screenshots.
