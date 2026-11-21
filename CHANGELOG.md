@@ -2,6 +2,10 @@
 
 Русская версия: `CHANGELOG.ru.md`.
 
+## 1.2.2 — 2026-11-21
+
+- Updated and new GM Guide screenshots in Russian and English: every page now has pictures.
+
 ## 1.2.1 — 2026-11-21
 
 - Clue levels: a clue can have up to 6 levels of information, each with its own text, check and difficulty; level 1 is the description and is open on receipt. A player opens the next level with “Study” (a check against its difficulty, unlimited tries; the GM gets a whisper with the result). The GM opens and closes any level per player — in the clue card, in GM window → Players (the “2/4” button) and for all holders at once from the library. Level texts come from the template unless the GM edited that player's copy. Open levels travel with a handover and merge with a duplicate; chat and board cards show all open levels; case progress and clue cards show “2/4”; a notification, a “new” badge and an event log entry when a level opens.
