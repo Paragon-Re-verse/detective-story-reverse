@@ -283,8 +283,10 @@
   font-size: 9px;
 }
 
-.detective-story .case-chip.closed i {
-  color: #9f8475;
+.detective-story .case-chip.closed {
+  background: rgba(60, 55, 50, 0.75);
+  color: #b8ada0;
+  text-decoration: line-through;
 }
 
 .detective-story .thumb-footer .lock-badge {

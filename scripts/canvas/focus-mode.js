@@ -256,6 +256,12 @@ function clearHighlightById(tileId) {
 }
 
 /** Смена сцены: подсветка прошлой сцены уничтожена вместе со слоем. */
+/** Тайл удалён: убрать его подпись ГМ и подсветку, не дожидаясь общего пересчёта. @param {string} tileId */
+export function clearZoneArtifacts(tileId) {
+  clearZoneLabel(tileId);
+  clearHighlightById(tileId);
+}
+
 export function resetHighlightsForNewCanvas() {
   for (const highlight of highlights.values()) {
     canvas.app?.ticker?.remove(highlight.ticker);

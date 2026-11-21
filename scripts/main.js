@@ -9,7 +9,7 @@ import { ensureAllModuleFolders, getModuleFolderIds } from "./data/folders.js";
 import { countNewPlayerClues, getPlayerClue } from "./data/player-clues.js";
 import { syncCollaboratorOwnership } from "./data/shared-journals.js";
 import { initializeZoneClicks, initializeZoneHoverHint, hideZoneHint } from "./canvas/zone-search.js";
-import { refreshZone, refreshAllZones, resetHighlightsForNewCanvas } from "./canvas/focus-mode.js";
+import { refreshZone, refreshAllZones, resetHighlightsForNewCanvas, clearZoneArtifacts } from "./canvas/focus-mode.js";
 import { initializeFindAnimationWatcher, onOwnCluesChanged } from "./canvas/find-animation.js";
 import { registerZoneTab, onRenderTileConfig } from "./canvas/zone-tab.js";
 import { registerTemplateDropOnCanvas } from "./canvas/zone-drop.js";
@@ -124,6 +124,7 @@ Hooks.on("refreshTile", (tileObject) => refreshZone(tileObject));
 Hooks.on("updateTile", (tileDocument) => {
   if (tileDocument.object) refreshZone(tileDocument.object);
 });
+Hooks.on("deleteTile", (tileDocument) => clearZoneArtifacts(tileDocument.id));
 
 Hooks.on("renderTileConfig", (application, element) => onRenderTileConfig(application, element));
 

@@ -5,6 +5,9 @@
 ## 1.2.4 — 2026-11-21
 
 - Updated and new GM Guide screenshots.
+- Fixed: the case badge of a closed case on clue cards was no longer dimmed after the badge lost its icon.
+- Fixed: the GM label of a deleted zone stayed on the canvas until something refreshed the zones.
+- Clue list: Shift+click no longer starts a range from a card that the previous Ctrl+click had just unselected; “Move selected” clears the selection afterwards, like “Hand over selected”.
 
 ## 1.2.3 — 2026-11-21
 

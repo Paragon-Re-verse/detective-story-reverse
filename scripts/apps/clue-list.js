@@ -491,12 +491,15 @@ export class ClueListApplication extends DetectiveApplication {
     if (extendRange && anchorIndex >= 0 && targetIndex >= 0) {
       const [fromIndex, toIndex] = [Math.min(anchorIndex, targetIndex), Math.max(anchorIndex, targetIndex)];
       for (const rangeId of visibleIds.slice(fromIndex, toIndex + 1)) this.selectedOriginIds.add(rangeId);
+      this.lastSelectedOriginId = originId;
     } else if (this.selectedOriginIds.has(originId)) {
+      // Снятая карточка не может быть началом диапазона для следующего Shift+клика.
       this.selectedOriginIds.delete(originId);
+      this.lastSelectedOriginId = null;
     } else {
       this.selectedOriginIds.add(originId);
+      this.lastSelectedOriginId = originId;
     }
-    this.lastSelectedOriginId = originId;
     this.selectionMode = this.selectedOriginIds.size > 0 || this.selectionMode;
     this.render();
   }
@@ -619,6 +622,8 @@ export class ClueListApplication extends DetectiveApplication {
     const folderId = await pickFolderDialog(this.folderScope);
     if (folderId === undefined) return;
     await moveItemsToFolder(this.folderScope, [...this.selectedOriginIds], folderId);
+    // Как и после «Передать выбранные»: дело сделано — выделение снимается, следующий Ctrl+клик начинает новое.
+    this.clearSelection();
   }
 
   static #onToggleSelection() {
