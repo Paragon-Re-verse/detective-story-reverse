@@ -6,7 +6,7 @@
         <div class="thumb-footer">
             {{#if folderPath}}<span class="folder-chip" data-tooltip="{{folderPath}}"><i class="fa-solid fa-folder-tree" inert></i></span>{{/if}}
             {{#each caseTags}}
-            <span class="case-chip{{#if this.closed}} closed{{/if}}" data-tooltip="{{this.label}}"><i class="fa-solid fa-folder" inert></i>{{this.number}}</span>
+            <span class="case-chip{{#if this.closed}} closed{{/if}}" data-tooltip="{{this.label}}">{{localize "DETECTIVE_STORY.Case.NumberBadge" number=this.number}}</span>
             {{/each}}
             {{#if hasNotes}}<i class="fa-solid fa-note-sticky note-badge" data-tooltip="{{notesPreview}}"></i>{{/if}}
             {{#if levelLabel}}<span class="level-chip" data-tooltip="{{localize 'DETECTIVE_STORY.Levels.Progress'}}"><i class="fa-solid fa-layer-group" inert></i>{{levelLabel}}</span>{{/if}}

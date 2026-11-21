@@ -13,6 +13,7 @@ import {
 } from "../data/transfers.js";
 import { whisperGameMasters, escapeText, GM_NOTE_TONES } from "../chat.js";
 import { buildFolderPayload } from "../data/clue-folders.js";
+import { listCases, canSeeCase, getCaseLabel } from "../data/cases.js";
 
 const { DialogV2 } = foundry.applications.api;
 const { renderTemplate } = foundry.applications.handlebars;
@@ -30,11 +31,34 @@ export async function pickRecipients({ title, confirmLabel }) {
     ui.notifications.info(localize("Transfer.NoRecipients"));
     return null;
   }
-  const content = await renderTemplate(`${TEMPLATE_PATH}/apps/recipient-picker.hbs`, { candidates });
+  // Участники открытых дел — одним кликом (п. 7): отмечаются все участники дела, лишних можно снять.
+  const candidateIds = new Set(candidates.map((candidate) => candidate.id));
+  const caseShortcuts = listCases({ includeClosed: false })
+    .filter((caseData) => canSeeCase(caseData) && caseData.memberIds.length)
+    .map((caseData) => ({
+      label: getCaseLabel(caseData),
+      title: caseData.title,
+      memberIds: caseData.memberIds.filter((userId) => candidateIds.has(userId)).join(",")
+    }))
+    .filter((shortcut) => shortcut.memberIds);
+  const content = await renderTemplate(`${TEMPLATE_PATH}/apps/recipient-picker.hbs`, { candidates, caseShortcuts });
   const recipientIds = await DialogV2.wait({
     window: { title, icon: "fa-solid fa-users" },
     classes: ["detective-story", "recipient-picker"],
     content,
+    render: (event, dialog) => {
+      dialog.element.querySelector(".case-shortcuts")?.addEventListener("click", (clickEvent) => {
+        const shortcutButton = clickEvent.target.closest("[data-member-ids]");
+        if (!shortcutButton) return;
+        clickEvent.preventDefault();
+        const memberCheckboxes = shortcutButton.dataset.memberIds.split(",")
+          .map((userId) => dialog.element.querySelector(`input[name='recipient'][value='${userId}']`))
+          .filter(Boolean);
+        // Все уже отмечены — снять; иначе отметить всех участников дела.
+        const allChecked = memberCheckboxes.every((checkbox) => checkbox.checked);
+        for (const checkbox of memberCheckboxes) checkbox.checked = !allChecked;
+      });
+    },
     buttons: [
       {
         action: "confirm",

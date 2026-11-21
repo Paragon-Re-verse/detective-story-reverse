@@ -472,7 +472,43 @@ export class ClueListApplication extends DetectiveApplication {
 
   static #onOpenClue(event, target) {
     const playerClue = this.#getClue(target);
-    if (playerClue) openClueView(this.ownerUser, playerClue.originId);
+    if (!playerClue) return;
+    // Ctrl+клик — добавить к выделению, Shift+клик — диапазон (п. 11); обычный клик открывает карточку.
+    const canSelect = this.isOwnList || game.user.isGM;
+    if (canSelect && (event?.ctrlKey || event?.metaKey || event?.shiftKey)) {
+      event.preventDefault();
+      this.#selectByClick(playerClue.originId, event.shiftKey);
+      return;
+    }
+    openClueView(this.ownerUser, playerClue.originId);
+  }
+
+  /** Выделение без кнопки режима выбора: полоса «Выбрано: N» появляется сама. */
+  #selectByClick(originId, extendRange) {
+    const visibleIds = [...this.element.querySelectorAll(".clue-grid .clue-item:not([hidden])")].map((itemElement) => itemElement.dataset.originId);
+    const anchorIndex = visibleIds.indexOf(this.lastSelectedOriginId);
+    const targetIndex = visibleIds.indexOf(originId);
+    if (extendRange && anchorIndex >= 0 && targetIndex >= 0) {
+      const [fromIndex, toIndex] = [Math.min(anchorIndex, targetIndex), Math.max(anchorIndex, targetIndex)];
+      for (const rangeId of visibleIds.slice(fromIndex, toIndex + 1)) this.selectedOriginIds.add(rangeId);
+    } else if (this.selectedOriginIds.has(originId)) {
+      this.selectedOriginIds.delete(originId);
+    } else {
+      this.selectedOriginIds.add(originId);
+    }
+    this.lastSelectedOriginId = originId;
+    this.selectionMode = this.selectedOriginIds.size > 0 || this.selectionMode;
+    this.render();
+  }
+
+  /** Esc в активном окне списка снимает выделение и выходит из режима выбора. @returns {boolean} обработано */
+  clearSelection() {
+    if (!this.selectionMode) return false;
+    this.selectionMode = false;
+    this.selectedOriginIds.clear();
+    this.lastSelectedOriginId = null;
+    this.render();
+    return true;
   }
 
   static async #onShowInChat(event, target) {
@@ -525,23 +561,35 @@ export class ClueListApplication extends DetectiveApplication {
     const playerClue = this.#getClue(itemElement);
     if (!playerClue) return [];
     const call = (handler) => () => handler.call(this, null, itemElement);
+    // Группы: просмотр / действия / правка ГМ / удаление (п. 2).
     const menuItems = [
       { icon: "fa-solid fa-file-magnifying-glass", label: localize("ClueList.Open"), callback: call(ClueListApplication.#onOpenClue) },
-      { icon: "fa-solid fa-comment", label: localize("ClueList.ShowInChat"), callback: call(ClueListApplication.#onShowInChat) }
+      { icon: "fa-solid fa-comment", label: localize("ClueList.ShowInChat"), callback: call(ClueListApplication.#onShowInChat) },
+      { separator: true }
     ];
     if (this.isOwnList) {
-      menuItems.push({ icon: "fa-solid fa-thumbtack", label: localize("ClueList.PlaceOnBoard"), callback: call(ClueListApplication.#onPlaceOnBoard) });
+      const boardAvailable = isBoardScene(canvas?.scene);
+      menuItems.push({
+        icon: "fa-solid fa-thumbtack",
+        label: localize("ClueList.PlaceOnBoard"),
+        callback: call(ClueListApplication.#onPlaceOnBoard),
+        disabled: !boardAvailable,
+        reason: localize("ClueList.OpenBoardFirst")
+      });
       menuItems.push({ icon: "fa-solid fa-share", label: localize("ClueList.Transfer"), callback: call(ClueListApplication.#onTransferClue) });
     }
     if (this.isOwnList || game.user.isGM) {
       menuItems.push({ icon: "fa-solid fa-folder-tree", label: localize("ClueFolders.MoveTo"), callback: call(ClueListApplication.#onMoveClue) });
     }
     if (game.user.isGM) {
+      menuItems.push({ separator: true });
       if (describeLevelProgress(playerClue).total > 1) {
         menuItems.push({ icon: "fa-solid fa-layer-group", label: localize("Levels.Manage"), callback: () => editPlayerLevelsDialog(this.ownerUser, playerClue.originId) });
       }
-      menuItems.push({ icon: "fa-solid fa-pen", label: localize("Common.Edit"), callback: call(ClueListApplication.#onEditClue) });
-      menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: call(ClueListApplication.#onDeleteClue) });
+      const locked = isClueLockedByClosedCase(playerClue.originId);
+      menuItems.push({ icon: "fa-solid fa-pen", label: localize("Common.Edit"), callback: call(ClueListApplication.#onEditClue), disabled: locked, reason: localize("Case.ClueLocked") });
+      menuItems.push({ separator: true });
+      menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: call(ClueListApplication.#onDeleteClue), danger: true, disabled: locked, reason: localize("Case.ClueLocked") });
     }
     return menuItems;
   }
@@ -576,6 +624,7 @@ export class ClueListApplication extends DetectiveApplication {
   static #onToggleSelection() {
     this.selectionMode = !this.selectionMode;
     this.selectedOriginIds.clear();
+    this.lastSelectedOriginId = null;
     this.render();
   }
 

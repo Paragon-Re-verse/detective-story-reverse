@@ -202,7 +202,10 @@ export function attachFolderTree(container, { getScope, onSelect, onDrop, onTran
     if ("canAdd" in nodeElement.dataset) menuItems.push({ icon: "fa-solid fa-folder-plus", label: localize("ClueFolders.NewSubfolder"), callback: run("create") });
     if ("canEdit" in nodeElement.dataset) menuItems.push({ icon: "fa-solid fa-pen", label: localize("Common.Edit"), callback: run("edit") });
     if ("canTransfer" in nodeElement.dataset) menuItems.push({ icon: "fa-solid fa-share", label: localize("ClueFolders.Transfer"), callback: run("transfer") });
-    if ("canEdit" in nodeElement.dataset) menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: run("delete") });
+    if ("canEdit" in nodeElement.dataset) {
+      menuItems.push({ separator: true });
+      menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: run("delete"), danger: true });
+    }
     return menuItems;
   });
 

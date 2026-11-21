@@ -12,6 +12,7 @@ import { initializeZoneClicks, initializeZoneHoverHint, hideZoneHint } from "./c
 import { refreshZone, refreshAllZones, resetHighlightsForNewCanvas } from "./canvas/focus-mode.js";
 import { initializeFindAnimationWatcher, onOwnCluesChanged } from "./canvas/find-animation.js";
 import { registerZoneTab, onRenderTileConfig } from "./canvas/zone-tab.js";
+import { registerTemplateDropOnCanvas } from "./canvas/zone-drop.js";
 import { ProfilersConfig, PermissionsWarning } from "./apps/settings-apps.js";
 import { synchronizeTransfers } from "./apps/transfer-dialogs.js";
 import { openClueList } from "./apps/clue-list.js";
@@ -84,6 +85,7 @@ Hooks.once("ready", async () => {
   }
 
   registerTemplateDropOnPlayersList();
+  registerTemplateDropOnCanvas();
 
   game.modules.get(MODULE_ID).api = { openClueList, openCaseJournal, openGameMasterWindow };
 });

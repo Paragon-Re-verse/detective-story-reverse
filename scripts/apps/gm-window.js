@@ -14,6 +14,7 @@ import { describeLevelProgress } from "../data/clue-levels.js";
 import { editPlayerLevelsDialog, setLevelForHoldersDialog } from "./level-dialogs.js";
 import { attachContextMenu } from "./context-menu.js";
 import { showBoardContextMenu } from "../board/threads.js";
+import { TEMPLATE_CANVAS_DROP_TYPE } from "../canvas/zone-drop.js";
 import { getUserCharacterName } from "../data/transfers.js";
 import {
   downloadExport,
@@ -172,6 +173,7 @@ export class GameMasterWindow extends DetectiveApplication {
       moveTemplate: GameMasterWindow.#onMoveTemplate,
       editPlayerLevels: GameMasterWindow.#onEditPlayerLevels,
       openTemplateMenu: GameMasterWindow.#onOpenTemplateMenu,
+      openDataMenu: GameMasterWindow.#onOpenDataMenu,
       newType: GameMasterWindow.#onNewType,
       editType: GameMasterWindow.#onEditType,
       deleteType: GameMasterWindow.#onDeleteType,
@@ -423,6 +425,8 @@ export class GameMasterWindow extends DetectiveApplication {
     for (const templateRow of this.element.querySelectorAll(".template-row[draggable]")) {
       templateRow.addEventListener("dragstart", (event) => {
         event.dataTransfer.setData(TEMPLATE_DRAG_TYPE, templateRow.dataset.templateId);
+        // Для броска на сцену: Foundry передаёт канве JSON из text/plain (п. 6 — улика на сцене становится зоной).
+        event.dataTransfer.setData("text/plain", JSON.stringify({ type: TEMPLATE_CANVAS_DROP_TYPE, templateId: templateRow.dataset.templateId }));
         event.dataTransfer.effectAllowed = "copy";
       });
     }
@@ -498,11 +502,17 @@ export class GameMasterWindow extends DetectiveApplication {
       { icon: "fa-solid fa-gift", label: localize("Grant.Button"), callback: call(GameMasterWindow.#onGrantTemplate) },
       { icon: "fa-solid fa-pen", label: localize("Common.Edit"), callback: call(GameMasterWindow.#onEditTemplate) }
     ];
-    if (Number(rowElement.dataset.levelCount) > 1) {
-      menuItems.push({ icon: "fa-solid fa-layer-group", label: localize("Levels.ForHolders"), callback: () => setLevelForHoldersDialog(templateId) });
-    }
+    menuItems.push({ separator: true });
+    menuItems.push({
+      icon: "fa-solid fa-layer-group",
+      label: localize("Levels.ForHolders"),
+      callback: () => setLevelForHoldersDialog(templateId),
+      disabled: Number(rowElement.dataset.levelCount) < 2,
+      reason: localize("Levels.NoExtraLevels")
+    });
     menuItems.push({ icon: "fa-solid fa-folder-tree", label: localize("ClueFolders.MoveTo"), callback: call(GameMasterWindow.#onMoveTemplate) });
-    menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: call(GameMasterWindow.#onDeleteTemplate) });
+    menuItems.push({ separator: true });
+    menuItems.push({ icon: "fa-solid fa-trash", label: localize("Common.Delete"), callback: call(GameMasterWindow.#onDeleteTemplate), danger: true });
     return menuItems;
   }
 
@@ -581,6 +591,17 @@ export class GameMasterWindow extends DetectiveApplication {
   /** Новая улика — сразу в открытой папке библиотеки (п. Б8). */
   static #onNewTemplate() {
     openTemplateEditor(undefined, { folderId: toRealFolderId(this.selectedLibraryFolderId) });
+  }
+
+  /** «Данные ▾»: экспорт, импорт и — отдельно, красным — сброс (п. 3). Сброс по-прежнему спрашивает подтверждение. */
+  static #onOpenDataMenu(event, target) {
+    const bounds = target.getBoundingClientRect();
+    showBoardContextMenu(bounds.left, bounds.top, [
+      { icon: "fa-solid fa-file-export", label: localize("DataTools.Export"), callback: () => downloadExport() },
+      { icon: "fa-solid fa-file-import", label: localize("DataTools.Import"), callback: () => runImportFlow() },
+      { separator: true },
+      { icon: "fa-solid fa-trash", label: localize("DataTools.Reset"), callback: () => GameMasterWindow.#onResetData.call(this), danger: true }
+    ]);
   }
 
   static #onOpenTemplateMenu(event, target) {

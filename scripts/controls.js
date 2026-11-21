@@ -101,6 +101,17 @@ export function registerKeybindings() {
       return true;
     }
   });
+  // Esc в активном списке улик снимает выделение (п. 11). В остальных случаях клавиша достаётся Foundry.
+  game.keybindings.register(MODULE_ID, "clearClueSelection", {
+    name: fullKey("Keybindings.ClearSelection"),
+    editable: [{ key: "Escape" }],
+    precedence: CONST.KEYBINDING_PRECEDENCE.PRIORITY,
+    onDown: () => {
+      const clueList = foundry.applications.instances.get("detective-story-clue-list");
+      if (!clueList?.rendered || ui.activeWindow !== clueList) return false;
+      return clueList.clearSelection();
+    }
+  });
   game.keybindings.register(MODULE_ID, "openGameMasterWindow", {
     name: fullKey("Keybindings.GameMasterWindow"),
     editable: [],

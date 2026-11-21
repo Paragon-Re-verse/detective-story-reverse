@@ -41,7 +41,8 @@
             "ClueList": "Open clue list",
             "CaseJournal": "Open case journal",
             "Focus": "Focus mode (on/off)",
-            "GameMasterWindow": "Open GM window"
+            "GameMasterWindow": "Open GM window",
+            "ClearSelection": "Clear the clue list selection"
         },
         "Settings": {
             "ProfilersCreateCases": {
@@ -210,7 +211,8 @@
             "LabelAttempts": "attempts: {count}",
             "Requires": "Requires clues",
             "RequiresHint": "The zone exists for a player only once they have all of these clues (a chain). Until then it isn't highlighted and clicking it does nothing.",
-            "LabelRequires": "Requires: {clues}"
+            "LabelRequires": "Requires: {clues}",
+            "CreatedFromDrop": "Search zone created: “{clue}”. Resize and configure it like any tile."
         },
         "Detection": {
             "Legend": "Detection",
@@ -340,7 +342,7 @@
             "PickTemplatesTitle": "Which clues to give",
             "Confirm": "Give",
             "Done": "Clues given: {count}",
-            "DragHint": "Drag onto a player to give the clue",
+            "DragHint": "Drag onto a player to give the clue; onto the scene to create a search zone",
             "DroppedTo": "“{clue}” given to {name}.",
             "AlreadyHas": "{name} already has “{clue}”.",
             "OnlyPlayers": "Clues can only be given to players."
@@ -357,7 +359,8 @@
             "DuplicateHint": "Clues you already have will not be added again.",
             "Question": "Accept?",
             "AcceptedBy": "Your clues were accepted: {name}.",
-            "DeclinedBy": "Your clues were declined: {name}."
+            "DeclinedBy": "Your clues were declined: {name}.",
+            "CaseMembers": "Case members"
         },
         "GameMasterWindow": {
             "Title": "GM window",
@@ -419,7 +422,8 @@
                 "InvalidJson": "The file cannot be read as JSON.",
                 "WrongFormat": "This is not a Detective Story Reverse export file.",
                 "NewerVersion": "The file was made by a newer version of the module."
-            }
+            },
+            "Menu": "Data"
         },
         "Case": {
             "NumberLabel": "Case #{number}",

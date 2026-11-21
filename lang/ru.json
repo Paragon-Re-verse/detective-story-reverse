@@ -37,7 +37,8 @@
             "ClueList": "Открыть список улик",
             "CaseJournal": "Открыть журнал дела",
             "Focus": "Режим сосредоточения (вкл/выкл)",
-            "GameMasterWindow": "Открыть окно ГМ"
+            "GameMasterWindow": "Открыть окно ГМ",
+            "ClearSelection": "Снять выделение в списке улик"
         },
         "Settings": {
             "ProfilersCreateCases": {
@@ -206,7 +207,8 @@
             "LabelAttempts": "попыток: {count}",
             "Requires": "Требует улики",
             "RequiresHint": "Зона существует для игрока только после того, как у него есть все эти улики (цепочка). Пока их нет, зона не подсвечивается и клик по ней ничего не делает.",
-            "LabelRequires": "Требует: {clues}"
+            "LabelRequires": "Требует: {clues}",
+            "CreatedFromDrop": "Зона поиска создана: «{clue}». Её можно растянуть и настроить, как обычный тайл."
         },
         "Detection": {
             "Legend": "Обнаружение",
@@ -336,7 +338,7 @@
             "PickTemplatesTitle": "Какие улики выдать",
             "Confirm": "Выдать",
             "Done": "Выдано улик: {count}",
-            "DragHint": "Перетащите на игрока, чтобы выдать улику",
+            "DragHint": "Перетащите на игрока — выдать улику; на сцену — создать зону поиска",
             "DroppedTo": "«{clue}» выдана: {name}.",
             "AlreadyHas": "У {name} уже есть «{clue}».",
             "OnlyPlayers": "Улики выдаются только игрокам."
@@ -353,7 +355,8 @@
             "DuplicateHint": "Улики, которые у вас уже есть, повторно не добавятся.",
             "Question": "Принять?",
             "AcceptedBy": "Ваши улики приняты: {name}.",
-            "DeclinedBy": "От ваших улик отказались: {name}."
+            "DeclinedBy": "От ваших улик отказались: {name}.",
+            "CaseMembers": "Участники дела"
         },
         "GameMasterWindow": {
             "Title": "Окно ГМ",
@@ -415,7 +418,8 @@
                 "InvalidJson": "Файл не читается как JSON.",
                 "WrongFormat": "Это не файл экспорта Detective Story Reverse.",
                 "NewerVersion": "Файл создан более новой версией модуля."
-            }
+            },
+            "Menu": "Данные"
         },
         "Case": {
             "NumberLabel": "Дело №{number}",

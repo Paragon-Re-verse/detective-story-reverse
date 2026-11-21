@@ -647,7 +647,9 @@ export function resetConnectionState() {
  * Простое меню в точке экрана (доска — PIXI, штатное ContextMenu Foundry к ней не цепляется).
  * @param {number} screenX
  * @param {number} screenY
- * @param {{icon: string, label: string, callback: Function}[]} menuItems
+ * Пункт может быть разделителем ({separator: true}), недоступным ({disabled: true, reason: "почему"})
+ * или опасным ({danger: true}, например «Удалить»).
+ * @param {{icon: string, label: string, callback: Function, disabled?: boolean, reason?: string, danger?: boolean, separator?: boolean}[]} menuItems
  * @param {Function} [onDismiss]
  */
 export function showBoardContextMenu(screenX, screenY, menuItems, onDismiss) {
@@ -659,8 +661,19 @@ export function showBoardContextMenu(screenX, screenY, menuItems, onDismiss) {
   const listElement = document.createElement("ol");
   let chosen = false;
   for (const menuItem of menuItems) {
+    if (menuItem.separator) {
+      // Разделитель только между пунктами: в начале, в конце и подряд не рисуется.
+      const lastElement = listElement.lastElementChild;
+      if (lastElement && !lastElement.classList.contains("board-menu-separator")) {
+        const separatorElement = document.createElement("li");
+        separatorElement.className = "board-menu-separator";
+        listElement.append(separatorElement);
+      }
+      continue;
+    }
     const itemElement = document.createElement("li");
     itemElement.className = "board-menu-item";
+    if (menuItem.danger) itemElement.classList.add("danger");
     let iconElement = document.createElement("i");
     iconElement.className = menuItem.icon;
     if (menuItem.maskImage) {
@@ -672,6 +685,18 @@ export function showBoardContextMenu(screenX, screenY, menuItems, onDismiss) {
     const labelElement = document.createElement("span");
     labelElement.textContent = menuItem.label;
     itemElement.append(iconElement, labelElement);
+    if (menuItem.disabled) {
+      // Недоступный пункт виден, но не нажимается; причина — второй строкой.
+      itemElement.classList.add("disabled");
+      if (menuItem.reason) {
+        const reasonElement = document.createElement("small");
+        reasonElement.className = "board-menu-reason";
+        reasonElement.textContent = menuItem.reason;
+        labelElement.append(reasonElement);
+      }
+      listElement.append(itemElement);
+      continue;
+    }
     itemElement.addEventListener("click", (event) => {
       event.stopPropagation();
       chosen = true;
@@ -680,8 +705,13 @@ export function showBoardContextMenu(screenX, screenY, menuItems, onDismiss) {
     });
     listElement.append(itemElement);
   }
+  if (listElement.lastElementChild?.classList.contains("board-menu-separator")) listElement.lastElementChild.remove();
   menuElement.append(listElement);
   document.body.append(menuElement);
+  // Меню у края экрана не уходит за него.
+  const menuBounds = menuElement.getBoundingClientRect();
+  if (menuBounds.right > window.innerWidth) menuElement.style.left = `${Math.max(0, window.innerWidth - menuBounds.width - 4)}px`;
+  if (menuBounds.bottom > window.innerHeight) menuElement.style.top = `${Math.max(0, window.innerHeight - menuBounds.height - 4)}px`;
 
   const onOutsidePointer = (event) => {
     if (menuElement.contains(event.target)) return;

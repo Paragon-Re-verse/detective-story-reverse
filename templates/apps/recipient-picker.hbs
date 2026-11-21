@@ -1,4 +1,10 @@
 <p class="hint">{{localize "DETECTIVE_STORY.Transfer.PickHint"}}</p>
+{{#if caseShortcuts.length}}
+<div class="case-shortcuts">
+    <span class="hint">{{localize "DETECTIVE_STORY.Transfer.CaseMembers"}}:</span>
+    {{#each caseShortcuts}}<button type="button" class="case-shortcut" data-member-ids="{{this.memberIds}}" data-tooltip="{{this.title}}"><i class="fa-solid fa-users" inert></i> {{this.label}}</button>{{/each}}
+</div>
+{{/if}}
 <ul class="recipient-list">
     {{#each candidates}}
     <li>

@@ -2,6 +2,16 @@
 
 Русская версия: `CHANGELOG.ru.md`.
 
+## 1.2.3 — 2026-11-21
+
+- Drag a clue from the GM library onto a scene to create a search zone: a transparent 2×2-cell tile with that clue and its detection settings, ready to resize. Board scenes are skipped.
+- The recipient picker has “Case members” buttons that tick all members of an open case at once (giving clues from the library or the editor, handing over between players).
+- Clue list: Ctrl+click adds a card to the selection, Shift+click selects a range, Esc clears it; the “Selected: N” bar appears by itself.
+- Right-click menus: groups separated by lines, unavailable items shown greyed out with the reason (for example “Place on the board” outside a board scene), “Delete” at the bottom in red; menus stay inside the screen.
+- The case number on clue cards is a “#3” badge instead of a folder icon (it was easy to confuse with folders).
+- GM window: Export, Import and Reset moved into one “Data ▾” button; Reset is separated and red and still asks for confirmation.
+- GM Guide: the quick way to make a zone, selection shortcuts, case members in the recipient picker and the “Data” menu.
+
 ## 1.2.2 — 2026-11-21
 
 - Updated and new GM Guide screenshots in Russian and English: every page now has pictures.

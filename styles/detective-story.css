@@ -2943,3 +2943,27 @@
 .detective-story .progress-table tbody tr:hover {
   background: rgba(127, 127, 127, 0.08);
 }
+
+/* ---------- 1.2.3 ---------- */
+
+/* Номер дела на карточке — бейдж «№3», не иконка папки */
+.detective-story .case-chip {
+  font-weight: bold;
+  letter-spacing: 0.02em;
+}
+
+.detective-story .case-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.detective-story .case-shortcut {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 24px;
+  padding: 0 8px;
+  font-size: var(--font-size-12, 12px);
+}
