@@ -2,6 +2,10 @@
 
 Русская версия: `CHANGELOG.ru.md`.
 
+## 1.2.4 — 2026-11-21
+
+- Updated and new GM Guide screenshots.
+
 ## 1.2.3 — 2026-11-21
 
 - Drag a clue from the GM library onto a scene to create a search zone: a transparent 2×2-cell tile with that clue and its detection settings, ready to resize. Board scenes are skipped.
