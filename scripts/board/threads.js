@@ -687,10 +687,23 @@ export function showBoardContextMenu(screenX, screenY, menuItems, onDismiss) {
     if (menuElement.contains(event.target)) return;
     closeMenu();
   };
+  // Escape закрывает только меню, а не окно под ним и не меню Foundry.
+  const onKeyDown = (event) => {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeMenu();
+  };
+  // Окно, из которого открыли меню, закрыли — меню уходит вместе с ним.
+  const closeHookId = Hooks.on("closeApplicationV2", () => closeMenu());
+  document.addEventListener("keydown", onKeyDown, true);
   function closeMenu() {
+    if (!menuElement.isConnected) return;
     menuElement.remove();
     document.removeEventListener("pointerdown", onOutsidePointer, true);
+    document.removeEventListener("keydown", onKeyDown, true);
     window.removeEventListener("wheel", closeMenu);
+    Hooks.off("closeApplicationV2", closeHookId);
     if (!chosen && onDismiss) onDismiss();
   }
   window.setTimeout(() => {

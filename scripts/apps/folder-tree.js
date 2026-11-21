@@ -219,7 +219,8 @@ export function attachFolderTree(container, { getScope, onSelect, onDrop, onTran
         firstObservation = false;
         return;
       }
-      if (!entries[0].target.classList.contains("collapsed")) saveWidth(entries[0].contentRect.width);
+      // Ширина с отступами и рамкой (как у inline-стиля при box-sizing: border-box), иначе панель при каждой загрузке сужалась.
+      if (!entries[0].target.classList.contains("collapsed")) saveWidth(entries[0].borderBoxSize?.[0]?.inlineSize ?? entries[0].target.offsetWidth);
     }).observe(treeElement);
   }
 

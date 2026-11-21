@@ -318,6 +318,7 @@
 
 .detective-story .clue-item:hover .thumb-footer {
   opacity: 0;
+  pointer-events: none;
 }
 
 .detective-story .clue-actions button {
@@ -2559,10 +2560,6 @@
   margin-bottom: 8px;
 }
 
-.detective-story .level-slot prose-mirror {
-  display: block;
-  height: 160px;
-}
 
 .detective-story .level-chip {
   display: inline-flex;

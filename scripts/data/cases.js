@@ -220,13 +220,14 @@ export function createCase(caseInput) {
  */
 async function updateCaseFlag(caseId, changes, title) {
   const journalEntry = game.journal.get(caseId);
-  if (!journalEntry || !canManageCase(getCase(caseId)) || !journalEntry.isOwner) return;
+  if (!journalEntry || !canManageCase(getCase(caseId)) || !journalEntry.isOwner) return false;
   const update = {};
   for (const [path, value] of Object.entries(changes)) {
     update[`flags.${MODULE_ID}.${CASE_FLAG}.${path}`] = value;
   }
   if (title !== undefined) update.name = title;
   await journalEntry.update(update);
+  return true;
 }
 
 /**
@@ -239,8 +240,8 @@ export async function updateOpenCaseFlag(caseId, changes, title) {
     ui.notifications.warn(localize("Case.ClosedReadOnly"));
     return false;
   }
-  await updateCaseFlag(caseId, changes, title);
-  return true;
+  // Нет права на это дело (чужая группа) — false, как и для закрытого дела.
+  return updateCaseFlag(caseId, changes, title);
 }
 
 /** @param {string} caseId @param {{title: string, description: string}} details */

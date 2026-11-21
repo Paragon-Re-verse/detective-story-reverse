@@ -782,7 +782,10 @@
             "PlayerTitle": "Levels: {clue} — {player}",
             "Progress": "Levels open",
             "Study": "Study: level {number} ({check})",
-            "StudyFailed": "It didn't work."
+            "StudyFailed": "It didn't work.",
+            "Text": "Text",
+            "CustomForCopy": "Own levels for this copy",
+            "CustomForCopyHint": "Unchecked, the player's copy takes its levels from the template, so template edits reach the player at once. The box is ticked automatically when you change the levels below."
         }
     }
 }

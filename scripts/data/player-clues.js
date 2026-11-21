@@ -140,8 +140,10 @@ export async function updatePlayerClueContent(user, originId, content) {
   if (!existingClue || warnIfLocked(originId)) return;
   const summary = normalizeSummary(content);
   const updatedClue = { ...existingClue, ...summary, visual: normalizeVisual(content.visual) };
-  // Правка уровней делает копию своей: тексты шаблона на неё больше не влияют (п. 4).
-  if (content.levels !== undefined) {
+  // levels — свои уровни копии (тексты шаблона на неё больше не влияют, п. 4); null — снова уровни шаблона.
+  if (content.levels === null) {
+    updatedClue.customLevels = false;
+  } else if (content.levels !== undefined) {
     updatedClue.levelsSnapshot = normalizeLevels(content.levels);
     updatedClue.customLevels = true;
   }

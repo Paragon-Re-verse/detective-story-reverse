@@ -179,8 +179,16 @@ export class ClueEditorApplication extends DetectiveApplication {
   async _onFirstRender(context, options) {
     await super._onFirstRender(context, options);
     const refreshLater = foundry.utils.debounce(() => this.#refreshPreviews(), 100);
-    this.element.addEventListener("input", refreshLater);
-    this.element.addEventListener("change", refreshLater);
+    const onFormEdit = (event) => {
+      // Уровни в превью не участвуют: не трогаем форму, пока в их редакторах идёт ввод.
+      if (event.target.closest?.(".level-slot")) {
+        if (this.isPlayerCopy) this.#markCustomLevels();
+        return;
+      }
+      refreshLater();
+    };
+    this.element.addEventListener("input", onFormEdit);
+    this.element.addEventListener("change", onFormEdit);
   }
 
   /** @inheritDoc */
@@ -205,22 +213,41 @@ export class ClueEditorApplication extends DetectiveApplication {
   }
 
   /** Живые превью: картинка на «Сводке» и карточка доски на «Визуализации». */
+  /**
+   * Живые превью читают только свои поля. Разбор всей формы (FormDataExtended) после сохранения
+   * натыкался на уже убранные поля и падал (TypeError в консоли ГМ).
+   */
   #refreshPreviews() {
-    const formValues = new foundry.applications.ux.FormDataExtended(this.element).object;
+    if (!this.rendered || !this.element?.isConnected) return;
+    const readField = (name) => this.element.querySelector(`[name="${name}"]`)?.value ?? "";
+    const image = readField("img");
     const imagePreview = this.element.querySelector(".editor-image-preview");
-    if (imagePreview && formValues.img) imagePreview.src = formValues.img;
+    if (imagePreview && image) imagePreview.src = image;
     const previewStage = this.element.querySelector("[data-visual-preview]");
     if (!previewStage) return;
     const visual = {};
-    for (const [key, value] of Object.entries(formValues)) {
-      if (key.startsWith("visual.")) visual[key.slice("visual.".length)] = value;
+    for (const fieldElement of this.element.querySelectorAll("[name^='visual.']")) {
+      const key = fieldElement.getAttribute("name").slice("visual.".length);
+      if (fieldElement.type === "checkbox") {
+        visual[key] = fieldElement.checked;
+      } else if (fieldElement.type === "radio") {
+        if (fieldElement.checked) visual[key] = fieldElement.value;
+      } else {
+        visual[key] = fieldElement.value;
+      }
     }
     renderCardMiniPreview(previewStage, {
-      name: formValues.name || localize("Editor.NewClue"),
-      img: formValues.img,
-      description: formValues.description,
+      name: readField("name") || localize("Editor.NewClue"),
+      img: image,
+      description: readField("description"),
       visual
     });
+  }
+
+  /** ГМ начал править уровни копии игрока — копия получает свои уровни (галочка ставится сама). */
+  #markCustomLevels() {
+    const customCheckbox = this.element.querySelector("input[name='customLevels']");
+    if (customCheckbox) customCheckbox.checked = true;
   }
 
   /** Поля вкладки «Визуализация» зависят от вида карточки. */
@@ -255,6 +282,8 @@ export class ClueEditorApplication extends DetectiveApplication {
       levels: normalizeLevels(submittedLevels)
     };
     if (this.isPlayerCopy) {
+      // Без галочки «Свои уровни» копия берёт уровни из шаблона: сохранение карточки их не замораживает.
+      if (!submitted.customLevels) clueContent.levels = null;
       await updatePlayerClueContent(this.ownerUser, this.originId, clueContent);
       return;
     }

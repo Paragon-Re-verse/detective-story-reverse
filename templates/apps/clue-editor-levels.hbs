@@ -4,6 +4,12 @@
         <label>{{localize "DETECTIVE_STORY.Levels.Count"}}</label>
         <div class="form-fields"><select name="levelCount">{{selectOptions levelCountChoices selected=levelCount}}</select></div>
     </div>
+    {{#if isPlayerCopy}}
+    <div class="form-group">
+        <label class="checkbox"><input type="checkbox" name="customLevels" {{checked clue.customLevels}}> {{localize "DETECTIVE_STORY.Levels.CustomForCopy"}}</label>
+        <p class="hint">{{localize "DETECTIVE_STORY.Levels.CustomForCopyHint"}}</p>
+    </div>
+    {{/if}}
     <fieldset class="level-slot level-one">
         <legend>{{localize "DETECTIVE_STORY.Levels.LevelN" number=1}}</legend>
         <p class="hint">{{localize "DETECTIVE_STORY.Levels.LevelOneHint"}}</p>
@@ -19,7 +25,10 @@
             <label>{{localize "DETECTIVE_STORY.Detection.Difficulty"}}</label>
             <div class="form-fields"><input type="text" name="levels.{{this.index}}.dc" value="{{this.dc}}"></div>
         </div>
-        <prose-mirror name="levels.{{this.index}}.text" value="{{this.text}}"></prose-mirror>
+        <div class="form-group stacked">
+            <label>{{localize "DETECTIVE_STORY.Levels.Text"}}</label>
+            <prose-mirror name="levels.{{this.index}}.text" value="{{this.text}}"></prose-mirror>
+        </div>
     </fieldset>
     {{/each}}
 </section>

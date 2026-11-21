@@ -5,6 +5,17 @@
 ## 1.2.2 — 2026-11-21
 
 - Updated and new GM Guide screenshots in Russian and English: every page now has pictures.
+- Fixed: the level text editors on the “Levels” tab had no visible input area, and typed text came out reversed.
+- Fixed: on a clue list card, the hidden folder and level badges caught clicks meant for “Edit” and “…”.
+- Fixed: a console error (TypeError in the clue editor preview) after saving a player's copy.
+- A player's copy keeps taking its levels from the template until the GM ticks “Own levels for this copy” (ticked automatically when the levels are changed); saving the card alone no longer freezes them.
+- Menus opened by right-click or “…” close with Escape and when their window closes.
+- An open clue card updates “Place on the board” as soon as the board scene opens.
+- “Details” on a board card opens the player's clue card with all open levels instead of the clue list.
+- The folder panel keeps exactly the width it was dragged to (it used to shrink by a few pixels on reload).
+- “Study” rolls with the same character as a background zone search: the profile character, otherwise the selected token.
+- A write to a case the user doesn't run now reports failure instead of success.
+- GM Guide: the caption of the case journal screenshot describes the case tabs.
 
 ## 1.2.1 — 2026-11-21
 

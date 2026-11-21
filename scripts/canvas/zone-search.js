@@ -178,7 +178,7 @@ export function measureDistanceToZone(tokenObject, tileDocument) {
 }
 
 /** Актёр для фона без токена: персонаж из профиля, иначе выбранный токен. */
-function getBackgroundActor() {
+export function getBackgroundActor() {
   if (game.user.character) return game.user.character;
   return getOwnControlledToken()?.actor ?? null;
 }

@@ -12,7 +12,7 @@ import { enrichText, formatDateTime } from "./view-helpers.js";
 import { startTransfer } from "./transfer-dialogs.js";
 import { getClueLevels, getNextClosedLevel, setClueLevelOpen, describeCheck, getLevelLabel } from "../data/clue-levels.js";
 import { getClueTemplate } from "../data/clue-templates.js";
-import { rollDetectionCheck } from "../canvas/zone-search.js";
+import { rollDetectionCheck, getBackgroundActor } from "../canvas/zone-search.js";
 import { whisperGameMasters, escapeText, GM_NOTE_TONES } from "../chat.js";
 
 /**
@@ -117,6 +117,8 @@ export class ClueViewApplication extends DetectiveApplication {
       if (onlyPersonalFields) return;
       this.render();
     });
+    // Сцена сменилась (например, открыли доску) — кнопка «Выставить на доску» должна это увидеть.
+    this.subscribe("canvasReady", () => this.render());
     // Тексты уровней берутся из шаблона: ГМ дописал уровень — окно обновляется.
     this.subscribe("updateJournalEntry", (journalEntry) => {
       if (journalEntry.id === this.originId) this.render();
@@ -152,8 +154,8 @@ export class ClueViewApplication extends DetectiveApplication {
     const playerClue = this.playerClue;
     const nextLevel = playerClue && getNextClosedLevel(playerClue);
     if (!nextLevel || this.ownerUser.id !== game.user.id) return;
-    let actor = game.user.character ?? null;
-    if (!actor) actor = canvas?.tokens?.controlled.find((tokenObject) => tokenObject.isOwner && tokenObject.actor)?.actor ?? null;
+    // Тот же персонаж, что и при поиске на фоне: из профиля, иначе выбранный токен.
+    const actor = getBackgroundActor();
     const rollMode = getClueTemplate(this.originId)?.detection.rollMode ?? "publicroll";
     const rollResult = await rollDetectionCheck({ check: nextLevel.check, dc: nextLevel.dc, rollMode }, actor);
     if (!rollResult) return;
